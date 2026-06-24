@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import os
 import streamlit.components.v1 as components
+from datetime import datetime
+import csv
 
 # ─── PAGE CONFIG ──────────────────────────────────────────
 st.set_page_config(
@@ -19,7 +21,7 @@ st.markdown("""
     
     .header-wrapper {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-        padding: 1.8rem 0 1.5rem 0;
+        padding: 1.5rem 0 1.2rem 0;
         border-radius: 0 0 40px 40px;
         margin-bottom: 2rem;
         box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15);
@@ -37,36 +39,39 @@ st.markdown("""
         margin: 0 auto;
         padding: 0 2rem;
         flex-wrap: wrap;
-        gap: 1rem;
+        gap: 0.8rem;
     }
     
-    .header-left { display: flex; align-items: center; gap: 1.2rem; }
+    .header-left { display: flex; align-items: center; gap: 1rem; }
     
     .logo-box {
         display: flex;
         align-items: center;
-        gap: 0.8rem;
+        gap: 0.6rem;
         background: rgba(255, 255, 255, 0.04);
-        padding: 0.4rem 1.2rem 0.4rem 0.8rem;
+        padding: 0.3rem 1rem 0.3rem 0.6rem;
         border-radius: 100px;
         border: 1px solid rgba(255, 255, 255, 0.06);
         backdrop-filter: blur(10px);
     }
     
-    .logo-icon {
-        font-size: 2.2rem;
-        background: linear-gradient(135deg, #818cf8, #c084fc);
-        padding: 0.4rem 0.6rem;
-        border-radius: 50px;
+    .logo-svg {
+        width: 44px;
+        height: 44px;
     }
     
-    .logo-text { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.95rem; color: #ffffff; }
+    .logo-text { 
+        font-family: 'Inter', sans-serif; 
+        font-weight: 700; 
+        font-size: 0.85rem; 
+        color: #ffffff;
+    }
     .logo-text span { color: #a78bfa; }
     
     .header-title {
         font-family: 'Inter', sans-serif;
         font-weight: 800;
-        font-size: 2rem;
+        font-size: 1.8rem;
         color: #ffffff;
         letter-spacing: -0.02em;
         margin: 0;
@@ -82,7 +87,7 @@ st.markdown("""
     .header-subtitle {
         font-family: 'Inter', sans-serif;
         font-weight: 300;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         color: rgba(255, 255, 255, 0.5);
         margin-top: 0.05rem;
         letter-spacing: 0.02em;
@@ -92,17 +97,17 @@ st.markdown("""
     
     .header-stats {
         display: flex;
-        gap: 1.8rem;
+        gap: 1.5rem;
         background: rgba(255, 255, 255, 0.04);
-        padding: 0.4rem 1.5rem;
+        padding: 0.3rem 1.2rem;
         border-radius: 100px;
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.06);
     }
     
     .stat-item { text-align: center; }
-    .stat-number { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.1rem; color: #ffffff; }
-    .stat-label { font-family: 'Inter', sans-serif; font-weight: 400; font-size: 0.65rem; color: rgba(255, 255, 255, 0.35); text-transform: uppercase; letter-spacing: 0.08em; }
+    .stat-number { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1rem; color: #ffffff; }
+    .stat-label { font-family: 'Inter', sans-serif; font-weight: 400; font-size: 0.6rem; color: rgba(255, 255, 255, 0.35); text-transform: uppercase; letter-spacing: 0.08em; }
     
     .stTabs [data-baseweb="tab-list"] {
         gap: 0.3rem;
@@ -117,9 +122,9 @@ st.markdown("""
     .stTabs [data-baseweb="tab"] {
         font-family: 'Inter', sans-serif;
         font-weight: 600;
-        font-size: 1.1rem !important;
+        font-size: 1rem !important;
         color: #64748b;
-        padding: 0.8rem 2rem !important;
+        padding: 0.6rem 1.6rem !important;
         border-radius: 14px;
         transition: all 0.25s ease;
         background: transparent;
@@ -181,24 +186,28 @@ st.markdown("""
         border-top: 1px solid #f1f5f9;
     }
     
-    .footer {
-        text-align: center;
-        padding: 2rem 0;
-        color: #94a3b8;
-        font-family: 'Inter', sans-serif;
-        font-size: 0.8rem;
-        border-top: 1px solid #eef2f6;
+    .sinica-footer {
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        padding: 1.5rem 0 1.2rem 0;
+        border-radius: 20px 20px 0 0;
         margin-top: 3rem;
+        color: rgba(255,255,255,0.7);
+        font-family: 'Inter', sans-serif;
+        text-align: center;
     }
-    
-    .footer a { color: #6366f1; text-decoration: none; }
-    .footer a:hover { text-decoration: underline; }
+    .sinica-footer a { color: #a78bfa; text-decoration: none; }
+    .sinica-footer a:hover { text-decoration: underline; }
+    .sinica-footer .org-name { color: #ffffff; font-weight: 600; font-size: 1rem; }
+    .sinica-footer .org-desc { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+    .sinica-footer .divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 0.8rem auto; width: 40%; }
     
     @media (max-width: 768px) {
         .header-content { flex-direction: column; align-items: flex-start; padding: 0 1rem; }
-        .header-stats { flex-wrap: wrap; gap: 1rem; padding: 0.5rem 1rem; border-radius: 16px; }
-        .header-title { font-size: 1.5rem; }
-        .stTabs [data-baseweb="tab"] { font-size: 0.85rem !important; padding: 0.5rem 1rem !important; }
+        .header-stats { flex-wrap: wrap; gap: 0.8rem; padding: 0.3rem 0.8rem; border-radius: 16px; }
+        .header-title { font-size: 1.3rem; }
+        .logo-svg { width: 36px; height: 36px; }
+        .stTabs [data-baseweb="tab"] { font-size: 0.8rem !important; padding: 0.4rem 0.8rem !important; }
+        .sinica-footer { padding: 1rem 0; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -301,7 +310,7 @@ def chemical_drawing_tool():
         let atoms = [], bonds = [], history = [];
         let tool = 'draw';
         let selectedAtom = 'C';
-        let bondType = 1; // 1=single, 2=double, 3=triple
+        let bondType = 1;
         let deleteBondMode = false;
         let replaceMode = false;
         let selectMode = false;
@@ -359,7 +368,6 @@ def chemical_drawing_tool():
             const nx = -dy / len, ny = dx / len;
             
             if (type === 1 || type === undefined) {
-                // Single bond
                 ctx.beginPath();
                 ctx.moveTo(x1, y1);
                 ctx.lineTo(x2, y2);
@@ -367,7 +375,6 @@ def chemical_drawing_tool():
                 ctx.lineWidth = highlight ? 6 : 3;
                 ctx.stroke();
             } else if (type === 2) {
-                // Double bond
                 for (let d = -1; d <= 1; d += 2) {
                     const ox = d * offset * nx;
                     const oy = d * offset * ny;
@@ -379,7 +386,6 @@ def chemical_drawing_tool():
                     ctx.stroke();
                 }
             } else if (type === 3) {
-                // Triple bond
                 for (let d = -1; d <= 1; d++) {
                     const ox = d * offset * nx;
                     const oy = d * offset * ny;
@@ -414,7 +420,6 @@ def chemical_drawing_tool():
             
             for (let i = 0; i < 6; i++) {
                 let j = (i + 1) % 6;
-                // Single bond
                 ctx.beginPath();
                 ctx.moveTo(pts[i].x, pts[i].y);
                 ctx.lineTo(pts[j].x, pts[j].y);
@@ -422,7 +427,6 @@ def chemical_drawing_tool():
                 ctx.lineWidth = 3;
                 ctx.stroke();
                 
-                // Double bond on alternating sides
                 if (i % 2 === 0) {
                     const midX = (pts[i].x + pts[j].x) / 2;
                     const midY = (pts[i].y + pts[j].y) / 2;
@@ -499,7 +503,6 @@ def chemical_drawing_tool():
 
         function drawAll() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Grid
             ctx.strokeStyle = '#f1f5f9';
             ctx.lineWidth = 0.5;
             for (let x=0; x<=canvas.width; x+=30) {
@@ -513,7 +516,6 @@ def chemical_drawing_tool():
                 const sel = selectedAtoms.some(s => s.id === a.id);
                 drawAtom(a.x,a.y,a.label,false,sel);
             });
-            // Selection box
             if (selectMode && selectionStart && selectionEnd) {
                 const x = Math.min(selectionStart.x, selectionEnd.x);
                 const y = Math.min(selectionStart.y, selectionEnd.y);
@@ -567,13 +569,10 @@ def chemical_drawing_tool():
             }
         }
 
-        // ─── CANVAS EVENTS ────────────────────────────────
         canvas.onmousedown = function(e) {
             const pos = getPos(e);
             
-            // Eraser mode - click to delete atom or bond
             if (eraserMode) {
-                // Check if clicking on an atom
                 const atom = findNearestAtom(pos.x, pos.y);
                 if (atom) {
                     saveState();
@@ -583,7 +582,6 @@ def chemical_drawing_tool():
                     drawAll();
                     return;
                 }
-                // Check if clicking on a bond
                 const bond = findNearestBond(pos.x, pos.y);
                 if (bond) {
                     saveState();
@@ -593,7 +591,6 @@ def chemical_drawing_tool():
                 return;
             }
             
-            // Select mode
             if (selectMode) {
                 selectionStart = pos;
                 selectionEnd = pos;
@@ -602,7 +599,6 @@ def chemical_drawing_tool():
                 return;
             }
             
-            // Replace mode
             if (replaceMode) {
                 const atom = findNearestAtom(pos.x, pos.y);
                 if (atom) {
@@ -615,7 +611,6 @@ def chemical_drawing_tool():
                 return;
             }
             
-            // Delete bond mode
             if (deleteBondMode) {
                 const bond = findNearestBond(pos.x, pos.y);
                 if (bond) {
@@ -626,7 +621,6 @@ def chemical_drawing_tool():
                 return;
             }
             
-            // Right click = delete atom
             if (e.button === 2) {
                 const atom = findNearestAtom(pos.x, pos.y);
                 if (atom) {
@@ -681,7 +675,6 @@ def chemical_drawing_tool():
         };
 
         canvas.onmouseup = function(e) {
-            // Select mode - finish selection
             if (selectMode && selectionStart) {
                 const pos = getPos(e);
                 const selected = getAtomsInRect(selectionStart.x, selectionStart.y, pos.x, pos.y);
@@ -689,7 +682,6 @@ def chemical_drawing_tool():
                 drawAll();
                 selected.forEach(a => drawAtom(a.x, a.y, a.label, false, true));
                 if (selected.length > 0) {
-                    // Highlight the selection
                     document.getElementById('mode-status').textContent = `✅ ${selected.length} atoms selected. Press Delete to remove.`;
                 }
                 selectionStart = null;
@@ -697,7 +689,6 @@ def chemical_drawing_tool():
                 return;
             }
             
-            // Line drawing
             if (isDrawing && tool === 'line') {
                 const pos = getPos(e);
                 saveState();
@@ -722,7 +713,6 @@ def chemical_drawing_tool():
 
         canvas.oncontextmenu = e => e.preventDefault();
 
-        // ─── KEYBOARD SHORTCUTS ────────────────────────────
         document.addEventListener('keydown', function(e) {
             if ((e.key === 'Delete' || e.key === 'Backspace') && selectedAtoms.length > 0) {
                 saveState();
@@ -739,7 +729,6 @@ def chemical_drawing_tool():
             }
         });
 
-        // ─── TOOLBAR BUTTONS ───────────────────────────────
         document.getElementById('btn-draw').onclick = function() {
             tool = 'draw'; replaceMode = false; deleteBondMode = false; selectMode = false; eraserMode = false;
             selectionStart = null; selectionEnd = null; selectedAtoms = [];
@@ -809,7 +798,6 @@ def chemical_drawing_tool():
             updateModeStatus();
         };
         
-        // Bond type buttons
         document.getElementById('btn-single-bond').onclick = function() {
             bondType = 1;
             document.querySelectorAll('#btn-single-bond, #btn-double-bond, #btn-triple-bond').forEach(b => b.classList.remove('active'));
@@ -855,7 +843,6 @@ def chemical_drawing_tool():
             navigator.clipboard.writeText(sm);
         };
 
-        // ─── INIT ──────────────────────────────────────────
         drawBenzene(375, 240);
         drawAll();
         saveState();
@@ -868,17 +855,40 @@ def render_header():
     valid_years = papers['Year'].dropna() if len(papers) > 0 else []
     topics = papers['Topic'].dropna().unique() if len(papers) > 0 else []
     
+    # SVG Logo - AI + Chemistry + Automation
+    logo_svg = '''
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="22,2 40,12 40,32 22,42 4,32 4,12" stroke="#818cf8" stroke-width="1.5" fill="rgba(99,102,241,0.06)"/>
+        <circle cx="22" cy="19" r="9" fill="rgba(129,140,248,0.10)" stroke="#818cf8" stroke-width="1.5"/>
+        <circle cx="16" cy="14" r="2.2" fill="#818cf8"/>
+        <circle cx="28" cy="14" r="2.2" fill="#818cf8"/>
+        <circle cx="22" cy="10" r="2.2" fill="#a78bfa"/>
+        <circle cx="22" cy="28" r="2.2" fill="#a78bfa"/>
+        <circle cx="16" cy="24" r="2.2" fill="#818cf8"/>
+        <circle cx="28" cy="24" r="2.2" fill="#818cf8"/>
+        <line x1="16" y1="14" x2="22" y2="10" stroke="#818cf8" stroke-width="1.2"/>
+        <line x1="28" y1="14" x2="22" y2="10" stroke="#818cf8" stroke-width="1.2"/>
+        <line x1="16" y1="14" x2="16" y2="24" stroke="#818cf8" stroke-width="1.2"/>
+        <line x1="28" y1="14" x2="28" y2="24" stroke="#818cf8" stroke-width="1.2"/>
+        <line x1="16" y1="24" x2="22" y2="28" stroke="#a78bfa" stroke-width="1.2"/>
+        <line x1="28" y1="24" x2="22" y2="28" stroke="#a78bfa" stroke-width="1.2"/>
+        <polygon points="30,34 34,36 30,38" fill="#c084fc"/>
+        <path d="M18 36 L18 39 L26 39 L26 36 L22 36 L18 36" fill="#818cf8" opacity="0.25"/>
+        <text x="22" y="43" font-size="6.5" fill="#a78bfa" text-anchor="middle" font-weight="700" font-family="Inter, sans-serif">AI</text>
+    </svg>
+    '''
+    
     st.markdown(f"""
     <div class="header-wrapper">
         <div class="header-content">
             <div class="header-left">
                 <div class="logo-box">
-                    <div class="logo-icon">🧬</div>
-                    <div class="logo-text">CCWang-<span>FizSab</span></div>
+                    <div class="logo-svg">{logo_svg}</div>
+                    <div class="logo-text">AI-Glyco<span>Auto</span></div>
                 </div>
                 <div>
                     <div class="header-title">Glyco<span>Search</span></div>
-                    <div class="header-subtitle">Glycosylation Research · 1,000+ Papers</div>
+                    <div class="header-subtitle">AI-Powered Glycosylation Research · {len(papers)} Papers</div>
                 </div>
             </div>
             <div class="header-right">
@@ -911,11 +921,13 @@ if len(papers) == 0:
 else:
     render_header()
     
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "🔍 Search",
-        "📊 Analytics",
-        "📚 Methods", 
-        "🧪 Draw"
+        "📊 Analytics", 
+        "📚 Methods",
+        "🧪 Draw",
+        "⚙️ Settings",
+        "📋 About"
     ])
 
     # ─── TAB 1: SEARCH ────────────────────────────────
@@ -1049,14 +1061,121 @@ else:
             <b>Tools:</b> Draw atoms • Single/Double/Triple bonds • Eraser • Select + Delete • Replace atoms • STol leaving group
         </p>
         """, unsafe_allow_html=True)
-        
         chemical_drawing_tool()
+
+    # ─── TAB 5: SETTINGS ────────────────────────────────
+    with tab5:
+        st.markdown("### ⚙️ App Settings")
+        
+        st.markdown("**Data Management**")
+        if st.button("🔄 Reload Data"):
+            st.cache_data.clear()
+            st.rerun()
+        
+        st.markdown("**Display Options**")
+        results_per_page = st.slider("Results per page", 5, 100, 20)
+        show_abstracts = st.checkbox("Show abstracts by default", True)
+        
+        st.markdown("**Export**")
+        if st.button("📥 Export All Data"):
+            csv = papers.to_csv(index=False)
+            st.download_button("Download CSV", csv, "glycosylation_papers.csv")
+        
+        st.markdown("**System Info**")
+        st.code(f"Papers: {len(papers)}")
+        st.code(f"Topics: {papers['Topic'].nunique() if len(papers) > 0 else 0}")
+        
+        st.markdown("**Feedback**")
+        if os.path.exists("feedback.csv"):
+            fb_df = pd.read_csv("feedback.csv")
+            st.write(f"📊 **{len(fb_df)}** feedback entries")
+            st.dataframe(fb_df)
+            if 'rating' in fb_df.columns:
+                st.write("**Ratings Summary**")
+                st.bar_chart(fb_df['rating'].value_counts())
+        else:
+            st.info("No feedback yet. Be the first!")
+
+    # ─── TAB 6: ABOUT / LICENSE ──────────────────────────
+    with tab6:
+        st.markdown("### 📋 About GlycoSearch")
+        
+        st.markdown("""
+        <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #eef2f6; margin: 10px 0;">
+            <h3 style="color: #0f172a;">🧬 GlycoSearch</h3>
+            <p style="color: #475569;">
+                <b>Developer:</b> Wang Research Group<br>
+                <b>Institute:</b> Institute of Chemistry, Academia Sinica<br>
+                <b>Principal Investigator:</b> Dr. Cheng-Chung Wang<br>
+                <b>Email:</b> wangcc7280@gate.sinica.edu.tw<br>
+                <b>Lab Website:</b> <a href="https://www.chem.sinica.edu.tw" target="_blank">Institute of Chemistry, Academia Sinica</a>
+            </p>
+            <hr>
+            <h4 style="color: #0f172a;">📄 License</h4>
+            <p style="color: #475569;">
+                MIT License — Free for academic and research use.
+            </p>
+            <h4 style="color: #0f172a;">© Copyright</h4>
+            <p style="color: #475569;">
+                © 2026 Wang Research Group, Institute of Chemistry, Academia Sinica<br>
+                All rights reserved.
+            </p>
+            <h4 style="color: #0f172a;">📚 Data Sources</h4>
+            <p style="color: #475569;">
+                PubMed publications extracted with AI (2026).<br>
+                Contains 1,040+ glycosylation research papers.
+            </p>
+            <h4 style="color: #0f172a;">🔗 Citation</h4>
+            <p style="color: #475569;">
+                If you use this tool, please cite:<br>
+                <i>Wang Research Group, GlycoSearch: Glycosylation Research Agent, 
+                Institute of Chemistry, Academia Sinica, 2026.</i>
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        st.markdown("""
+        <div style="text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 10px 0;">
+            <b>Institute of Chemistry, Academia Sinica</b><br>
+            128 Academia Road, Section 2, Nankang, Taipei 115201, Taiwan<br>
+            <a href="https://www.chem.sinica.edu.tw" target="_blank" style="color: #6366f1; text-decoration: none;">
+                www.chem.sinica.edu.tw
+            </a>
+        </div>
+        """, unsafe_allow_html=True)
 
 # ─── FOOTER ─────────────────────────────────────────────
 st.markdown("""
-<div class="footer">
-    🧬 GlycoSearch · Built with Streamlit · 
-    <a href="https://github.com/FizzaSab/GlycoAgent" target="_blank">GitHub</a> · 
-    CCWang-FizSab · 2026
+<div class="sinica-footer">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 2rem;">
+        <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin-bottom: 0.3rem;">
+            <span style="font-size: 1.3rem;">🧬</span>
+            <span style="font-weight: 600; font-size: 1rem; color: #ffffff;">GlycoSearch</span>
+            <span style="color: rgba(255,255,255,0.3);">·</span>
+            <span style="color: rgba(255,255,255,0.5); font-size: 0.85rem;">v2.0</span>
+        </div>
+        
+        <hr class="divider">
+        
+        <div class="org-name">🏛️ Institute of Chemistry, Academia Sinica</div>
+        <div class="org-desc">Wang Research Group · Dr. Cheng-Chung Wang</div>
+        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 0.2rem;">
+            wangcc7280@gate.sinica.edu.tw
+        </div>
+        
+        <hr class="divider">
+        
+        <div style="font-size: 0.75rem; display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;">
+            <span>📄 MIT License</span>
+            <span>© 2026 Academia Sinica</span>
+            <span><a href="https://github.com/FizzaSab/GlycoAgent" target="_blank">GitHub</a></span>
+            <span><a href="https://www.chem.sinica.edu.tw" target="_blank">Institute Website</a></span>
+        </div>
+        
+        <div style="font-size: 0.65rem; color: rgba(255,255,255,0.2); margin-top: 0.5rem;">
+            128 Academia Road, Section 2, Nankang, Taipei 115201, Taiwan
+        </div>
+    </div>
 </div>
 """, unsafe_allow_html=True)
