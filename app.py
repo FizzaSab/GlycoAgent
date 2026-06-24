@@ -4,6 +4,8 @@ import os
 import streamlit.components.v1 as components
 from datetime import datetime
 import csv
+import re
+from collections import defaultdict
 
 # ─── PAGE CONFIG ──────────────────────────────────────────
 st.set_page_config(
@@ -20,6 +22,7 @@ st.markdown("""
     
     .stApp { background: #f5f7fb; }
     
+    /* ── HEADER ── */
     .header-wrapper {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         padding: 1rem 0 0.8rem 0;
@@ -144,6 +147,7 @@ st.markdown("""
         letter-spacing: 0.06em;
     }
     
+    /* ── TABS ── */
     .stTabs [data-baseweb="tab-list"] {
         gap: 0.2rem;
         background: #ffffff;
@@ -177,6 +181,7 @@ st.markdown("""
         font-weight: 600;
     }
     
+    /* ── SEARCH ── */
     .search-wrapper {
         background: #ffffff;
         padding: 1rem 1.5rem;
@@ -194,6 +199,7 @@ st.markdown("""
         margin-bottom: 0.2rem;
     }
     
+    /* ── RESULT CARDS ── */
     .result-card {
         background: #ffffff;
         padding: 0.7rem 1.2rem;
@@ -237,6 +243,7 @@ st.markdown("""
     .badge-year { background: #f1f5f9; color: #475569; }
     .badge-topic { background: #eef2ff; color: #4f46e5; }
     .badge-journal { background: #fce7f3; color: #be185d; }
+    .badge-reference { background: #fef3c7; color: #92400e; }
     
     .result-abstract {
         font-family: 'Inter', sans-serif;
@@ -249,6 +256,58 @@ st.markdown("""
         border-top: 1px solid #f1f5f9;
     }
     
+    /* ── AI CHAT ── */
+    .ai-answer {
+        background: #ffffff;
+        padding: 1.2rem 1.5rem;
+        border-radius: 14px;
+        border: 2px solid #e2e8f0;
+        margin: 0.5rem 0;
+        border-left: 4px solid #818cf8;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .ai-answer .answer-text {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9rem;
+        color: #0f172a;
+        line-height: 1.7;
+        margin-bottom: 0.8rem;
+    }
+    
+    .ai-answer .ref {
+        font-size: 0.75rem;
+        color: #64748b;
+        background: #f1f5f9;
+        padding: 0.2rem 0.8rem;
+        border-radius: 4px;
+        display: inline-block;
+        margin: 0.2rem 0.2rem;
+    }
+    
+    .ai-answer .ref a {
+        color: #6366f1;
+        text-decoration: none;
+    }
+    
+    .ai-answer .ref a:hover {
+        text-decoration: underline;
+    }
+    
+    .ai-answer .source-count {
+        font-size: 0.7rem;
+        color: #94a3b8;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #f1f5f9;
+    }
+    
+    /* ── FOOTER ── */
     .footer-container {
         background: linear-gradient(135deg, #0f172a, #1e293b);
         padding: 1.2rem 0;
@@ -313,6 +372,7 @@ st.markdown("""
         margin-top: 0.1rem;
     }
     
+    /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
         .header-content { flex-direction: column; align-items: flex-start; padding: 0 1rem; }
         .header-stats { flex-wrap: wrap; gap: 0.5rem; padding: 0.25rem 0.8rem; }
@@ -320,6 +380,7 @@ st.markdown("""
         .stTabs [data-baseweb="tab"] { font-size: 0.7rem !important; padding: 0.3rem 0.8rem !important; }
     }
     
+    /* ── ABOUT ── */
     .about-box {
         background: #ffffff;
         padding: 1.5rem 2rem;
@@ -331,6 +392,22 @@ st.markdown("""
     .about-box p { color: #475569; font-family: 'Inter', sans-serif; font-size: 0.85rem; line-height: 1.6; }
     .about-box hr { border: none; border-top: 1px solid #e8ecf2; margin: 0.6rem 0; }
     .about-box .highlight { color: #6366f1; font-weight: 500; }
+    
+    .section-title {
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #0f172a;
+        margin-bottom: 0.3rem;
+    }
+    
+    .chat-container {
+        background: #ffffff;
+        padding: 1.5rem;
+        border-radius: 14px;
+        border: 1px solid #e8ecf2;
+        min-height: 400px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -347,27 +424,244 @@ def load_data():
 
 papers = load_data()
 
+# ─── RAG KNOWLEDGE ENGINE ──────────────────────────────
+class GlycoKnowledgeEngine:
+    """Simple but powerful knowledge engine that reads all papers"""
+    
+    def __init__(self, papers_df):
+        self.papers = papers_df
+        self.index = []
+        self.topic_index = defaultdict(list)
+        self.keyword_index = defaultdict(list)
+        self.build_index()
+    
+    def build_index(self):
+        """Build searchable index from all papers"""
+        if len(self.papers) == 0:
+            return
+        
+        for idx, row in self.papers.iterrows():
+            title = str(row.get('Title', ''))
+            abstract = str(row.get('Abstract', ''))
+            year = str(row.get('Year', ''))
+            journal = str(row.get('Journal', ''))
+            topic = str(row.get('Topic', ''))
+            url = str(row.get('URL', ''))
+            
+            # Clean text
+            clean_title = title.lower()
+            clean_abstract = abstract.lower()
+            clean_topic = topic.lower()
+            
+            # Extract key terms
+            terms = re.findall(r'\b[a-z]{3,}\b', f"{clean_title} {clean_abstract} {clean_topic}")
+            
+            paper_data = {
+                'title': title,
+                'abstract': abstract,
+                'year': year,
+                'journal': journal,
+                'topic': topic,
+                'url': url,
+                'text': f"{title} {abstract}",
+                'terms': terms,
+                'row': row
+            }
+            
+            self.index.append(paper_data)
+            
+            # Index by topic
+            if topic:
+                self.topic_index[topic.lower()].append(paper_data)
+            
+            # Index by keywords
+            for term in set(terms):
+                if len(term) > 2:
+                    self.keyword_index[term].append(paper_data)
+    
+    def search(self, query, top_n=5):
+        """Search for relevant papers using keyword matching"""
+        if len(self.index) == 0:
+            return []
+        
+        query_terms = set(re.findall(r'\b[a-z]{3,}\b', query.lower()))
+        scores = []
+        
+        for paper in self.index:
+            # Count matching terms
+            matches = sum(1 for t in query_terms if t in paper['terms'])
+            
+            # Boost if query term appears in title
+            title_boost = sum(1 for t in query_terms if t in paper['title'].lower()) * 2
+            
+            # Boost if query term appears in topic
+            topic_boost = sum(1 for t in query_terms if t in paper['topic'].lower()) * 1.5
+            
+            score = matches + title_boost + topic_boost
+            if score > 0:
+                scores.append((score, paper))
+        
+        # Sort by score descending
+        scores.sort(key=lambda x: x[0], reverse=True)
+        return [p for _, p in scores[:top_n]]
+    
+    def answer_question(self, question):
+        """Answer a question based on all papers"""
+        relevant = self.search(question, top_n=10)
+        
+        if not relevant:
+            return {
+                'answer': "I couldn't find specific information about this in our database.",
+                'references': [],
+                'source_count': 0
+            }
+        
+        # Extract key information from relevant papers
+        key_points = []
+        references = []
+        
+        for paper in relevant[:5]:
+            # Extract relevant sentences from abstract
+            abstract = paper['abstract']
+            if abstract and len(abstract) > 20:
+                # Find sentences that might answer the question
+                sentences = re.split(r'[.!?]+', abstract)
+                for sent in sentences:
+                    if len(sent.strip()) > 30:
+                        # Check if sentence contains question keywords
+                        q_words = set(re.findall(r'\b[a-z]{3,}\b', question.lower()))
+                        sent_words = set(re.findall(r'\b[a-z]{3,}\b', sent.lower()))
+                        if len(q_words.intersection(sent_words)) > 1:
+                            key_points.append(sent.strip())
+                            break
+            
+            # Add reference
+            ref = f"{paper['title']} ({paper['year']}) - {paper['journal']}"
+            if paper['url'] and paper['url'] != '#':
+                ref = f"{paper['title']} ({paper['year']}) - {paper['journal']} [PubMed]({paper['url']})"
+            references.append(ref)
+        
+        # Generate answer
+        if key_points:
+            answer = "Based on the research in our database:\n\n"
+            answer += "• " + "\n• ".join(key_points[:3])
+        else:
+            # Fallback: use abstract excerpts
+            excerpts = []
+            for paper in relevant[:3]:
+                abstract = paper['abstract']
+                if abstract and len(abstract) > 50:
+                    excerpt = abstract[:300] + "..."
+                    excerpts.append(f"From '{paper['title']}' ({paper['year']}): {excerpt}")
+            
+            if excerpts:
+                answer = "Here's what I found in the literature:\n\n" + "\n\n".join(excerpts)
+            else:
+                answer = "I found some relevant papers but couldn't extract specific sentences. Here are the most relevant titles:\n\n"
+                for paper in relevant[:3]:
+                    answer += f"• {paper['title']} ({paper['year']})\n"
+        
+        return {
+            'answer': answer,
+            'references': references,
+            'source_count': len(relevant)
+        }
+
 # ─── DRAWING TOOL ──────────────────────────────────────
 def chemical_drawing_tool():
     components.html("""
     <style>
-        .draw-header { background: linear-gradient(135deg, #f8fafc, #eef2ff); border: 2px solid #e2e8f0; border-radius: 14px; padding: 1rem 1.5rem; margin-bottom: 0.8rem; text-align: center; }
-        .draw-header h2 { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.3rem; color: #0f172a; margin: 0; }
-        .draw-header h2 span { background: linear-gradient(135deg, #6366f1, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .draw-header p { font-family: 'Inter', sans-serif; font-size: 0.8rem; color: #64748b; margin: 0.2rem 0 0 0; }
-        .draw-toolbar { display: flex; gap: 4px; padding: 6px 0; flex-wrap: wrap; align-items: center; }
-        .draw-toolbar button { padding: 4px 10px; border: none; border-radius: 6px; background: #f1f5f9; color: #0f172a; cursor: pointer; font-size: 11px; font-family: 'Inter', sans-serif; font-weight: 500; transition: all 0.2s; }
+        .draw-header {
+            background: linear-gradient(135deg, #f8fafc, #eef2ff);
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.8rem;
+            text-align: center;
+        }
+        .draw-header h2 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: #0f172a;
+            margin: 0;
+        }
+        .draw-header h2 span {
+            background: linear-gradient(135deg, #6366f1, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .draw-header p {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 0.2rem 0 0 0;
+        }
+        .draw-toolbar {
+            display: flex;
+            gap: 4px;
+            padding: 6px 0;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .draw-toolbar button {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 6px;
+            background: #f1f5f9;
+            color: #0f172a;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
         .draw-toolbar button:hover { background: #e2e8f0; }
         .draw-toolbar button.active { background: #0f172a; color: white; }
         .draw-toolbar button.danger { background: #fee2e2; color: #991b1b; }
+        .draw-toolbar button.danger:hover { background: #fecaca; }
         .draw-toolbar button.success { background: #dcfce7; color: #166534; }
+        .draw-toolbar button.success:hover { background: #bbf7d0; }
         .draw-toolbar button.warning { background: #fef3c7; color: #92400e; }
+        .draw-toolbar button.warning:hover { background: #fde68a; }
         .draw-toolbar button.info { background: #dbeafe; color: #1e40af; }
+        .draw-toolbar button.info:hover { background: #bfdbfe; }
         .draw-toolbar button.purple { background: #f3e8ff; color: #6b21a8; }
-        .draw-toolbar select { padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 11px; font-family: 'Inter', sans-serif; background: white; }
-        #canvas { border: 2px solid #e2e8f0; background: white; border-radius: 12px; cursor: crosshair; width: 100%; height: auto; }
-        #smiles-output { width: 100%; padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; margin-top: 8px; font-family: monospace; font-size: 12px; background: #f8fafc; }
-        .mode-status { padding: 2px 10px; border-radius: 50px; font-size: 10px; font-weight: 500; font-family: 'Inter', sans-serif; display: inline-block; }
+        .draw-toolbar button.purple:hover { background: #e9d5ff; }
+        .draw-toolbar select {
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            font-size: 11px;
+            font-family: 'Inter', sans-serif;
+            background: white;
+        }
+        #canvas {
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 12px;
+            cursor: crosshair;
+            width: 100%;
+            height: auto;
+        }
+        #smiles-output {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            margin-top: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            background: #f8fafc;
+        }
+        .mode-status {
+            padding: 2px 10px;
+            border-radius: 50px;
+            font-size: 10px;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            display: inline-block;
+        }
         .mode-draw { background: #dcfce7; color: #166534; }
         .mode-replace { background: #fef3c7; color: #92400e; }
         .mode-delete { background: #fee2e2; color: #991b1b; }
@@ -442,10 +736,19 @@ def chemical_drawing_tool():
         const MAX_HISTORY = 30;
         let atomIdCounter = 0;
 
-        document.getElementById('atom-select').onchange = function() { selectedAtom = this.value; };
+        document.getElementById('atom-select').onchange = function() {
+            selectedAtom = this.value;
+        };
 
         function getAtomColor(label) {
-            const colors = {'C':'#333333','O':'#FF0000','N':'#3050F8','H':'#FFFFFF','S':'#FFFF30','P':'#FF8000','F':'#90E050','Cl':'#1FF01F','Br':'#A62929','I':'#940094','OH':'#FF0000','OMe':'#CD5C5C','OBn':'#8B4513','OBz':'#8B6914','OAc':'#CD853F','N3':'#4169E1','NH2':'#4169E1','OTs':'#DAA520','STol':'#8B008B','TBDMS':'#2E8B57','TIPS':'#2E8B57','Bz':'#8B6914','Bn':'#8B4513','Ac':'#CD853F'};
+            const colors = {
+                'C': '#333333', 'O': '#FF0000', 'N': '#3050F8', 'H': '#FFFFFF',
+                'S': '#FFFF30', 'P': '#FF8000', 'F': '#90E050', 'Cl': '#1FF01F',
+                'Br': '#A62929', 'I': '#940094', 'OH': '#FF0000', 'OMe': '#CD5C5C',
+                'OBn': '#8B4513', 'OBz': '#8B6914', 'OAc': '#CD853F', 'N3': '#4169E1',
+                'NH2': '#4169E1', 'OTs': '#DAA520', 'STol': '#8B008B', 
+                'TBDMS': '#2E8B57', 'TIPS': '#2E8B57', 'Bz': '#8B6914', 'Bn': '#8B4513', 'Ac': '#CD853F'
+            };
             return colors[label] || '#333333';
         }
 
@@ -478,28 +781,46 @@ def chemical_drawing_tool():
             const len = Math.hypot(dx, dy);
             if (len === 0) return;
             const nx = -dy / len, ny = dx / len;
+            
             if (type === 1 || type === undefined) {
-                ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
-                ctx.strokeStyle = color; ctx.lineWidth = highlight ? 6 : 3; ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = highlight ? 6 : 3;
+                ctx.stroke();
             } else if (type === 2) {
                 for (let d = -1; d <= 1; d += 2) {
-                    const ox = d * offset * nx, oy = d * offset * ny;
-                    ctx.beginPath(); ctx.moveTo(x1 + ox, y1 + oy); ctx.lineTo(x2 + ox, y2 + oy);
-                    ctx.strokeStyle = color; ctx.lineWidth = highlight ? 6 : 3; ctx.stroke();
+                    const ox = d * offset * nx;
+                    const oy = d * offset * ny;
+                    ctx.beginPath();
+                    ctx.moveTo(x1 + ox, y1 + oy);
+                    ctx.lineTo(x2 + ox, y2 + oy);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = highlight ? 6 : 3;
+                    ctx.stroke();
                 }
             } else if (type === 3) {
                 for (let d = -1; d <= 1; d++) {
-                    const ox = d * offset * nx, oy = d * offset * ny;
-                    ctx.beginPath(); ctx.moveTo(x1 + ox, y1 + oy); ctx.lineTo(x2 + ox, y2 + oy);
-                    ctx.strokeStyle = color; ctx.lineWidth = highlight ? 6 : 2; ctx.stroke();
+                    const ox = d * offset * nx;
+                    const oy = d * offset * ny;
+                    ctx.beginPath();
+                    ctx.moveTo(x1 + ox, y1 + oy);
+                    ctx.lineTo(x2 + ox, y2 + oy);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = highlight ? 6 : 2;
+                    ctx.stroke();
                 }
             }
             if (highlight) {
                 const mx = (x1+x2)/2, my = (y1+y2)/2;
-                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 2;
                 const s = 8;
-                ctx.beginPath(); ctx.moveTo(mx-s, my-s); ctx.lineTo(mx+s, my+s);
-                ctx.moveTo(mx+s, my-s); ctx.lineTo(mx-s, my+s); ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(mx-s, my-s); ctx.lineTo(mx+s, my+s);
+                ctx.moveTo(mx+s, my-s); ctx.lineTo(mx-s, my+s);
+                ctx.stroke();
             }
         }
 
@@ -509,30 +830,48 @@ def chemical_drawing_tool():
             const pts = angles.map(d => ({x: x + size * Math.cos(d * Math.PI / 180), y: y + size * Math.sin(d * Math.PI / 180)}));
             for (let i = 0; i < 6; i++) {
                 let j = (i + 1) % 6;
-                ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y);
-                ctx.strokeStyle = '#333'; ctx.lineWidth = 3; ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(pts[i].x, pts[i].y);
+                ctx.lineTo(pts[j].x, pts[j].y);
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 3;
+                ctx.stroke();
                 if (i % 2 === 0) {
-                    const midX = (pts[i].x + pts[j].x) / 2, midY = (pts[i].y + pts[j].y) / 2;
+                    const midX = (pts[i].x + pts[j].x) / 2;
+                    const midY = (pts[i].y + pts[j].y) / 2;
                     const angle = Math.atan2(pts[j].y - pts[i].y, pts[j].x - pts[i].x);
                     const perpAngle = angle + Math.PI / 2;
                     const offset = 8;
                     for (let d = -1; d <= 1; d += 2) {
-                        const dx = d * offset * Math.cos(perpAngle), dy = d * offset * Math.sin(perpAngle);
-                        const sx = midX + dx - 22 * Math.cos(angle), sy = midY + dy - 22 * Math.sin(angle);
-                        const ex = midX + dx + 22 * Math.cos(angle), ey = midY + dy + 22 * Math.sin(angle);
-                        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey);
-                        ctx.strokeStyle = '#333'; ctx.lineWidth = 3; ctx.stroke();
+                        const dx = d * offset * Math.cos(perpAngle);
+                        const dy = d * offset * Math.sin(perpAngle);
+                        const sx = midX + dx - 22 * Math.cos(angle);
+                        const sy = midY + dy - 22 * Math.sin(angle);
+                        const ex = midX + dx + 22 * Math.cos(angle);
+                        const ey = midY + dy + 22 * Math.sin(angle);
+                        ctx.beginPath();
+                        ctx.moveTo(sx, sy);
+                        ctx.lineTo(ex, ey);
+                        ctx.strokeStyle = '#333';
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
                     }
                 }
             }
             for (let i = 0; i < 6; i++) {
                 const color = getAtomColor('C');
-                ctx.beginPath(); ctx.arc(pts[i].x, pts[i].y, 18, 0, Math.PI*2);
-                ctx.fillStyle = color; ctx.fill();
-                ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.stroke();
+                const radius = 18;
+                ctx.beginPath();
+                ctx.arc(pts[i].x, pts[i].y, radius, 0, Math.PI*2);
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.stroke();
                 ctx.fillStyle = 'white';
                 ctx.font = 'bold 12px Inter, Arial, sans-serif';
-                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
                 ctx.fillText('C', pts[i].x, pts[i].y);
                 atoms.push({x: pts[i].x, y: pts[i].y, label: 'C', id: atomIdCounter++});
             }
@@ -650,7 +989,11 @@ def chemical_drawing_tool():
                 return;
             }
             if (selectMode) {
-                selectionStart = pos; selectionEnd = pos; selectedAtoms = []; drawAll(); return;
+                selectionStart = pos;
+                selectionEnd = pos;
+                selectedAtoms = [];
+                drawAll();
+                return;
             }
             if (replaceMode) {
                 const atom = findNearestAtom(pos.x, pos.y);
@@ -728,7 +1071,9 @@ def chemical_drawing_tool():
                 if (selected.length > 0) {
                     document.getElementById('mode-status').textContent = `✅ ${selected.length} atoms selected. Press Delete to remove.`;
                 }
-                selectionStart = null; selectionEnd = null; return;
+                selectionStart = null;
+                selectionEnd = null;
+                return;
             }
             if (isDrawing && tool === 'line') {
                 const pos = getPos(e);
@@ -970,8 +1315,16 @@ if len(papers) == 0:
 else:
     render_header()
     
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    # Initialize knowledge engine
+    @st.cache_resource
+    def get_knowledge_engine():
+        return GlycoKnowledgeEngine(papers)
+    
+    engine = get_knowledge_engine()
+    
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
         "🔍 Search",
+        "💬 Ask AI",
         "📊 Analytics", 
         "📚 Methods",
         "🧪 Draw",
@@ -1040,8 +1393,69 @@ else:
                         if url != '#':
                             st.markdown(f"[🔗 View in PubMed]({url})")
 
-    # ─── TAB 2: ANALYTICS ──────────────────────────────
+    # ─── TAB 2: ASK AI ──────────────────────────────────
     with tab2:
+        st.markdown("### 💬 Ask GlycoAI - Research Assistant")
+        st.markdown("Ask questions about glycosylation research and get answers with references from our database.")
+        
+        # Example questions
+        with st.expander("💡 Example Questions"):
+            st.markdown("""
+            - "Can environmental effects influence glycosylation?"
+            - "What are the best methods for sialic acid activation?"
+            - "How does temperature affect glycosylation stereoselectivity?"
+            - "What is the role of NIS in thioglycoside activation?"
+            - "Compare Koenigs-Knorr and Schmidt glycosylation methods"
+            - "What factors influence α/β selectivity?"
+            """)
+        
+        # Question input
+        question = st.text_area(
+            "Ask your research question:",
+            placeholder="e.g., Can environmental effects influence glycosylation?",
+            height=80
+        )
+        
+        col1, col2 = st.columns([1, 5])
+        with col1:
+            ask_button = st.button("🔍 Ask", type="primary", use_container_width=True)
+        
+        if ask_button and question:
+            with st.spinner("🔬 Searching through all papers..."):
+                result = engine.answer_question(question)
+            
+            # Display answer
+            st.markdown(f"""
+            <div class="ai-answer">
+                <div class="answer-text">{result['answer']}</div>
+                <div class="source-count">📚 Based on {result['source_count']} relevant papers</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Display references
+            if result['references']:
+                st.markdown("**📖 References:**")
+                for ref in result['references']:
+                    st.markdown(f"- {ref}")
+            
+            # Show relevant papers in detail
+            with st.expander("📄 View relevant papers"):
+                relevant = engine.search(question, top_n=5)
+                for paper in relevant:
+                    st.markdown(f"""
+                    **{paper['title']}** ({paper['year']})  
+                    *{paper['journal']}*  
+                    {paper['abstract'][:200]}...
+                    """)
+                    if paper['url'] and paper['url'] != '#':
+                        st.markdown(f"[🔗 Link]({paper['url']})")
+                    st.markdown("---")
+        
+        elif ask_button and not question:
+            st.warning("Please enter a question.")
+
+    # ─── TAB 3: ANALYTICS ──────────────────────────────
+    with tab3:
         st.markdown("### 📊 Research Analytics")
         
         col1, col2 = st.columns(2)
@@ -1068,8 +1482,8 @@ else:
                 hide_index=True
             )
 
-    # ─── TAB 3: METHODS ─────────────────────────────────
-    with tab3:
+    # ─── TAB 4: METHODS ─────────────────────────────────
+    with tab4:
         st.markdown("### 📚 Glycosylation Methods Reference")
         
         methods_data = {
@@ -1100,12 +1514,12 @@ else:
         for term, definition in terms.items():
             st.markdown(f"**{term}:** {definition}")
 
-    # ─── TAB 4: DRAW ────────────────────────────────────
-    with tab4:
+    # ─── TAB 5: DRAW ────────────────────────────────────
+    with tab5:
         chemical_drawing_tool()
 
-    # ─── TAB 5: SETTINGS ────────────────────────────────
-    with tab5:
+    # ─── TAB 6: SETTINGS ────────────────────────────────
+    with tab6:
         st.markdown("### ⚙️ Settings")
         
         col1, col2 = st.columns(2)
@@ -1114,6 +1528,7 @@ else:
             st.markdown("**Data Management**")
             if st.button("🔄 Reload Data"):
                 st.cache_data.clear()
+                st.cache_resource.clear()
                 st.rerun()
             
             st.markdown("**Export**")
@@ -1125,13 +1540,14 @@ else:
             st.markdown("**System Info**")
             st.code(f"Papers: {len(papers)}")
             st.code(f"Topics: {papers['Topic'].nunique() if len(papers) > 0 else 0}")
+            st.code(f"Knowledge Index: {len(engine.index)} papers")
             
             if os.path.exists("feedback.csv"):
                 fb_df = pd.read_csv("feedback.csv")
                 st.metric("📊 Feedback Entries", len(fb_df))
 
-    # ─── TAB 6: ABOUT ────────────────────────────────────
-    with tab6:
+    # ─── TAB 7: ABOUT ────────────────────────────────────
+    with tab7:
         st.markdown("### 📋 About GlycoSearch")
         
         st.markdown("""
@@ -1144,6 +1560,15 @@ else:
                 <b>Email:</b> <span class="highlight">wangcc7280@gate.sinica.edu.tw</span>
             </p>
             <hr>
+            <h4>🤖 AI Research Assistant</h4>
+            <p>
+                GlycoSearch includes an AI-powered research assistant that:
+                <ul>
+                    <li>Reads and understands all papers in the database</li>
+                    <li>Answers questions with relevant references</li>
+                    <li>Helps you find connections between different studies</li>
+                </ul>
+            </p>
             <h4>📄 License</h4>
             <p>MIT License — Free for academic and research use.</p>
             <h4>© Copyright</h4>
@@ -1159,7 +1584,7 @@ else:
         </div>
         """, unsafe_allow_html=True)
 
-# ─── FOOTER ─────────────────────────────────────────────
+# ─── CLEAN FOOTER ─────────────────────────────────────────
 st.markdown("""
 <div class="footer-container">
     <div class="org-name">🏛️ Institute of Chemistry, Academia Sinica</div>
