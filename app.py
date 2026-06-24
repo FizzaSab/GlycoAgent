@@ -16,17 +16,29 @@ st.set_page_config(
 # ─── CUSTOM CSS ──────────────────────────────────────────
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-    .stApp { background: #f8fafc; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
     
+    .stApp { background: #f5f7fb; }
+    
+    /* ── HEADER ── */
     .header-wrapper {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-        padding: 1.5rem 0 1.2rem 0;
-        border-radius: 0 0 40px 40px;
-        margin-bottom: 2rem;
-        box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15);
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        padding: 1.2rem 0 0.8rem 0;
+        border-radius: 0 0 30px 30px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.12);
         position: relative;
         overflow: hidden;
+    }
+    
+    .header-wrapper::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #818cf8, #c084fc, #f472b6);
     }
     
     .header-content {
@@ -39,39 +51,47 @@ st.markdown("""
         margin: 0 auto;
         padding: 0 2rem;
         flex-wrap: wrap;
-        gap: 0.8rem;
+        gap: 0.5rem;
     }
     
-    .header-left { display: flex; align-items: center; gap: 1rem; }
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
     
     .logo-box {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 0.6rem;
-        background: rgba(255, 255, 255, 0.04);
-        padding: 0.3rem 1rem 0.3rem 0.6rem;
-        border-radius: 100px;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        backdrop-filter: blur(10px);
+        gap: 0.1rem;
+        padding: 0.2rem 1rem 0.2rem 0.6rem;
     }
     
     .logo-svg {
-        width: 44px;
-        height: 44px;
+        width: 50px;
+        height: 50px;
     }
     
-    .logo-text { 
-        font-family: 'Inter', sans-serif; 
-        font-weight: 700; 
-        font-size: 0.85rem; 
-        color: #ffffff;
+    .logo-label {
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 0.6rem;
+        color: rgba(255,255,255,0.5);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-top: 0.1rem;
     }
-    .logo-text span { color: #a78bfa; }
+    
+    .header-title-block {
+        display: flex;
+        flex-direction: column;
+    }
     
     .header-title {
         font-family: 'Inter', sans-serif;
-        font-weight: 800;
-        font-size: 1.8rem;
+        font-weight: 700;
+        font-size: 1.6rem;
         color: #ffffff;
         letter-spacing: -0.02em;
         margin: 0;
@@ -87,90 +107,142 @@ st.markdown("""
     .header-subtitle {
         font-family: 'Inter', sans-serif;
         font-weight: 300;
-        font-size: 0.8rem;
-        color: rgba(255, 255, 255, 0.5);
-        margin-top: 0.05rem;
-        letter-spacing: 0.02em;
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.4);
+        letter-spacing: 0.05em;
     }
     
-    .header-right { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
     
     .header-stats {
         display: flex;
-        gap: 1.5rem;
+        gap: 1.2rem;
         background: rgba(255, 255, 255, 0.04);
-        padding: 0.3rem 1.2rem;
-        border-radius: 100px;
+        padding: 0.3rem 1rem;
+        border-radius: 50px;
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.05);
     }
     
-    .stat-item { text-align: center; }
-    .stat-number { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1rem; color: #ffffff; }
-    .stat-label { font-family: 'Inter', sans-serif; font-weight: 400; font-size: 0.6rem; color: rgba(255, 255, 255, 0.35); text-transform: uppercase; letter-spacing: 0.08em; }
+    .stat-item {
+        text-align: center;
+        padding: 0.1rem 0.3rem;
+    }
     
+    .stat-number {
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #ffffff;
+    }
+    
+    .stat-label {
+        font-family: 'Inter', sans-serif;
+        font-weight: 400;
+        font-size: 0.55rem;
+        color: rgba(255, 255, 255, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+    
+    /* ── TABS ── */
     .stTabs [data-baseweb="tab-list"] {
         gap: 0.3rem;
         background: #ffffff;
-        padding: 0.5rem 0.6rem;
-        border-radius: 18px;
+        padding: 0.4rem 0.6rem;
+        border-radius: 14px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        border: 1px solid #eef2f6;
-        margin-bottom: 1.8rem;
+        border: 1px solid #e8ecf2;
+        margin-bottom: 1.5rem;
     }
     
     .stTabs [data-baseweb="tab"] {
         font-family: 'Inter', sans-serif;
-        font-weight: 600;
-        font-size: 1rem !important;
+        font-weight: 500;
+        font-size: 0.9rem !important;
         color: #64748b;
-        padding: 0.6rem 1.6rem !important;
-        border-radius: 14px;
-        transition: all 0.25s ease;
+        padding: 0.5rem 1.4rem !important;
+        border-radius: 10px;
+        transition: all 0.2s ease;
         background: transparent;
     }
     
-    .stTabs [data-baseweb="tab"]:hover { background: #f1f5f9; color: #0f172a; }
+    .stTabs [data-baseweb="tab"]:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+    }
+    
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
         background: #0f172a;
         color: #ffffff;
-        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.18);
-        font-weight: 700;
+        box-shadow: 0 2px 12px rgba(15, 23, 42, 0.12);
+        font-weight: 600;
     }
     
+    /* ── SEARCH ── */
     .search-wrapper {
         background: #ffffff;
-        padding: 1.5rem;
-        border-radius: 16px;
+        padding: 1.2rem 1.5rem;
+        border-radius: 14px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        border: 1px solid #eef2f6;
-        margin-bottom: 1.5rem;
+        border: 1px solid #e8ecf2;
+        margin-bottom: 1.2rem;
     }
     
+    .search-label {
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        font-size: 0.85rem;
+        color: #0f172a;
+        margin-bottom: 0.3rem;
+    }
+    
+    /* ── RESULT CARDS ── */
     .result-card {
         background: #ffffff;
-        padding: 1rem 1.5rem;
-        border-radius: 12px;
-        border: 1px solid #eef2f6;
-        margin-bottom: 0.75rem;
-        transition: all 0.25s ease;
+        padding: 0.8rem 1.2rem;
+        border-radius: 10px;
+        border: 1px solid #e8ecf2;
+        margin-bottom: 0.6rem;
+        transition: all 0.2s ease;
     }
     
-    .result-card:hover { border-color: #c7d2fe; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.06); transform: translateY(-1px); }
-    .result-title { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 1.05rem; color: #0f172a; }
+    .result-card:hover {
+        border-color: #c7d2fe;
+        box-shadow: 0 2px 12px rgba(99, 102, 241, 0.05);
+    }
+    
+    .result-title {
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #0f172a;
+        line-height: 1.4;
+    }
     
     .result-meta {
         font-family: 'Inter', sans-serif;
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         color: #94a3b8;
-        margin-top: 0.3rem;
+        margin-top: 0.2rem;
         display: flex;
         flex-wrap: wrap;
-        gap: 0.75rem;
+        gap: 0.5rem;
         align-items: center;
     }
     
-    .badge { display: inline-block; padding: 0.15rem 0.7rem; border-radius: 100px; font-size: 0.7rem; font-weight: 500; }
+    .badge {
+        display: inline-block;
+        padding: 0.1rem 0.6rem;
+        border-radius: 50px;
+        font-size: 0.6rem;
+        font-weight: 500;
+    }
     .badge-year { background: #f1f5f9; color: #475569; }
     .badge-topic { background: #eef2ff; color: #4f46e5; }
     .badge-journal { background: #fce7f3; color: #be185d; }
@@ -178,37 +250,64 @@ st.markdown("""
     .result-abstract {
         font-family: 'Inter', sans-serif;
         font-weight: 400;
-        font-size: 0.9rem;
+        font-size: 0.82rem;
         color: #475569;
-        line-height: 1.6;
-        margin-top: 0.5rem;
-        padding-top: 0.5rem;
+        line-height: 1.5;
+        margin-top: 0.4rem;
+        padding-top: 0.4rem;
         border-top: 1px solid #f1f5f9;
     }
     
+    /* ── ANALYTICS ── */
+    .section-title {
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #0f172a;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* ── FOOTER ── */
     .sinica-footer {
         background: linear-gradient(135deg, #0f172a, #1e293b);
-        padding: 1.5rem 0 1.2rem 0;
-        border-radius: 20px 20px 0 0;
-        margin-top: 3rem;
-        color: rgba(255,255,255,0.7);
+        padding: 1.2rem 0 1rem 0;
+        border-radius: 16px 16px 0 0;
+        margin-top: 2.5rem;
+        color: rgba(255,255,255,0.6);
         font-family: 'Inter', sans-serif;
         text-align: center;
+        border-top: 3px solid transparent;
+        border-image: linear-gradient(90deg, #818cf8, #c084fc) 1;
     }
+    
     .sinica-footer a { color: #a78bfa; text-decoration: none; }
     .sinica-footer a:hover { text-decoration: underline; }
-    .sinica-footer .org-name { color: #ffffff; font-weight: 600; font-size: 1rem; }
-    .sinica-footer .org-desc { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
-    .sinica-footer .divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 0.8rem auto; width: 40%; }
+    .sinica-footer .org-name { color: #ffffff; font-weight: 500; font-size: 0.95rem; }
+    .sinica-footer .org-desc { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+    .sinica-footer .divider { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 0.5rem auto; width: 30%; }
     
+    /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
         .header-content { flex-direction: column; align-items: flex-start; padding: 0 1rem; }
-        .header-stats { flex-wrap: wrap; gap: 0.8rem; padding: 0.3rem 0.8rem; border-radius: 16px; }
-        .header-title { font-size: 1.3rem; }
-        .logo-svg { width: 36px; height: 36px; }
-        .stTabs [data-baseweb="tab"] { font-size: 0.8rem !important; padding: 0.4rem 0.8rem !important; }
-        .sinica-footer { padding: 1rem 0; }
+        .header-stats { flex-wrap: wrap; gap: 0.5rem; padding: 0.3rem 0.8rem; }
+        .header-title { font-size: 1.2rem; }
+        .logo-svg { width: 40px; height: 40px; }
+        .stTabs [data-baseweb="tab"] { font-size: 0.75rem !important; padding: 0.3rem 0.8rem !important; }
+        .sinica-footer { padding: 0.8rem 0; }
     }
+    
+    /* ── ABOUT TAB ── */
+    .about-box {
+        background: #ffffff;
+        padding: 1.5rem 2rem;
+        border-radius: 14px;
+        border: 1px solid #e8ecf2;
+        margin: 0.5rem 0;
+    }
+    .about-box h3 { color: #0f172a; font-family: 'Inter', sans-serif; font-weight: 600; }
+    .about-box p { color: #475569; font-family: 'Inter', sans-serif; font-size: 0.9rem; line-height: 1.6; }
+    .about-box hr { border: none; border-top: 1px solid #e8ecf2; margin: 0.8rem 0; }
+    .about-box .highlight { color: #6366f1; font-weight: 500; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -230,32 +329,27 @@ def chemical_drawing_tool():
     components.html("""
     <style>
         .draw-toolbar { display: flex; gap: 4px; padding: 8px 0; flex-wrap: wrap; align-items: center; }
-        .draw-toolbar button { padding: 5px 12px; border: none; border-radius: 6px; background: #eef2f6; color: #0f172a; cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; font-weight: 500; transition: all 0.2s; }
+        .draw-toolbar button { padding: 4px 10px; border: none; border-radius: 6px; background: #eef2f6; color: #0f172a; cursor: pointer; font-size: 11px; font-family: 'Inter', sans-serif; font-weight: 500; transition: all 0.2s; }
         .draw-toolbar button:hover { background: #e2e8f0; }
         .draw-toolbar button.active { background: #0f172a; color: white; }
         .draw-toolbar button.danger { background: #fee2e2; color: #991b1b; }
-        .draw-toolbar button.danger:hover { background: #fecaca; }
         .draw-toolbar button.success { background: #dcfce7; color: #166534; }
-        .draw-toolbar button.success:hover { background: #bbf7d0; }
         .draw-toolbar button.warning { background: #fef3c7; color: #92400e; }
-        .draw-toolbar button.warning:hover { background: #fde68a; }
         .draw-toolbar button.info { background: #dbeafe; color: #1e40af; }
-        .draw-toolbar button.info:hover { background: #bfdbfe; }
         .draw-toolbar button.purple { background: #f3e8ff; color: #6b21a8; }
-        .draw-toolbar button.purple:hover { background: #e9d5ff; }
-        .draw-toolbar select { padding: 5px 10px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 12px; font-family: 'Inter', sans-serif; background: white; }
+        .draw-toolbar select { padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 11px; font-family: 'Inter', sans-serif; background: white; }
         #canvas { border: 2px solid #e2e8f0; background: white; border-radius: 12px; cursor: crosshair; width: 100%; height: auto; }
-        #smiles-output { width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; margin-top: 10px; font-family: monospace; font-size: 13px; }
-        .mode-status { padding: 3px 12px; border-radius: 100px; font-size: 11px; font-weight: 500; font-family: 'Inter', sans-serif; display: inline-block; }
+        #smiles-output { width: 100%; padding: 8px; border: 2px solid #e2e8f0; border-radius: 8px; margin-top: 8px; font-family: monospace; font-size: 12px; }
+        .mode-status { padding: 2px 10px; border-radius: 50px; font-size: 10px; font-weight: 500; font-family: 'Inter', sans-serif; display: inline-block; }
         .mode-draw { background: #dcfce7; color: #166534; }
         .mode-replace { background: #fef3c7; color: #92400e; }
         .mode-delete { background: #fee2e2; color: #991b1b; }
         .mode-select { background: #dbeafe; color: #1e40af; }
         .mode-eraser { background: #fce4ec; color: #880e4f; }
-        .draw-info { color: #94a3b8; font-size: 11px; font-family: 'Inter', sans-serif; margin-top: 4px; }
-        .toolbar-group { display: flex; gap: 3px; align-items: center; background: #f8fafc; padding: 3px 8px; border-radius: 8px; }
-        .toolbar-label { font-size: 10px; color: #94a3b8; font-weight: 600; margin-right: 3px; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
-        .bond-type-indicator { font-size: 11px; color: #64748b; padding: 2px 8px; background: #f1f5f9; border-radius: 4px; }
+        .draw-info { color: #94a3b8; font-size: 10px; font-family: 'Inter', sans-serif; }
+        .toolbar-group { display: flex; gap: 3px; align-items: center; background: #f8fafc; padding: 2px 6px; border-radius: 6px; }
+        .toolbar-label { font-size: 9px; color: #94a3b8; font-weight: 600; margin-right: 2px; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
+        .bond-type-indicator { font-size: 10px; color: #64748b; padding: 1px 6px; background: #f1f5f9; border-radius: 4px; }
     </style>
     <div>
         <div class="draw-toolbar">
@@ -293,14 +387,12 @@ def chemical_drawing_tool():
                 <button id="btn-smiles" class="success">📋 SMILES</button>
             </div>
         </div>
-        <div style="display:flex; gap:10px; margin-bottom:6px; align-items:center; flex-wrap:wrap;">
+        <div style="display:flex; gap:8px; margin-bottom:4px; align-items:center; flex-wrap:wrap;">
             <span id="mode-status" class="mode-status mode-draw">✏️ Draw Mode</span>
             <span class="bond-type-indicator" id="bond-type-indicator">Bond: Single</span>
-            <span class="draw-info">💡 Click atom to add • Eraser: click to remove • Select: drag box + Delete key</span>
+            <span class="draw-info">💡 Click atom • Eraser: click to remove • Select: drag box + Delete</span>
         </div>
-        <div style="position:relative;">
-            <canvas id="canvas" width="750" height="480"></canvas>
-        </div>
+        <canvas id="canvas" width="750" height="480"></canvas>
         <input id="smiles-output" placeholder="SMILES will appear here...">
     </div>
     <script>
@@ -397,7 +489,6 @@ def chemical_drawing_tool():
                     ctx.stroke();
                 }
             }
-            
             if (highlight) {
                 const mx = (x1+x2)/2, my = (y1+y2)/2;
                 ctx.strokeStyle = '#ef4444';
@@ -413,11 +504,7 @@ def chemical_drawing_tool():
         function drawBenzene(x, y) {
             const size = 50;
             const angles = [0, 60, 120, 180, 240, 300];
-            const pts = angles.map(d => ({
-                x: x + size * Math.cos(d * Math.PI / 180),
-                y: y + size * Math.sin(d * Math.PI / 180)
-            }));
-            
+            const pts = angles.map(d => ({x: x + size * Math.cos(d * Math.PI / 180), y: y + size * Math.sin(d * Math.PI / 180)}));
             for (let i = 0; i < 6; i++) {
                 let j = (i + 1) % 6;
                 ctx.beginPath();
@@ -426,14 +513,12 @@ def chemical_drawing_tool():
                 ctx.strokeStyle = '#333';
                 ctx.lineWidth = 3;
                 ctx.stroke();
-                
                 if (i % 2 === 0) {
                     const midX = (pts[i].x + pts[j].x) / 2;
                     const midY = (pts[i].y + pts[j].y) / 2;
                     const angle = Math.atan2(pts[j].y - pts[i].y, pts[j].x - pts[i].x);
                     const perpAngle = angle + Math.PI / 2;
                     const offset = 8;
-                    
                     for (let d = -1; d <= 1; d += 2) {
                         const dx = d * offset * Math.cos(perpAngle);
                         const dy = d * offset * Math.sin(perpAngle);
@@ -450,7 +535,6 @@ def chemical_drawing_tool():
                     }
                 }
             }
-            
             for (let i = 0; i < 6; i++) {
                 const color = getAtomColor('C');
                 const radius = 18;
@@ -538,10 +622,7 @@ def chemical_drawing_tool():
 
         function getPos(e) {
             const r = canvas.getBoundingClientRect();
-            return {
-                x: (e.clientX - r.x) * (canvas.width / r.width),
-                y: (e.clientY - r.y) * (canvas.height / r.height)
-            };
+            return { x: (e.clientX - r.x) * (canvas.width / r.width), y: (e.clientY - r.y) * (canvas.height / r.height) };
         }
 
         function updateModeStatus() {
@@ -552,7 +633,7 @@ def chemical_drawing_tool():
                 canvas.style.cursor = 'not-allowed';
             } else if (selectMode) {
                 status.className = 'mode-status mode-select';
-                status.textContent = '⬜ Select Mode (drag to select, Delete key to remove)';
+                status.textContent = '⬜ Select Mode (drag to select, Delete to remove)';
                 canvas.style.cursor = 'default';
             } else if (replaceMode) {
                 status.className = 'mode-status mode-replace';
@@ -571,7 +652,6 @@ def chemical_drawing_tool():
 
         canvas.onmousedown = function(e) {
             const pos = getPos(e);
-            
             if (eraserMode) {
                 const atom = findNearestAtom(pos.x, pos.y);
                 if (atom) {
@@ -579,18 +659,12 @@ def chemical_drawing_tool():
                     atoms = atoms.filter(a => a !== atom);
                     bonds = bonds.filter(b => b.x1 !== atom.x || b.y1 !== atom.y);
                     bonds = bonds.filter(b => b.x2 !== atom.x || b.y2 !== atom.y);
-                    drawAll();
-                    return;
+                    drawAll(); return;
                 }
                 const bond = findNearestBond(pos.x, pos.y);
-                if (bond) {
-                    saveState();
-                    bonds = bonds.filter(b => b !== bond);
-                    drawAll();
-                }
+                if (bond) { saveState(); bonds = bonds.filter(b => b !== bond); drawAll(); }
                 return;
             }
-            
             if (selectMode) {
                 selectionStart = pos;
                 selectionEnd = pos;
@@ -598,7 +672,6 @@ def chemical_drawing_tool():
                 drawAll();
                 return;
             }
-            
             if (replaceMode) {
                 const atom = findNearestAtom(pos.x, pos.y);
                 if (atom) {
@@ -610,17 +683,11 @@ def chemical_drawing_tool():
                 }
                 return;
             }
-            
             if (deleteBondMode) {
                 const bond = findNearestBond(pos.x, pos.y);
-                if (bond) {
-                    saveState();
-                    bonds = bonds.filter(b => b !== bond);
-                    drawAll();
-                }
+                if (bond) { saveState(); bonds = bonds.filter(b => b !== bond); drawAll(); }
                 return;
             }
-            
             if (e.button === 2) {
                 const atom = findNearestAtom(pos.x, pos.y);
                 if (atom) {
@@ -632,7 +699,6 @@ def chemical_drawing_tool():
                 }
                 return;
             }
-            
             if (tool === 'draw') {
                 saveState();
                 atoms.push({x: pos.x, y: pos.y, label: selectedAtom, id: atomIdCounter++});
@@ -650,7 +716,6 @@ def chemical_drawing_tool():
 
         canvas.onmousemove = function(e) {
             const pos = getPos(e);
-            
             if (selectMode && selectionStart) {
                 selectionEnd = pos;
                 drawAll();
@@ -659,7 +724,6 @@ def chemical_drawing_tool():
                 selected.forEach(a => drawAtom(a.x, a.y, a.label, false, true));
                 return;
             }
-            
             if (isDrawing && tool === 'line') {
                 drawAll();
                 drawBond(lastX, lastY, pos.x, pos.y, bondType, false);
@@ -688,7 +752,6 @@ def chemical_drawing_tool():
                 selectionEnd = null;
                 return;
             }
-            
             if (isDrawing && tool === 'line') {
                 const pos = getPos(e);
                 saveState();
@@ -736,7 +799,6 @@ def chemical_drawing_tool():
             this.classList.add('active');
             updateModeStatus();
         };
-        
         document.getElementById('btn-replace').onclick = function() {
             replaceMode = !replaceMode;
             if (replaceMode) {
@@ -751,7 +813,6 @@ def chemical_drawing_tool():
             }
             updateModeStatus();
         };
-        
         document.getElementById('btn-line').onclick = function() {
             tool = 'line'; replaceMode = false; deleteBondMode = false; selectMode = false; eraserMode = false;
             selectionStart = null; selectionEnd = null; selectedAtoms = [];
@@ -759,7 +820,6 @@ def chemical_drawing_tool():
             this.classList.add('active');
             updateModeStatus();
         };
-        
         document.getElementById('btn-eraser').onclick = function() {
             eraserMode = !eraserMode;
             if (eraserMode) {
@@ -774,7 +834,6 @@ def chemical_drawing_tool():
             }
             updateModeStatus();
         };
-        
         document.getElementById('btn-select').onclick = function() {
             selectMode = !selectMode;
             if (selectMode) {
@@ -789,7 +848,6 @@ def chemical_drawing_tool():
             }
             updateModeStatus();
         };
-        
         document.getElementById('btn-benzene').onclick = function() {
             tool = 'benzene'; replaceMode = false; deleteBondMode = false; selectMode = false; eraserMode = false;
             selectionStart = null; selectionEnd = null; selectedAtoms = [];
@@ -797,7 +855,6 @@ def chemical_drawing_tool():
             this.classList.add('active');
             updateModeStatus();
         };
-        
         document.getElementById('btn-single-bond').onclick = function() {
             bondType = 1;
             document.querySelectorAll('#btn-single-bond, #btn-double-bond, #btn-triple-bond').forEach(b => b.classList.remove('active'));
@@ -816,7 +873,6 @@ def chemical_drawing_tool():
             this.classList.add('active');
             document.getElementById('bond-type-indicator').textContent = 'Bond: Triple';
         };
-        
         document.getElementById('btn-undo').onclick = function() {
             if (history.length > 0) {
                 const state = history.pop();
@@ -825,7 +881,6 @@ def chemical_drawing_tool():
                 drawAll();
             }
         };
-        
         document.getElementById('btn-clear').onclick = function() {
             if (atoms.length > 0 || bonds.length > 0) {
                 if (confirm('Clear everything?')) {
@@ -836,7 +891,6 @@ def chemical_drawing_tool():
                 }
             }
         };
-        
         document.getElementById('btn-smiles').onclick = function() {
             const sm = atoms.length > 0 ? atoms.map(a => a.label||'C').join('') : 'No atoms drawn';
             document.getElementById('smiles-output').value = 'SMILES: ' + sm;
@@ -848,33 +902,49 @@ def chemical_drawing_tool():
         saveState();
         updateModeStatus();
     </script>
-    """, height=580)
+    """, height=560)
 
 # ─── HEADER ─────────────────────────────────────────────
 def render_header():
     valid_years = papers['Year'].dropna() if len(papers) > 0 else []
     topics = papers['Topic'].dropna().unique() if len(papers) > 0 else []
     
-    # SVG Logo - AI + Chemistry + Automation
+    # Logo: Sugar chair ring + AI Chip
     logo_svg = '''
-    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="22,2 40,12 40,32 22,42 4,32 4,12" stroke="#818cf8" stroke-width="1.5" fill="rgba(99,102,241,0.06)"/>
-        <circle cx="22" cy="19" r="9" fill="rgba(129,140,248,0.10)" stroke="#818cf8" stroke-width="1.5"/>
-        <circle cx="16" cy="14" r="2.2" fill="#818cf8"/>
-        <circle cx="28" cy="14" r="2.2" fill="#818cf8"/>
-        <circle cx="22" cy="10" r="2.2" fill="#a78bfa"/>
-        <circle cx="22" cy="28" r="2.2" fill="#a78bfa"/>
-        <circle cx="16" cy="24" r="2.2" fill="#818cf8"/>
-        <circle cx="28" cy="24" r="2.2" fill="#818cf8"/>
-        <line x1="16" y1="14" x2="22" y2="10" stroke="#818cf8" stroke-width="1.2"/>
-        <line x1="28" y1="14" x2="22" y2="10" stroke="#818cf8" stroke-width="1.2"/>
-        <line x1="16" y1="14" x2="16" y2="24" stroke="#818cf8" stroke-width="1.2"/>
-        <line x1="28" y1="14" x2="28" y2="24" stroke="#818cf8" stroke-width="1.2"/>
-        <line x1="16" y1="24" x2="22" y2="28" stroke="#a78bfa" stroke-width="1.2"/>
-        <line x1="28" y1="24" x2="22" y2="28" stroke="#a78bfa" stroke-width="1.2"/>
-        <polygon points="30,34 34,36 30,38" fill="#c084fc"/>
-        <path d="M18 36 L18 39 L26 39 L26 36 L22 36 L18 36" fill="#818cf8" opacity="0.25"/>
-        <text x="22" y="43" font-size="6.5" fill="#a78bfa" text-anchor="middle" font-weight="700" font-family="Inter, sans-serif">AI</text>
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="24,4 38,12 38,28 24,36 10,28 10,12" stroke="#6366f1" stroke-width="2" fill="rgba(99,102,241,0.06)"/>
+        <line x1="10" y1="12" x2="24" y2="20" stroke="#818cf8" stroke-width="1.2"/>
+        <line x1="24" y1="20" x2="38" y2="12" stroke="#818cf8" stroke-width="1.2"/>
+        <line x1="24" y1="36" x2="38" y2="28" stroke="#818cf8" stroke-width="1.2"/>
+        <line x1="24" y1="36" x2="10" y2="28" stroke="#818cf8" stroke-width="1.2"/>
+        <circle cx="24" cy="4" r="3" fill="#ef4444" stroke="#dc2626" stroke-width="1"/>
+        <text x="24" y="6" font-size="5" fill="white" text-anchor="middle" font-weight="bold">O</text>
+        <circle cx="38" cy="12" r="3" fill="#333" stroke="#333"/>
+        <circle cx="38" cy="28" r="3" fill="#333" stroke="#333"/>
+        <circle cx="24" cy="36" r="3" fill="#333" stroke="#333"/>
+        <circle cx="10" cy="28" r="3" fill="#333" stroke="#333"/>
+        <circle cx="10" cy="12" r="3" fill="#333" stroke="#333"/>
+        <text x="44" y="10" font-size="4" fill="#ef4444" font-weight="bold">OH</text>
+        <text x="44" y="30" font-size="4" fill="#ef4444" font-weight="bold">OH</text>
+        <text x="24" y="42" font-size="4" fill="#ef4444" font-weight="bold">OH</text>
+        <text x="3" y="30" font-size="4" fill="#ef4444" font-weight="bold">OH</text>
+        <text x="3" y="10" font-size="4" fill="#ef4444" font-weight="bold">OH</text>
+        <rect x="17" y="12" width="14" height="14" rx="3" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+        <line x1="17" y1="16" x2="14" y2="16" stroke="#a78bfa" stroke-width="1"/>
+        <line x1="17" y1="22" x2="14" y2="22" stroke="#a78bfa" stroke-width="1"/>
+        <line x1="31" y1="16" x2="34" y2="16" stroke="#a78bfa" stroke-width="1"/>
+        <line x1="31" y1="22" x2="34" y2="22" stroke="#a78bfa" stroke-width="1"/>
+        <line x1="24" y1="12" x2="24" y2="10" stroke="#a78bfa" stroke-width="1"/>
+        <line x1="24" y1="26" x2="24" y2="28" stroke="#a78bfa" stroke-width="1"/>
+        <circle cx="24" cy="19" r="4.5" fill="rgba(167,139,250,0.12)" stroke="#c084fc" stroke-width="1"/>
+        <circle cx="21.5" cy="17" r="1.2" fill="#a78bfa"/>
+        <circle cx="26.5" cy="17" r="1.2" fill="#a78bfa"/>
+        <circle cx="24" cy="21" r="1.2" fill="#c084fc"/>
+        <line x1="21.5" y1="17" x2="24" y2="21" stroke="#a78bfa" stroke-width="0.8"/>
+        <line x1="26.5" y1="17" x2="24" y2="21" stroke="#a78bfa" stroke-width="0.8"/>
+        <line x1="21.5" y1="17" x2="26.5" y2="17" stroke="#a78bfa" stroke-width="0.8"/>
+        <text x="24" y="14" font-size="3.5" fill="#c084fc" text-anchor="middle" font-weight="700">AI</text>
+        <circle cx="24" cy="11" r="1.5" fill="#22d3ee"><animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/></circle>
     </svg>
     '''
     
@@ -884,11 +954,11 @@ def render_header():
             <div class="header-left">
                 <div class="logo-box">
                     <div class="logo-svg">{logo_svg}</div>
-                    <div class="logo-text">AI-Glyco<span>Auto</span></div>
+                    <div class="logo-label">CCWang_FizSab</div>
                 </div>
-                <div>
+                <div class="header-title-block">
                     <div class="header-title">Glyco<span>Search</span></div>
-                    <div class="header-subtitle">AI-Powered Glycosylation Research · {len(papers)} Papers</div>
+                    <div class="header-subtitle">Glycosylation Research · {len(papers)} Papers</div>
                 </div>
             </div>
             <div class="header-right">
@@ -934,9 +1004,7 @@ else:
     with tab1:
         st.markdown("""
         <div class="search-wrapper">
-            <p style="font-family:'Inter',sans-serif;font-weight:500;font-size:0.95rem;color:#0f172a;margin-bottom:0.5rem;">
-                🔎 Find papers by keyword
-            </p>
+            <div class="search-label">🔎 Find papers by keyword</div>
         """, unsafe_allow_html=True)
         
         col1, col2 = st.columns([4, 1])
@@ -961,7 +1029,7 @@ else:
             results = papers[mask].copy()
             
             st.markdown(f"""
-            <p style="font-family:'Inter',sans-serif;font-weight:500;font-size:1rem;color:#0f172a;">
+            <p style="font-family:'Inter',sans-serif;font-weight:500;font-size:0.95rem;color:#0f172a;">
                 📊 Found <strong>{len(results)}</strong> papers
             </p>
             """, unsafe_allow_html=True)
@@ -1057,91 +1125,64 @@ else:
     with tab4:
         st.markdown("### 🧪 Chemical Structure Editor")
         st.markdown("""
-        <p style="font-family:'Inter',sans-serif;font-size:0.9rem;color:#64748b;margin-bottom:1rem;">
-            <b>Tools:</b> Draw atoms • Single/Double/Triple bonds • Eraser • Select + Delete • Replace atoms • STol leaving group
+        <p style="font-family:'Inter',sans-serif;font-size:0.85rem;color:#64748b;margin-bottom:0.8rem;">
+            <b>Tools:</b> Draw atoms • Single/Double/Triple bonds • Eraser • Select + Delete • Replace • STol
         </p>
         """, unsafe_allow_html=True)
         chemical_drawing_tool()
 
     # ─── TAB 5: SETTINGS ────────────────────────────────
     with tab5:
-        st.markdown("### ⚙️ App Settings")
+        st.markdown("### ⚙️ Settings")
         
-        st.markdown("**Data Management**")
-        if st.button("🔄 Reload Data"):
-            st.cache_data.clear()
-            st.rerun()
+        col1, col2 = st.columns(2)
         
-        st.markdown("**Display Options**")
-        results_per_page = st.slider("Results per page", 5, 100, 20)
-        show_abstracts = st.checkbox("Show abstracts by default", True)
+        with col1:
+            st.markdown("**Data Management**")
+            if st.button("🔄 Reload Data"):
+                st.cache_data.clear()
+                st.rerun()
+            
+            st.markdown("**Export**")
+            if st.button("📥 Export All Data"):
+                csv = papers.to_csv(index=False)
+                st.download_button("Download CSV", csv, "glycosylation_papers.csv")
         
-        st.markdown("**Export**")
-        if st.button("📥 Export All Data"):
-            csv = papers.to_csv(index=False)
-            st.download_button("Download CSV", csv, "glycosylation_papers.csv")
-        
-        st.markdown("**System Info**")
-        st.code(f"Papers: {len(papers)}")
-        st.code(f"Topics: {papers['Topic'].nunique() if len(papers) > 0 else 0}")
-        
-        st.markdown("**Feedback**")
-        if os.path.exists("feedback.csv"):
-            fb_df = pd.read_csv("feedback.csv")
-            st.write(f"📊 **{len(fb_df)}** feedback entries")
-            st.dataframe(fb_df)
-            if 'rating' in fb_df.columns:
-                st.write("**Ratings Summary**")
-                st.bar_chart(fb_df['rating'].value_counts())
-        else:
-            st.info("No feedback yet. Be the first!")
+        with col2:
+            st.markdown("**System Info**")
+            st.code(f"Papers: {len(papers)}")
+            st.code(f"Topics: {papers['Topic'].nunique() if len(papers) > 0 else 0}")
+            
+            if os.path.exists("feedback.csv"):
+                fb_df = pd.read_csv("feedback.csv")
+                st.metric("📊 Feedback Entries", len(fb_df))
 
-    # ─── TAB 6: ABOUT / LICENSE ──────────────────────────
+    # ─── TAB 6: ABOUT ────────────────────────────────────
     with tab6:
         st.markdown("### 📋 About GlycoSearch")
         
         st.markdown("""
-        <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #eef2f6; margin: 10px 0;">
-            <h3 style="color: #0f172a;">🧬 GlycoSearch</h3>
-            <p style="color: #475569;">
+        <div class="about-box">
+            <h3>🧬 GlycoSearch</h3>
+            <p>
                 <b>Developer:</b> Wang Research Group<br>
                 <b>Institute:</b> Institute of Chemistry, Academia Sinica<br>
                 <b>Principal Investigator:</b> Dr. Cheng-Chung Wang<br>
-                <b>Email:</b> wangcc7280@gate.sinica.edu.tw<br>
-                <b>Lab Website:</b> <a href="https://www.chem.sinica.edu.tw" target="_blank">Institute of Chemistry, Academia Sinica</a>
+                <b>Email:</b> <span class="highlight">wangcc7280@gate.sinica.edu.tw</span>
             </p>
             <hr>
-            <h4 style="color: #0f172a;">📄 License</h4>
-            <p style="color: #475569;">
-                MIT License — Free for academic and research use.
-            </p>
-            <h4 style="color: #0f172a;">© Copyright</h4>
-            <p style="color: #475569;">
-                © 2026 Wang Research Group, Institute of Chemistry, Academia Sinica<br>
-                All rights reserved.
-            </p>
-            <h4 style="color: #0f172a;">📚 Data Sources</h4>
-            <p style="color: #475569;">
-                PubMed publications extracted with AI (2026).<br>
-                Contains 1,040+ glycosylation research papers.
-            </p>
-            <h4 style="color: #0f172a;">🔗 Citation</h4>
-            <p style="color: #475569;">
+            <h4>📄 License</h4>
+            <p>MIT License — Free for academic and research use.</p>
+            <h4>© Copyright</h4>
+            <p>© 2026 Wang Research Group, Institute of Chemistry, Academia Sinica</p>
+            <h4>📚 Data Sources</h4>
+            <p>PubMed publications extracted with AI (2026).<br>Contains 1,040+ glycosylation research papers.</p>
+            <h4>🔗 Citation</h4>
+            <p>
                 If you use this tool, please cite:<br>
                 <i>Wang Research Group, GlycoSearch: Glycosylation Research Agent, 
                 Institute of Chemistry, Academia Sinica, 2026.</i>
             </p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("---")
-        st.markdown("""
-        <div style="text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 10px 0;">
-            <b>Institute of Chemistry, Academia Sinica</b><br>
-            128 Academia Road, Section 2, Nankang, Taipei 115201, Taiwan<br>
-            <a href="https://www.chem.sinica.edu.tw" target="_blank" style="color: #6366f1; text-decoration: none;">
-                www.chem.sinica.edu.tw
-            </a>
         </div>
         """, unsafe_allow_html=True)
 
@@ -1150,30 +1191,30 @@ st.markdown("""
 <div class="sinica-footer">
     <div style="max-width: 1200px; margin: 0 auto; padding: 0 2rem;">
         <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin-bottom: 0.3rem;">
-            <span style="font-size: 1.3rem;">🧬</span>
-            <span style="font-weight: 600; font-size: 1rem; color: #ffffff;">GlycoSearch</span>
-            <span style="color: rgba(255,255,255,0.3);">·</span>
-            <span style="color: rgba(255,255,255,0.5); font-size: 0.85rem;">v2.0</span>
+            <span style="font-size: 1.2rem;">🧬</span>
+            <span style="font-weight: 500; font-size: 0.95rem; color: #ffffff;">GlycoSearch</span>
+            <span style="color: rgba(255,255,255,0.25);">·</span>
+            <span style="color: rgba(255,255,255,0.4); font-size: 0.8rem;">v2.0</span>
         </div>
         
         <hr class="divider">
         
         <div class="org-name">🏛️ Institute of Chemistry, Academia Sinica</div>
         <div class="org-desc">Wang Research Group · Dr. Cheng-Chung Wang</div>
-        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 0.2rem;">
+        <div style="font-size: 0.7rem; color: rgba(255,255,255,0.35); margin-top: 0.2rem;">
             wangcc7280@gate.sinica.edu.tw
         </div>
         
         <hr class="divider">
         
-        <div style="font-size: 0.75rem; display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;">
+        <div style="font-size: 0.7rem; display: flex; justify-content: center; gap: 1.2rem; flex-wrap: wrap;">
             <span>📄 MIT License</span>
             <span>© 2026 Academia Sinica</span>
             <span><a href="https://github.com/FizzaSab/GlycoAgent" target="_blank">GitHub</a></span>
             <span><a href="https://www.chem.sinica.edu.tw" target="_blank">Institute Website</a></span>
         </div>
         
-        <div style="font-size: 0.65rem; color: rgba(255,255,255,0.2); margin-top: 0.5rem;">
+        <div style="font-size: 0.6rem; color: rgba(255,255,255,0.15); margin-top: 0.4rem;">
             128 Academia Road, Section 2, Nankang, Taipei 115201, Taiwan
         </div>
     </div>
