@@ -20,7 +20,6 @@ st.markdown("""
     
     .stApp { background: #f5f7fb; }
     
-    /* ── HEADER ── */
     .header-wrapper {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         padding: 1rem 0 0.8rem 0;
@@ -145,7 +144,6 @@ st.markdown("""
         letter-spacing: 0.06em;
     }
     
-    /* ── TABS ── */
     .stTabs [data-baseweb="tab-list"] {
         gap: 0.2rem;
         background: #ffffff;
@@ -179,7 +177,6 @@ st.markdown("""
         font-weight: 600;
     }
     
-    /* ── SEARCH ── */
     .search-wrapper {
         background: #ffffff;
         padding: 1rem 1.5rem;
@@ -197,7 +194,6 @@ st.markdown("""
         margin-bottom: 0.2rem;
     }
     
-    /* ── RESULT CARDS ── */
     .result-card {
         background: #ffffff;
         padding: 0.7rem 1.2rem;
@@ -253,7 +249,6 @@ st.markdown("""
         border-top: 1px solid #f1f5f9;
     }
     
-    /* ── FOOTER ── */
     .footer-container {
         background: linear-gradient(135deg, #0f172a, #1e293b);
         padding: 1.2rem 0;
@@ -318,17 +313,13 @@ st.markdown("""
         margin-top: 0.1rem;
     }
     
-    /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
         .header-content { flex-direction: column; align-items: flex-start; padding: 0 1rem; }
         .header-stats { flex-wrap: wrap; gap: 0.5rem; padding: 0.25rem 0.8rem; }
         .header-title { font-size: 1.2rem; }
         .stTabs [data-baseweb="tab"] { font-size: 0.7rem !important; padding: 0.3rem 0.8rem !important; }
-        .footer-container { padding: 0.8rem 0; }
-        .footer-container .org-name { font-size: 0.8rem; }
     }
     
-    /* ── ABOUT TAB ── */
     .about-box {
         background: #ffffff;
         padding: 1.5rem 2rem;
@@ -340,15 +331,6 @@ st.markdown("""
     .about-box p { color: #475569; font-family: 'Inter', sans-serif; font-size: 0.85rem; line-height: 1.6; }
     .about-box hr { border: none; border-top: 1px solid #e8ecf2; margin: 0.6rem 0; }
     .about-box .highlight { color: #6366f1; font-weight: 500; }
-    
-    /* ── SECTION TITLES ── */
-    .section-title {
-        font-family: 'Inter', sans-serif;
-        font-weight: 600;
-        font-size: 1rem;
-        color: #0f172a;
-        margin-bottom: 0.3rem;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -369,97 +351,23 @@ papers = load_data()
 def chemical_drawing_tool():
     components.html("""
     <style>
-        .draw-header {
-            background: linear-gradient(135deg, #f8fafc, #eef2ff);
-            border: 2px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 1rem 1.5rem;
-            margin-bottom: 0.8rem;
-            text-align: center;
-        }
-        .draw-header h2 {
-            font-family: 'Inter', sans-serif;
-            font-weight: 700;
-            font-size: 1.3rem;
-            color: #0f172a;
-            margin: 0;
-        }
-        .draw-header h2 span {
-            background: linear-gradient(135deg, #6366f1, #a78bfa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .draw-header p {
-            font-family: 'Inter', sans-serif;
-            font-size: 0.8rem;
-            color: #64748b;
-            margin: 0.2rem 0 0 0;
-        }
-        .draw-toolbar {
-            display: flex;
-            gap: 4px;
-            padding: 6px 0;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .draw-toolbar button {
-            padding: 4px 10px;
-            border: none;
-            border-radius: 6px;
-            background: #f1f5f9;
-            color: #0f172a;
-            cursor: pointer;
-            font-size: 11px;
-            font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
+        .draw-header { background: linear-gradient(135deg, #f8fafc, #eef2ff); border: 2px solid #e2e8f0; border-radius: 14px; padding: 1rem 1.5rem; margin-bottom: 0.8rem; text-align: center; }
+        .draw-header h2 { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.3rem; color: #0f172a; margin: 0; }
+        .draw-header h2 span { background: linear-gradient(135deg, #6366f1, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .draw-header p { font-family: 'Inter', sans-serif; font-size: 0.8rem; color: #64748b; margin: 0.2rem 0 0 0; }
+        .draw-toolbar { display: flex; gap: 4px; padding: 6px 0; flex-wrap: wrap; align-items: center; }
+        .draw-toolbar button { padding: 4px 10px; border: none; border-radius: 6px; background: #f1f5f9; color: #0f172a; cursor: pointer; font-size: 11px; font-family: 'Inter', sans-serif; font-weight: 500; transition: all 0.2s; }
         .draw-toolbar button:hover { background: #e2e8f0; }
         .draw-toolbar button.active { background: #0f172a; color: white; }
         .draw-toolbar button.danger { background: #fee2e2; color: #991b1b; }
-        .draw-toolbar button.danger:hover { background: #fecaca; }
         .draw-toolbar button.success { background: #dcfce7; color: #166534; }
-        .draw-toolbar button.success:hover { background: #bbf7d0; }
         .draw-toolbar button.warning { background: #fef3c7; color: #92400e; }
-        .draw-toolbar button.warning:hover { background: #fde68a; }
         .draw-toolbar button.info { background: #dbeafe; color: #1e40af; }
-        .draw-toolbar button.info:hover { background: #bfdbfe; }
         .draw-toolbar button.purple { background: #f3e8ff; color: #6b21a8; }
-        .draw-toolbar button.purple:hover { background: #e9d5ff; }
-        .draw-toolbar select {
-            padding: 4px 8px;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
-            font-size: 11px;
-            font-family: 'Inter', sans-serif;
-            background: white;
-        }
-        #canvas {
-            border: 2px solid #e2e8f0;
-            background: white;
-            border-radius: 12px;
-            cursor: crosshair;
-            width: 100%;
-            height: auto;
-        }
-        #smiles-output {
-            width: 100%;
-            padding: 8px 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            margin-top: 8px;
-            font-family: monospace;
-            font-size: 12px;
-            background: #f8fafc;
-        }
-        .mode-status {
-            padding: 2px 10px;
-            border-radius: 50px;
-            font-size: 10px;
-            font-weight: 500;
-            font-family: 'Inter', sans-serif;
-            display: inline-block;
-        }
+        .draw-toolbar select { padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 11px; font-family: 'Inter', sans-serif; background: white; }
+        #canvas { border: 2px solid #e2e8f0; background: white; border-radius: 12px; cursor: crosshair; width: 100%; height: auto; }
+        #smiles-output { width: 100%; padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; margin-top: 8px; font-family: monospace; font-size: 12px; background: #f8fafc; }
+        .mode-status { padding: 2px 10px; border-radius: 50px; font-size: 10px; font-weight: 500; font-family: 'Inter', sans-serif; display: inline-block; }
         .mode-draw { background: #dcfce7; color: #166534; }
         .mode-replace { background: #fef3c7; color: #92400e; }
         .mode-delete { background: #fee2e2; color: #991b1b; }
@@ -534,19 +442,10 @@ def chemical_drawing_tool():
         const MAX_HISTORY = 30;
         let atomIdCounter = 0;
 
-        document.getElementById('atom-select').onchange = function() {
-            selectedAtom = this.value;
-        };
+        document.getElementById('atom-select').onchange = function() { selectedAtom = this.value; };
 
         function getAtomColor(label) {
-            const colors = {
-                'C': '#333333', 'O': '#FF0000', 'N': '#3050F8', 'H': '#FFFFFF',
-                'S': '#FFFF30', 'P': '#FF8000', 'F': '#90E050', 'Cl': '#1FF01F',
-                'Br': '#A62929', 'I': '#940094', 'OH': '#FF0000', 'OMe': '#CD5C5C',
-                'OBn': '#8B4513', 'OBz': '#8B6914', 'OAc': '#CD853F', 'N3': '#4169E1',
-                'NH2': '#4169E1', 'OTs': '#DAA520', 'STol': '#8B008B', 
-                'TBDMS': '#2E8B57', 'TIPS': '#2E8B57', 'Bz': '#8B6914', 'Bn': '#8B4513', 'Ac': '#CD853F'
-            };
+            const colors = {'C':'#333333','O':'#FF0000','N':'#3050F8','H':'#FFFFFF','S':'#FFFF30','P':'#FF8000','F':'#90E050','Cl':'#1FF01F','Br':'#A62929','I':'#940094','OH':'#FF0000','OMe':'#CD5C5C','OBn':'#8B4513','OBz':'#8B6914','OAc':'#CD853F','N3':'#4169E1','NH2':'#4169E1','OTs':'#DAA520','STol':'#8B008B','TBDMS':'#2E8B57','TIPS':'#2E8B57','Bz':'#8B6914','Bn':'#8B4513','Ac':'#CD853F'};
             return colors[label] || '#333333';
         }
 
@@ -579,46 +478,28 @@ def chemical_drawing_tool():
             const len = Math.hypot(dx, dy);
             if (len === 0) return;
             const nx = -dy / len, ny = dx / len;
-            
             if (type === 1 || type === undefined) {
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.strokeStyle = color;
-                ctx.lineWidth = highlight ? 6 : 3;
-                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+                ctx.strokeStyle = color; ctx.lineWidth = highlight ? 6 : 3; ctx.stroke();
             } else if (type === 2) {
                 for (let d = -1; d <= 1; d += 2) {
-                    const ox = d * offset * nx;
-                    const oy = d * offset * ny;
-                    ctx.beginPath();
-                    ctx.moveTo(x1 + ox, y1 + oy);
-                    ctx.lineTo(x2 + ox, y2 + oy);
-                    ctx.strokeStyle = color;
-                    ctx.lineWidth = highlight ? 6 : 3;
-                    ctx.stroke();
+                    const ox = d * offset * nx, oy = d * offset * ny;
+                    ctx.beginPath(); ctx.moveTo(x1 + ox, y1 + oy); ctx.lineTo(x2 + ox, y2 + oy);
+                    ctx.strokeStyle = color; ctx.lineWidth = highlight ? 6 : 3; ctx.stroke();
                 }
             } else if (type === 3) {
                 for (let d = -1; d <= 1; d++) {
-                    const ox = d * offset * nx;
-                    const oy = d * offset * ny;
-                    ctx.beginPath();
-                    ctx.moveTo(x1 + ox, y1 + oy);
-                    ctx.lineTo(x2 + ox, y2 + oy);
-                    ctx.strokeStyle = color;
-                    ctx.lineWidth = highlight ? 6 : 2;
-                    ctx.stroke();
+                    const ox = d * offset * nx, oy = d * offset * ny;
+                    ctx.beginPath(); ctx.moveTo(x1 + ox, y1 + oy); ctx.lineTo(x2 + ox, y2 + oy);
+                    ctx.strokeStyle = color; ctx.lineWidth = highlight ? 6 : 2; ctx.stroke();
                 }
             }
             if (highlight) {
                 const mx = (x1+x2)/2, my = (y1+y2)/2;
-                ctx.strokeStyle = '#ef4444';
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
                 const s = 8;
-                ctx.beginPath();
-                ctx.moveTo(mx-s, my-s); ctx.lineTo(mx+s, my+s);
-                ctx.moveTo(mx+s, my-s); ctx.lineTo(mx-s, my+s);
-                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(mx-s, my-s); ctx.lineTo(mx+s, my+s);
+                ctx.moveTo(mx+s, my-s); ctx.lineTo(mx-s, my+s); ctx.stroke();
             }
         }
 
@@ -628,48 +509,30 @@ def chemical_drawing_tool():
             const pts = angles.map(d => ({x: x + size * Math.cos(d * Math.PI / 180), y: y + size * Math.sin(d * Math.PI / 180)}));
             for (let i = 0; i < 6; i++) {
                 let j = (i + 1) % 6;
-                ctx.beginPath();
-                ctx.moveTo(pts[i].x, pts[i].y);
-                ctx.lineTo(pts[j].x, pts[j].y);
-                ctx.strokeStyle = '#333';
-                ctx.lineWidth = 3;
-                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y);
+                ctx.strokeStyle = '#333'; ctx.lineWidth = 3; ctx.stroke();
                 if (i % 2 === 0) {
-                    const midX = (pts[i].x + pts[j].x) / 2;
-                    const midY = (pts[i].y + pts[j].y) / 2;
+                    const midX = (pts[i].x + pts[j].x) / 2, midY = (pts[i].y + pts[j].y) / 2;
                     const angle = Math.atan2(pts[j].y - pts[i].y, pts[j].x - pts[i].x);
                     const perpAngle = angle + Math.PI / 2;
                     const offset = 8;
                     for (let d = -1; d <= 1; d += 2) {
-                        const dx = d * offset * Math.cos(perpAngle);
-                        const dy = d * offset * Math.sin(perpAngle);
-                        const sx = midX + dx - 22 * Math.cos(angle);
-                        const sy = midY + dy - 22 * Math.sin(angle);
-                        const ex = midX + dx + 22 * Math.cos(angle);
-                        const ey = midY + dy + 22 * Math.sin(angle);
-                        ctx.beginPath();
-                        ctx.moveTo(sx, sy);
-                        ctx.lineTo(ex, ey);
-                        ctx.strokeStyle = '#333';
-                        ctx.lineWidth = 3;
-                        ctx.stroke();
+                        const dx = d * offset * Math.cos(perpAngle), dy = d * offset * Math.sin(perpAngle);
+                        const sx = midX + dx - 22 * Math.cos(angle), sy = midY + dy - 22 * Math.sin(angle);
+                        const ex = midX + dx + 22 * Math.cos(angle), ey = midY + dy + 22 * Math.sin(angle);
+                        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey);
+                        ctx.strokeStyle = '#333'; ctx.lineWidth = 3; ctx.stroke();
                     }
                 }
             }
             for (let i = 0; i < 6; i++) {
                 const color = getAtomColor('C');
-                const radius = 18;
-                ctx.beginPath();
-                ctx.arc(pts[i].x, pts[i].y, radius, 0, Math.PI*2);
-                ctx.fillStyle = color;
-                ctx.fill();
-                ctx.strokeStyle = '#333';
-                ctx.lineWidth = 2;
-                ctx.stroke();
+                ctx.beginPath(); ctx.arc(pts[i].x, pts[i].y, 18, 0, Math.PI*2);
+                ctx.fillStyle = color; ctx.fill();
+                ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.stroke();
                 ctx.fillStyle = 'white';
                 ctx.font = 'bold 12px Inter, Arial, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 ctx.fillText('C', pts[i].x, pts[i].y);
                 atoms.push({x: pts[i].x, y: pts[i].y, label: 'C', id: atomIdCounter++});
             }
@@ -787,11 +650,7 @@ def chemical_drawing_tool():
                 return;
             }
             if (selectMode) {
-                selectionStart = pos;
-                selectionEnd = pos;
-                selectedAtoms = [];
-                drawAll();
-                return;
+                selectionStart = pos; selectionEnd = pos; selectedAtoms = []; drawAll(); return;
             }
             if (replaceMode) {
                 const atom = findNearestAtom(pos.x, pos.y);
@@ -869,9 +728,7 @@ def chemical_drawing_tool():
                 if (selected.length > 0) {
                     document.getElementById('mode-status').textContent = `✅ ${selected.length} atoms selected. Press Delete to remove.`;
                 }
-                selectionStart = null;
-                selectionEnd = null;
-                return;
+                selectionStart = null; selectionEnd = null; return;
             }
             if (isDrawing && tool === 'line') {
                 const pos = getPos(e);
@@ -1302,7 +1159,7 @@ else:
         </div>
         """, unsafe_allow_html=True)
 
-# ─── CLEAN FOOTER ─────────────────────────────────────────
+# ─── FOOTER ─────────────────────────────────────────────
 st.markdown("""
 <div class="footer-container">
     <div class="org-name">🏛️ Institute of Chemistry, Academia Sinica</div>
