@@ -1243,24 +1243,21 @@ def create_colorful_bar_chart(data, title, color_scheme):
         cornerRadiusTopLeft=4,
         cornerRadiusTopRight=4
     ).encode(
-        x=alt.X('Category:N', sort='-y', title=None),
-        y=alt.Y('Count:Q', title=None),
+        x=alt.X('Category:N', sort='-y', title=None, axis=alt.Axis(labelFontSize=11, labelColor='#1e293b')),
+        y=alt.Y('Count:Q', title=None, axis=alt.Axis(labelFontSize=11, labelColor='#1e293b')),
         color=alt.Color('Count:Q', 
                        scale=alt.Scale(scheme=color_scheme),
                        legend=None),
         tooltip=['Category', 'Count']
     ).properties(
         height=300,
-        title=title
-    ).configure_axis(
-        labelFontSize=11,
-        labelFontWeight='500',
-        labelColor='#1e293b'
-    ).configure_title(
-        fontSize=14,
-        fontWeight='600',
-        color='#0f172a',
-        anchor='start'
+        title=alt.TitleParams(
+            title,
+            fontSize=14,
+            fontWeight='600',
+            color='#0f172a',
+            anchor='start'
+        )
     )
     
     return chart
