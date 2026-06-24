@@ -2,8 +2,6 @@ import streamlit as st
 import pandas as pd
 import os
 import streamlit.components.v1 as components
-import base64
-from datetime import datetime
 
 # ─── PAGE CONFIG ──────────────────────────────────────────
 st.set_page_config(
@@ -16,25 +14,15 @@ st.set_page_config(
 # ─── CUSTOM CSS ──────────────────────────────────────────
 st.markdown("""
 <style>
-    /* ── Google Fonts ── */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
     
-    /* ── Global Reset ── */
     .stApp {
         background: #f8fafc;
     }
     
-    /* ── Main Container ── */
-    .main-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 0 2rem;
-    }
-    
-    /* ── Header ── */
     .header-wrapper {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-        padding: 2rem 0 1.5rem 0;
+        padding: 1.8rem 0 1.5rem 0;
         border-radius: 0 0 40px 40px;
         margin-bottom: 2rem;
         box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15);
@@ -50,17 +38,6 @@ st.markdown("""
         width: 500px;
         height: 500px;
         background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
-        border-radius: 50%;
-    }
-    
-    .header-wrapper::after {
-        content: '';
-        position: absolute;
-        bottom: -30%;
-        left: -5%;
-        width: 400px;
-        height: 400px;
-        background: radial-gradient(circle, rgba(236, 72, 153, 0.06) 0%, transparent 70%);
         border-radius: 50%;
     }
     
@@ -80,21 +57,41 @@ st.markdown("""
     .header-left {
         display: flex;
         align-items: center;
-        gap: 1.5rem;
+        gap: 1.2rem;
+    }
+    
+    .logo-box {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        background: rgba(255, 255, 255, 0.04);
+        padding: 0.4rem 1.2rem 0.4rem 0.8rem;
+        border-radius: 100px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(10px);
     }
     
     .logo-icon {
-        font-size: 3rem;
+        font-size: 2.2rem;
         line-height: 1;
         background: linear-gradient(135deg, #818cf8, #c084fc);
-        padding: 0.5rem;
-        border-radius: 16px;
+        padding: 0.4rem 0.6rem;
+        border-radius: 50px;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 60px;
-        height: 60px;
-        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.25);
+    }
+    
+    .logo-text {
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #ffffff;
+        letter-spacing: 0.02em;
+    }
+    
+    .logo-text span {
+        color: #a78bfa;
     }
     
     .header-title {
@@ -116,9 +113,9 @@ st.markdown("""
     .header-subtitle {
         font-family: 'Inter', sans-serif;
         font-weight: 300;
-        font-size: 0.95rem;
-        color: rgba(255, 255, 255, 0.6);
-        margin-top: 0.1rem;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.5);
+        margin-top: 0.05rem;
         letter-spacing: 0.02em;
     }
     
@@ -131,9 +128,9 @@ st.markdown("""
     
     .header-stats {
         display: flex;
-        gap: 2rem;
-        background: rgba(255, 255, 255, 0.05);
-        padding: 0.5rem 1.5rem;
+        gap: 1.8rem;
+        background: rgba(255, 255, 255, 0.04);
+        padding: 0.4rem 1.5rem;
         border-radius: 100px;
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.06);
@@ -146,7 +143,7 @@ st.markdown("""
     .stat-number {
         font-family: 'Inter', sans-serif;
         font-weight: 700;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         color: #ffffff;
         letter-spacing: -0.01em;
     }
@@ -154,32 +151,32 @@ st.markdown("""
     .stat-label {
         font-family: 'Inter', sans-serif;
         font-weight: 400;
-        font-size: 0.7rem;
-        color: rgba(255, 255, 255, 0.4);
+        font-size: 0.65rem;
+        color: rgba(255, 255, 255, 0.35);
         text-transform: uppercase;
         letter-spacing: 0.08em;
     }
     
-    /* ── Tabs ── */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 0.25rem;
+        gap: 0.3rem;
         background: #ffffff;
-        padding: 0.4rem;
-        border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+        padding: 0.5rem 0.6rem;
+        border-radius: 18px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         border: 1px solid #eef2f6;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.8rem;
     }
     
     .stTabs [data-baseweb="tab"] {
         font-family: 'Inter', sans-serif;
-        font-weight: 500;
-        font-size: 0.9rem;
+        font-weight: 600;
+        font-size: 1.1rem !important;
         color: #64748b;
-        padding: 0.6rem 1.4rem;
-        border-radius: 12px;
-        transition: all 0.2s ease;
+        padding: 0.8rem 2rem !important;
+        border-radius: 14px;
+        transition: all 0.25s ease;
         background: transparent;
+        letter-spacing: 0.01em;
     }
     
     .stTabs [data-baseweb="tab"]:hover {
@@ -190,10 +187,10 @@ st.markdown("""
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
         background: #0f172a;
         color: #ffffff;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.18);
+        font-weight: 700;
     }
     
-    /* ── Search Box ── */
     .search-wrapper {
         background: #ffffff;
         padding: 1.5rem;
@@ -203,21 +200,6 @@ st.markdown("""
         margin-bottom: 1.5rem;
     }
     
-    .search-input {
-        font-family: 'Inter', sans-serif !important;
-        font-size: 1.1rem !important;
-        padding: 0.8rem 1.2rem !important;
-        border-radius: 12px !important;
-        border: 2px solid #e2e8f0 !important;
-        transition: all 0.2s ease !important;
-    }
-    
-    .search-input:focus {
-        border-color: #818cf8 !important;
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
-    }
-    
-    /* ── Result Cards ── */
     .result-card {
         background: #ffffff;
         padding: 1rem 1.5rem;
@@ -225,7 +207,6 @@ st.markdown("""
         border: 1px solid #eef2f6;
         margin-bottom: 0.75rem;
         transition: all 0.25s ease;
-        cursor: pointer;
     }
     
     .result-card:hover {
@@ -239,16 +220,6 @@ st.markdown("""
         font-weight: 600;
         font-size: 1.05rem;
         color: #0f172a;
-        letter-spacing: -0.01em;
-    }
-    
-    .result-title a {
-        color: #0f172a;
-        text-decoration: none;
-    }
-    
-    .result-title a:hover {
-        color: #6366f1;
     }
     
     .result-meta {
@@ -268,23 +239,10 @@ st.markdown("""
         border-radius: 100px;
         font-size: 0.7rem;
         font-weight: 500;
-        letter-spacing: 0.02em;
     }
-    
-    .badge-year {
-        background: #f1f5f9;
-        color: #475569;
-    }
-    
-    .badge-topic {
-        background: #eef2ff;
-        color: #4f46e5;
-    }
-    
-    .badge-journal {
-        background: #fce7f3;
-        color: #be185d;
-    }
+    .badge-year { background: #f1f5f9; color: #475569; }
+    .badge-topic { background: #eef2ff; color: #4f46e5; }
+    .badge-journal { background: #fce7f3; color: #be185d; }
     
     .result-abstract {
         font-family: 'Inter', sans-serif;
@@ -297,53 +255,6 @@ st.markdown("""
         border-top: 1px solid #f1f5f9;
     }
     
-    /* ── Metrics ── */
-    .metric-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1rem;
-        margin: 1rem 0;
-    }
-    
-    .metric-box {
-        background: #ffffff;
-        padding: 1.2rem;
-        border-radius: 14px;
-        text-align: center;
-        border: 1px solid #eef2f6;
-        transition: all 0.2s ease;
-    }
-    
-    .metric-box:hover {
-        border-color: #c7d2fe;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-    }
-    
-    .metric-number {
-        font-family: 'Inter', sans-serif;
-        font-weight: 700;
-        font-size: 1.8rem;
-        color: #0f172a;
-        letter-spacing: -0.02em;
-    }
-    
-    .metric-label {
-        font-family: 'Inter', sans-serif;
-        font-weight: 400;
-        font-size: 0.8rem;
-        color: #94a3b8;
-        margin-top: 0.2rem;
-    }
-    
-    /* ── Draw Tab ── */
-    .draw-container {
-        background: #ffffff;
-        padding: 1.5rem;
-        border-radius: 16px;
-        border: 1px solid #eef2f6;
-    }
-    
-    /* ── Footer ── */
     .footer {
         text-align: center;
         padding: 2rem 0;
@@ -354,43 +265,17 @@ st.markdown("""
         margin-top: 3rem;
     }
     
-    .footer a {
-        color: #6366f1;
-        text-decoration: none;
-    }
+    .footer a { color: #6366f1; text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
     
-    .footer a:hover {
-        text-decoration: underline;
-    }
-    
-    /* ── Responsive ── */
     @media (max-width: 768px) {
-        .header-content {
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 0 1rem;
-        }
-        .header-stats {
-            flex-wrap: wrap;
-            gap: 1rem;
-            padding: 0.5rem 1rem;
-            border-radius: 16px;
-        }
-        .header-title {
-            font-size: 1.5rem;
-        }
-        .logo-icon {
-            font-size: 2rem;
-            width: 48px;
-            height: 48px;
-        }
-        .stTabs [data-baseweb="tab"] {
-            font-size: 0.8rem;
-            padding: 0.4rem 0.8rem;
-        }
-        .main-container {
-            padding: 0 1rem;
-        }
+        .header-content { flex-direction: column; align-items: flex-start; padding: 0 1rem; }
+        .header-stats { flex-wrap: wrap; gap: 1rem; padding: 0.5rem 1rem; border-radius: 16px; }
+        .header-title { font-size: 1.5rem; }
+        .logo-box { padding: 0.3rem 0.8rem; }
+        .logo-text { font-size: 0.75rem; }
+        .stTabs [data-baseweb="tab"] { font-size: 0.85rem !important; padding: 0.5rem 1rem !important; }
+        .stTabs [data-baseweb="tab-list"] { padding: 0.3rem; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -408,206 +293,6 @@ def load_data():
 
 papers = load_data()
 
-# ─── HEADER ─────────────────────────────────────────────
-def render_header():
-    valid_years = papers['Year'].dropna() if len(papers) > 0 else []
-    topics = papers['Topic'].dropna().unique() if len(papers) > 0 else []
-    
-    st.markdown(f"""
-    <div class="header-wrapper">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="logo-icon">🧬</div>
-                <div>
-                    <div class="header-title">Glyco<span>Search</span></div>
-                    <div class="header-subtitle">Glycosylation Research · 1,000+ Papers</div>
-                </div>
-            </div>
-            <div class="header-right">
-                <div class="header-stats">
-                    <div class="stat-item">
-                        <div class="stat-number">{len(papers) if len(papers) > 0 else 0}</div>
-                        <div class="stat-label">Papers</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">{int(valid_years.min()) if len(valid_years) > 0 else '—'}–{int(valid_years.max()) if len(valid_years) > 0 else '—'}</div>
-                        <div class="stat-label">Years</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">{len(topics) if len(topics) > 0 else 0}</div>
-                        <div class="stat-label">Topics</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-render_header()
-
-# ─── MAIN CONTENT ───────────────────────────────────────
-if len(papers) == 0:
-    st.warning("📁 Upload your Excel file to get started")
-    uploaded = st.file_uploader("Choose Excel file", type=['xlsx'])
-    if uploaded:
-        papers = pd.read_excel(uploaded, sheet_name='All Papers')
-        st.rerun()
-else:
-    # ─── TABS ──────────────────────────────────────────
-    tab1, tab2, tab3, tab4 = st.tabs([
-        "🔍 Search",
-        "📊 Analytics",
-        "📚 Methods", 
-        "🧪 Draw"
-    ])
-
-    # ─── TAB 1: SEARCH ────────────────────────────────
-    with tab1:
-        st.markdown("""
-        <div class="search-wrapper">
-            <p style="font-family:'Inter',sans-serif;font-weight:500;font-size:0.95rem;color:#0f172a;margin-bottom:0.5rem;">
-                🔎 Find papers by keyword
-            </p>
-        """, unsafe_allow_html=True)
-        
-        col1, col2 = st.columns([4, 1])
-        with col1:
-            keyword = st.text_input("", placeholder="e.g. NIS, sialic acid, Koenigs-Knorr, thioglycoside", label_visibility="collapsed")
-        with col2:
-            max_results = st.selectbox("Show", [10, 20, 50, 100], index=0, label_visibility="collapsed")
-        
-        # Topic filter
-        topics_list = ['All Topics'] + sorted(papers['Topic'].dropna().unique().tolist())
-        selected_topic = st.selectbox("Filter by Topic", topics_list, index=0)
-        
-        st.markdown("</div>", unsafe_allow_html=True)
-        
-        if keyword:
-            kw = keyword.lower()
-            mask = (papers['Title'].astype(str).str.lower().str.contains(kw, na=False) | 
-                    papers['Abstract'].astype(str).str.lower().str.contains(kw, na=False))
-            
-            if selected_topic != 'All Topics':
-                mask = mask & (papers['Topic'] == selected_topic)
-            
-            results = papers[mask].copy()
-            
-            st.markdown(f"""
-            <p style="font-family:'Inter',sans-serif;font-weight:500;font-size:1rem;color:#0f172a;">
-                📊 Found <strong>{len(results)}</strong> papers
-            </p>
-            """, unsafe_allow_html=True)
-            
-            if len(results) == 0:
-                st.info("No matches found. Try different keywords.")
-            else:
-                for _, row in results.head(max_results).iterrows():
-                    title = str(row.get('Title', 'No title'))
-                    year = str(row.get('Year', '?'))
-                    journal = str(row.get('Journal', '?'))
-                    topic = str(row.get('Topic', '?'))
-                    abstract = str(row.get('Abstract', ''))
-                    
-                    with st.expander(f"📄 {title[:100]}{'...' if len(title) > 100 else ''}", expanded=False):
-                        st.markdown(f"""
-                        <div class="result-card">
-                            <div class="result-title">{title}</div>
-                            <div class="result-meta">
-                                <span class="badge badge-year">📅 {year}</span>
-                                <span class="badge badge-topic">📂 {topic}</span>
-                                <span class="badge badge-journal">📖 {journal}</span>
-                            </div>
-                            {f'<div class="result-abstract">{abstract[:500]}...</div>' if len(abstract) > 10 else ''}
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        url = row.get('URL', '#')
-                        if url != '#':
-                            st.markdown(f"[🔗 View in PubMed]({url})")
-
-    # ─── TAB 2: ANALYTICS ──────────────────────────────
-    with tab2:
-        st.markdown("### 📊 Research Analytics")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("**📅 Publications by Year**")
-            year_counts = papers['Year'].value_counts().sort_index()
-            if len(year_counts) > 0:
-                st.bar_chart(year_counts)
-        
-        with col2:
-            st.markdown("**📂 Papers by Topic**")
-            topic_counts = papers['Topic'].value_counts()
-            if len(topic_counts) > 0:
-                st.bar_chart(topic_counts.head(10))
-        
-        st.markdown("---")
-        st.markdown("**🏆 Top Journals**")
-        journal_counts = papers['Journal'].value_counts().head(10)
-        if len(journal_counts) > 0:
-            st.dataframe(
-                journal_counts.reset_index().rename(columns={'index': 'Journal', 'Journal': 'Count'}),
-                use_container_width=True,
-                hide_index=True
-            )
-
-    # ─── TAB 3: METHODS ─────────────────────────────────
-    with tab3:
-        st.markdown("### 📚 Glycosylation Methods Reference")
-        
-        methods_data = {
-            "Method": ["Koenigs-Knorr", "Schmidt (imidate)", "Thioglycoside", "Glycosyl phosphate", 
-                       "Glycosyl fluoride", "Sulfoxide (Kahne)", "n-Pentenyl", "Glycosyl boronate"],
-            "Donor": ["Glycosyl halide (Br/Cl)", "Trichloroacetimidate", "S-Ph or S-Et glycoside", 
-                      "Diphenyl phosphate", "Glycosyl fluoride", "Glycosyl sulfoxide", 
-                      "n-Pentenyl glycoside", "Boronic acid derivative"],
-            "Activator": ["Ag₂O, Ag₂CO₃, AgOTf", "BF₃·Et₂O or TMSOTf", "NIS/TfOH or DMTST", "TMSOTf", 
-                          "Cp₂HfCl₂/AgClO₄", "Tf₂O", "NIS/Et₃SiOTf", "None (metal-free)"],
-            "Selectivity": ["α or β (NGP)", "β (C2-acyl)", "Tunable α/β", "β-selective", 
-                            "Varies", "α possible", "Varies", "β-selective"],
-            "Temp": ["0°C to RT", "−40°C to RT", "−78°C to RT", "−78°C", 
-                     "RT", "−78°C", "−10°C", "RT"]
-        }
-        st.dataframe(pd.DataFrame(methods_data), use_container_width=True, hide_index=True)
-        
-        st.markdown("---")
-        st.markdown("### 📖 Common Terminology")
-        terms = {
-            "NGP": "Neighboring Group Participation - using an acyl group at C2 to direct β-selectivity",
-            "TMSOTf": "Trimethylsilyl trifluoromethanesulfonate - common Lewis acid activator",
-            "NIS": "N-Iodosuccinimide - thiophilic activator for thioglycosides",
-            "DMTST": "Dimethyl(methylthio)sulfonium triflate - thiophilic activator",
-            "1,2-cis": "The newly formed glycosidic bond is on the same side as the C2 substituent",
-            "1,2-trans": "The newly formed glycosidic bond is on the opposite side from the C2 substituent"
-        }
-        for term, definition in terms.items():
-            st.markdown(f"**{term}:** {definition}")
-
-    # ─── TAB 4: DRAW ────────────────────────────────────
-    with tab4:
-        st.markdown("### 🧪 Chemical Structure Editor")
-        st.markdown("""
-        <p style="font-family:'Inter',sans-serif;font-size:0.9rem;color:#64748b;margin-bottom:1rem;">
-            Select an atom type, then click to add or replace atoms. Click "Replace Atom" to change existing atoms.
-        </p>
-        """, unsafe_allow_html=True)
-        
-        chemical_drawing_tool()
-
-# ─── FOOTER ─────────────────────────────────────────────
-st.markdown("""
-<div class="footer">
-    🧬 GlycoSearch · Built with Streamlit · 
-    <a href="https://github.com/FizzaSab/GlycoAgent" target="_blank">GitHub</a> · 
-    <span id="year"></span>
-</div>
-<script>
-document.getElementById('year').textContent = new Date().getFullYear();
-</script>
-""", unsafe_allow_html=True)
-
 # ─── DRAWING TOOL ──────────────────────────────────────
 def chemical_drawing_tool():
     components.html("""
@@ -624,7 +309,7 @@ def chemical_drawing_tool():
         .draw-toolbar button.warning:hover { background: #fde68a; }
         .draw-toolbar select { padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 13px; font-family: 'Inter', sans-serif; background: white; }
         #canvas { border: 2px solid #e2e8f0; background: white; border-radius: 12px; cursor: crosshair; width: 100%; height: auto; }
-        #smiles-output { width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+        #smiles-output { width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; margin-top: 10px; font-family: monospace; font-size: 13px; }
         .mode-status { padding: 4px 14px; border-radius: 100px; font-size: 12px; font-weight: 500; font-family: 'Inter', sans-serif; display: inline-block; }
         .mode-draw { background: #dcfce7; color: #166534; }
         .mode-replace { background: #fef3c7; color: #92400e; }
@@ -646,29 +331,12 @@ def chemical_drawing_tool():
             <div class="toolbar-group">
                 <span class="toolbar-label">Atom</span>
                 <select id="atom-select">
-                    <option value="C">C</option>
-                    <option value="O">O</option>
-                    <option value="N">N</option>
-                    <option value="H">H</option>
-                    <option value="S">S</option>
-                    <option value="P">P</option>
-                    <option value="F">F</option>
-                    <option value="Cl">Cl</option>
-                    <option value="Br">Br</option>
-                    <option value="I">I</option>
-                    <option value="OH">OH</option>
-                    <option value="OMe">OMe</option>
-                    <option value="OBn">OBn</option>
-                    <option value="OBz">OBz</option>
-                    <option value="OAc">OAc</option>
-                    <option value="N3">N3</option>
-                    <option value="NH2">NH2</option>
-                    <option value="OTs">OTs</option>
-                    <option value="TBDMS">TBDMS</option>
-                    <option value="TIPS">TIPS</option>
-                    <option value="Bz">Bz</option>
-                    <option value="Bn">Bn</option>
-                    <option value="Ac">Ac</option>
+                    <option value="C">C</option><option value="O">O</option><option value="N">N</option><option value="H">H</option>
+                    <option value="S">S</option><option value="P">P</option><option value="F">F</option><option value="Cl">Cl</option>
+                    <option value="Br">Br</option><option value="I">I</option>
+                    <option value="OH">OH</option><option value="OMe">OMe</option><option value="OBn">OBn</option><option value="OBz">OBz</option>
+                    <option value="OAc">OAc</option><option value="N3">N3</option><option value="NH2">NH2</option><option value="OTs">OTs</option>
+                    <option value="TBDMS">TBDMS</option><option value="TIPS">TIPS</option><option value="Bz">Bz</option><option value="Bn">Bn</option><option value="Ac">Ac</option>
                 </select>
             </div>
             <div class="toolbar-group">
@@ -1005,3 +673,201 @@ def chemical_drawing_tool():
         updateModeStatus();
     </script>
     """, height=580)
+
+# ─── HEADER ─────────────────────────────────────────────
+def render_header():
+    valid_years = papers['Year'].dropna() if len(papers) > 0 else []
+    topics = papers['Topic'].dropna().unique() if len(papers) > 0 else []
+    
+    st.markdown(f"""
+    <div class="header-wrapper">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-box">
+                    <div class="logo-icon">🧬</div>
+                    <div class="logo-text">CCWang-<span>FizSab</span></div>
+                </div>
+                <div>
+                    <div class="header-title">Glyco<span>Search</span></div>
+                    <div class="header-subtitle">Glycosylation Research · 1,000+ Papers</div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">{len(papers) if len(papers) > 0 else 0}</div>
+                        <div class="stat-label">Papers</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{int(valid_years.min()) if len(valid_years) > 0 else '—'}–{int(valid_years.max()) if len(valid_years) > 0 else '—'}</div>
+                        <div class="stat-label">Years</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{len(topics) if len(topics) > 0 else 0}</div>
+                        <div class="stat-label">Topics</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# ─── MAIN ──────────────────────────────────────────────
+if len(papers) == 0:
+    st.warning("📁 Upload your Excel file to get started")
+    uploaded = st.file_uploader("Choose Excel file", type=['xlsx'])
+    if uploaded:
+        papers = pd.read_excel(uploaded, sheet_name='All Papers')
+        st.rerun()
+else:
+    render_header()
+    
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "🔍 Search",
+        "📊 Analytics",
+        "📚 Methods", 
+        "🧪 Draw"
+    ])
+
+    # ─── TAB 1: SEARCH ────────────────────────────────
+    with tab1:
+        st.markdown("""
+        <div class="search-wrapper">
+            <p style="font-family:'Inter',sans-serif;font-weight:500;font-size:0.95rem;color:#0f172a;margin-bottom:0.5rem;">
+                🔎 Find papers by keyword
+            </p>
+        """, unsafe_allow_html=True)
+        
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            keyword = st.text_input("", placeholder="e.g. NIS, sialic acid, Koenigs-Knorr, thioglycoside", label_visibility="collapsed")
+        with col2:
+            max_results = st.selectbox("Show", [10, 20, 50, 100], index=0, label_visibility="collapsed")
+        
+        topics_list = ['All Topics'] + sorted(papers['Topic'].dropna().unique().tolist())
+        selected_topic = st.selectbox("Filter by Topic", topics_list, index=0)
+        
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        if keyword:
+            kw = keyword.lower()
+            mask = (papers['Title'].astype(str).str.lower().str.contains(kw, na=False) | 
+                    papers['Abstract'].astype(str).str.lower().str.contains(kw, na=False))
+            
+            if selected_topic != 'All Topics':
+                mask = mask & (papers['Topic'] == selected_topic)
+            
+            results = papers[mask].copy()
+            
+            st.markdown(f"""
+            <p style="font-family:'Inter',sans-serif;font-weight:500;font-size:1rem;color:#0f172a;">
+                📊 Found <strong>{len(results)}</strong> papers
+            </p>
+            """, unsafe_allow_html=True)
+            
+            if len(results) == 0:
+                st.info("No matches found. Try different keywords.")
+            else:
+                for _, row in results.head(max_results).iterrows():
+                    title = str(row.get('Title', 'No title'))
+                    year = str(row.get('Year', '?'))
+                    journal = str(row.get('Journal', '?'))
+                    topic = str(row.get('Topic', '?'))
+                    abstract = str(row.get('Abstract', ''))
+                    
+                    with st.expander(f"📄 {title[:100]}{'...' if len(title) > 100 else ''}", expanded=False):
+                        st.markdown(f"""
+                        <div class="result-card">
+                            <div class="result-title">{title}</div>
+                            <div class="result-meta">
+                                <span class="badge badge-year">📅 {year}</span>
+                                <span class="badge badge-topic">📂 {topic}</span>
+                                <span class="badge badge-journal">📖 {journal}</span>
+                            </div>
+                            {f'<div class="result-abstract">{abstract[:500]}...</div>' if len(abstract) > 10 else ''}
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        url = row.get('URL', '#')
+                        if url != '#':
+                            st.markdown(f"[🔗 View in PubMed]({url})")
+
+    # ─── TAB 2: ANALYTICS ──────────────────────────────
+    with tab2:
+        st.markdown("### 📊 Research Analytics")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**📅 Publications by Year**")
+            year_counts = papers['Year'].value_counts().sort_index()
+            if len(year_counts) > 0:
+                st.bar_chart(year_counts)
+        
+        with col2:
+            st.markdown("**📂 Papers by Topic**")
+            topic_counts = papers['Topic'].value_counts()
+            if len(topic_counts) > 0:
+                st.bar_chart(topic_counts.head(10))
+        
+        st.markdown("---")
+        st.markdown("**🏆 Top Journals**")
+        journal_counts = papers['Journal'].value_counts().head(10)
+        if len(journal_counts) > 0:
+            st.dataframe(
+                journal_counts.reset_index().rename(columns={'index': 'Journal', 'Journal': 'Count'}),
+                use_container_width=True,
+                hide_index=True
+            )
+
+    # ─── TAB 3: METHODS ─────────────────────────────────
+    with tab3:
+        st.markdown("### 📚 Glycosylation Methods Reference")
+        
+        methods_data = {
+            "Method": ["Koenigs-Knorr", "Schmidt (imidate)", "Thioglycoside", "Glycosyl phosphate", 
+                       "Glycosyl fluoride", "Sulfoxide (Kahne)", "n-Pentenyl", "Glycosyl boronate"],
+            "Donor": ["Glycosyl halide (Br/Cl)", "Trichloroacetimidate", "S-Ph or S-Et glycoside", 
+                      "Diphenyl phosphate", "Glycosyl fluoride", "Glycosyl sulfoxide", 
+                      "n-Pentenyl glycoside", "Boronic acid derivative"],
+            "Activator": ["Ag₂O, Ag₂CO₃, AgOTf", "BF₃·Et₂O or TMSOTf", "NIS/TfOH or DMTST", "TMSOTf", 
+                          "Cp₂HfCl₂/AgClO₄", "Tf₂O", "NIS/Et₃SiOTf", "None (metal-free)"],
+            "Selectivity": ["α or β (NGP)", "β (C2-acyl)", "Tunable α/β", "β-selective", 
+                            "Varies", "α possible", "Varies", "β-selective"],
+            "Temp": ["0°C to RT", "−40°C to RT", "−78°C to RT", "−78°C", 
+                     "RT", "−78°C", "−10°C", "RT"]
+        }
+        st.dataframe(pd.DataFrame(methods_data), use_container_width=True, hide_index=True)
+        
+        st.markdown("---")
+        st.markdown("### 📖 Common Terminology")
+        terms = {
+            "NGP": "Neighboring Group Participation - using an acyl group at C2 to direct β-selectivity",
+            "TMSOTf": "Trimethylsilyl trifluoromethanesulfonate - common Lewis acid activator",
+            "NIS": "N-Iodosuccinimide - thiophilic activator for thioglycosides",
+            "DMTST": "Dimethyl(methylthio)sulfonium triflate - thiophilic activator",
+            "1,2-cis": "The newly formed glycosidic bond is on the same side as the C2 substituent",
+            "1,2-trans": "The newly formed glycosidic bond is on the opposite side from the C2 substituent"
+        }
+        for term, definition in terms.items():
+            st.markdown(f"**{term}:** {definition}")
+
+    # ─── TAB 4: DRAW ────────────────────────────────────
+    with tab4:
+        st.markdown("### 🧪 Chemical Structure Editor")
+        st.markdown("""
+        <p style="font-family:'Inter',sans-serif;font-size:0.9rem;color:#64748b;margin-bottom:1rem;">
+            Select an atom type, then click to add or replace atoms. Click "Replace Atom" to change existing atoms.
+        </p>
+        """, unsafe_allow_html=True)
+        
+        chemical_drawing_tool()
+
+# ─── FOOTER ─────────────────────────────────────────────
+st.markdown("""
+<div class="footer">
+    🧬 GlycoSearch · Built with Streamlit · 
+    <a href="https://github.com/FizzaSab/GlycoAgent" target="_blank">GitHub</a> · 
+    CCWang-FizSab · 2026
+</div>
+""", unsafe_allow_html=True)
