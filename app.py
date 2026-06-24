@@ -15,10 +15,7 @@ st.set_page_config(
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-    
-    .stApp {
-        background: #f8fafc;
-    }
+    .stApp { background: #f8fafc; }
     
     .header-wrapper {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
@@ -28,17 +25,6 @@ st.markdown("""
         box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15);
         position: relative;
         overflow: hidden;
-    }
-    
-    .header-wrapper::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -10%;
-        width: 500px;
-        height: 500px;
-        background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
-        border-radius: 50%;
     }
     
     .header-content {
@@ -54,11 +40,7 @@ st.markdown("""
         gap: 1rem;
     }
     
-    .header-left {
-        display: flex;
-        align-items: center;
-        gap: 1.2rem;
-    }
+    .header-left { display: flex; align-items: center; gap: 1.2rem; }
     
     .logo-box {
         display: flex;
@@ -73,26 +55,13 @@ st.markdown("""
     
     .logo-icon {
         font-size: 2.2rem;
-        line-height: 1;
         background: linear-gradient(135deg, #818cf8, #c084fc);
         padding: 0.4rem 0.6rem;
         border-radius: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
     
-    .logo-text {
-        font-family: 'Inter', sans-serif;
-        font-weight: 700;
-        font-size: 0.95rem;
-        color: #ffffff;
-        letter-spacing: 0.02em;
-    }
-    
-    .logo-text span {
-        color: #a78bfa;
-    }
+    .logo-text { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.95rem; color: #ffffff; }
+    .logo-text span { color: #a78bfa; }
     
     .header-title {
         font-family: 'Inter', sans-serif;
@@ -119,12 +88,7 @@ st.markdown("""
         letter-spacing: 0.02em;
     }
     
-    .header-right {
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-        flex-wrap: wrap;
-    }
+    .header-right { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
     
     .header-stats {
         display: flex;
@@ -136,26 +100,9 @@ st.markdown("""
         border: 1px solid rgba(255, 255, 255, 0.06);
     }
     
-    .stat-item {
-        text-align: center;
-    }
-    
-    .stat-number {
-        font-family: 'Inter', sans-serif;
-        font-weight: 700;
-        font-size: 1.1rem;
-        color: #ffffff;
-        letter-spacing: -0.01em;
-    }
-    
-    .stat-label {
-        font-family: 'Inter', sans-serif;
-        font-weight: 400;
-        font-size: 0.65rem;
-        color: rgba(255, 255, 255, 0.35);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-    }
+    .stat-item { text-align: center; }
+    .stat-number { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.1rem; color: #ffffff; }
+    .stat-label { font-family: 'Inter', sans-serif; font-weight: 400; font-size: 0.65rem; color: rgba(255, 255, 255, 0.35); text-transform: uppercase; letter-spacing: 0.08em; }
     
     .stTabs [data-baseweb="tab-list"] {
         gap: 0.3rem;
@@ -176,14 +123,9 @@ st.markdown("""
         border-radius: 14px;
         transition: all 0.25s ease;
         background: transparent;
-        letter-spacing: 0.01em;
     }
     
-    .stTabs [data-baseweb="tab"]:hover {
-        background: #f1f5f9;
-        color: #0f172a;
-    }
-    
+    .stTabs [data-baseweb="tab"]:hover { background: #f1f5f9; color: #0f172a; }
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
         background: #0f172a;
         color: #ffffff;
@@ -209,18 +151,8 @@ st.markdown("""
         transition: all 0.25s ease;
     }
     
-    .result-card:hover {
-        border-color: #c7d2fe;
-        box-shadow: 0 4px 20px rgba(99, 102, 241, 0.06);
-        transform: translateY(-1px);
-    }
-    
-    .result-title {
-        font-family: 'Inter', sans-serif;
-        font-weight: 600;
-        font-size: 1.05rem;
-        color: #0f172a;
-    }
+    .result-card:hover { border-color: #c7d2fe; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.06); transform: translateY(-1px); }
+    .result-title { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 1.05rem; color: #0f172a; }
     
     .result-meta {
         font-family: 'Inter', sans-serif;
@@ -233,13 +165,7 @@ st.markdown("""
         align-items: center;
     }
     
-    .badge {
-        display: inline-block;
-        padding: 0.15rem 0.7rem;
-        border-radius: 100px;
-        font-size: 0.7rem;
-        font-weight: 500;
-    }
+    .badge { display: inline-block; padding: 0.15rem 0.7rem; border-radius: 100px; font-size: 0.7rem; font-weight: 500; }
     .badge-year { background: #f1f5f9; color: #475569; }
     .badge-topic { background: #eef2ff; color: #4f46e5; }
     .badge-journal { background: #fce7f3; color: #be185d; }
@@ -272,10 +198,7 @@ st.markdown("""
         .header-content { flex-direction: column; align-items: flex-start; padding: 0 1rem; }
         .header-stats { flex-wrap: wrap; gap: 1rem; padding: 0.5rem 1rem; border-radius: 16px; }
         .header-title { font-size: 1.5rem; }
-        .logo-box { padding: 0.3rem 0.8rem; }
-        .logo-text { font-size: 0.75rem; }
         .stTabs [data-baseweb="tab"] { font-size: 0.85rem !important; padding: 0.5rem 1rem !important; }
-        .stTabs [data-baseweb="tab-list"] { padding: 0.3rem; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -297,8 +220,8 @@ papers = load_data()
 def chemical_drawing_tool():
     components.html("""
     <style>
-        .draw-toolbar { display: flex; gap: 6px; padding: 10px 0; flex-wrap: wrap; align-items: center; }
-        .draw-toolbar button { padding: 6px 14px; border: none; border-radius: 6px; background: #eef2f6; color: #0f172a; cursor: pointer; font-size: 13px; font-family: 'Inter', sans-serif; font-weight: 500; transition: all 0.2s; }
+        .draw-toolbar { display: flex; gap: 4px; padding: 8px 0; flex-wrap: wrap; align-items: center; }
+        .draw-toolbar button { padding: 5px 12px; border: none; border-radius: 6px; background: #eef2f6; color: #0f172a; cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; font-weight: 500; transition: all 0.2s; }
         .draw-toolbar button:hover { background: #e2e8f0; }
         .draw-toolbar button.active { background: #0f172a; color: white; }
         .draw-toolbar button.danger { background: #fee2e2; color: #991b1b; }
@@ -307,16 +230,23 @@ def chemical_drawing_tool():
         .draw-toolbar button.success:hover { background: #bbf7d0; }
         .draw-toolbar button.warning { background: #fef3c7; color: #92400e; }
         .draw-toolbar button.warning:hover { background: #fde68a; }
-        .draw-toolbar select { padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 13px; font-family: 'Inter', sans-serif; background: white; }
+        .draw-toolbar button.info { background: #dbeafe; color: #1e40af; }
+        .draw-toolbar button.info:hover { background: #bfdbfe; }
+        .draw-toolbar button.purple { background: #f3e8ff; color: #6b21a8; }
+        .draw-toolbar button.purple:hover { background: #e9d5ff; }
+        .draw-toolbar select { padding: 5px 10px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 12px; font-family: 'Inter', sans-serif; background: white; }
         #canvas { border: 2px solid #e2e8f0; background: white; border-radius: 12px; cursor: crosshair; width: 100%; height: auto; }
         #smiles-output { width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; margin-top: 10px; font-family: monospace; font-size: 13px; }
-        .mode-status { padding: 4px 14px; border-radius: 100px; font-size: 12px; font-weight: 500; font-family: 'Inter', sans-serif; display: inline-block; }
+        .mode-status { padding: 3px 12px; border-radius: 100px; font-size: 11px; font-weight: 500; font-family: 'Inter', sans-serif; display: inline-block; }
         .mode-draw { background: #dcfce7; color: #166534; }
         .mode-replace { background: #fef3c7; color: #92400e; }
         .mode-delete { background: #fee2e2; color: #991b1b; }
-        .draw-info { color: #94a3b8; font-size: 12px; font-family: 'Inter', sans-serif; margin-top: 6px; }
-        .toolbar-group { display: flex; gap: 4px; align-items: center; background: #f8fafc; padding: 4px 10px; border-radius: 8px; }
-        .toolbar-label { font-size: 11px; color: #94a3b8; font-weight: 600; margin-right: 4px; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
+        .mode-select { background: #dbeafe; color: #1e40af; }
+        .mode-eraser { background: #fce4ec; color: #880e4f; }
+        .draw-info { color: #94a3b8; font-size: 11px; font-family: 'Inter', sans-serif; margin-top: 4px; }
+        .toolbar-group { display: flex; gap: 3px; align-items: center; background: #f8fafc; padding: 3px 8px; border-radius: 8px; }
+        .toolbar-label { font-size: 10px; color: #94a3b8; font-weight: 600; margin-right: 3px; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
+        .bond-type-indicator { font-size: 11px; color: #64748b; padding: 2px 8px; background: #f1f5f9; border-radius: 4px; }
     </style>
     <div>
         <div class="draw-toolbar">
@@ -325,8 +255,9 @@ def chemical_drawing_tool():
                 <button id="btn-draw" class="active">✏️ Atom</button>
                 <button id="btn-replace" class="warning">🔄 Replace</button>
                 <button id="btn-line">🔗 Bond</button>
-                <button id="btn-benzene">⬡ Benzene</button>
-                <button id="btn-delete-bond" class="danger">✖️ Delete</button>
+                <button id="btn-eraser" class="danger">🧹 Eraser</button>
+                <button id="btn-select" class="info">⬜ Select</button>
+                <button id="btn-benzene" class="purple">⬡ Benzene</button>
             </div>
             <div class="toolbar-group">
                 <span class="toolbar-label">Atom</span>
@@ -336,20 +267,31 @@ def chemical_drawing_tool():
                     <option value="Br">Br</option><option value="I">I</option>
                     <option value="OH">OH</option><option value="OMe">OMe</option><option value="OBn">OBn</option><option value="OBz">OBz</option>
                     <option value="OAc">OAc</option><option value="N3">N3</option><option value="NH2">NH2</option><option value="OTs">OTs</option>
-                    <option value="TBDMS">TBDMS</option><option value="TIPS">TIPS</option><option value="Bz">Bz</option><option value="Bn">Bn</option><option value="Ac">Ac</option>
+                    <option value="STol">STol</option>
+                    <option value="TBDMS">TBDMS</option><option value="TIPS">TIPS</option>
+                    <option value="Bz">Bz</option><option value="Bn">Bn</option><option value="Ac">Ac</option>
                 </select>
+            </div>
+            <div class="toolbar-group">
+                <span class="toolbar-label">Bond</span>
+                <button id="btn-single-bond" class="active">─</button>
+                <button id="btn-double-bond">═</button>
+                <button id="btn-triple-bond">≡</button>
             </div>
             <div class="toolbar-group">
                 <button id="btn-undo">↩️ Undo</button>
                 <button id="btn-clear" class="danger">🗑️ Clear</button>
-                <button id="btn-smiles" class="success">📋 Get SMILES</button>
+                <button id="btn-smiles" class="success">📋 SMILES</button>
             </div>
         </div>
-        <div style="display:flex; gap:12px; margin-bottom:8px; align-items:center; flex-wrap:wrap;">
+        <div style="display:flex; gap:10px; margin-bottom:6px; align-items:center; flex-wrap:wrap;">
             <span id="mode-status" class="mode-status mode-draw">✏️ Draw Mode</span>
-            <span class="draw-info">💡 Click to add atom • Replace mode: click atom to change • Right-click to delete</span>
+            <span class="bond-type-indicator" id="bond-type-indicator">Bond: Single</span>
+            <span class="draw-info">💡 Click atom to add • Eraser: click to remove • Select: drag box + Delete key</span>
         </div>
-        <canvas id="canvas" width="700" height="450"></canvas>
+        <div style="position:relative;">
+            <canvas id="canvas" width="750" height="480"></canvas>
+        </div>
         <input id="smiles-output" placeholder="SMILES will appear here...">
     </div>
     <script>
@@ -359,8 +301,14 @@ def chemical_drawing_tool():
         let atoms = [], bonds = [], history = [];
         let tool = 'draw';
         let selectedAtom = 'C';
+        let bondType = 1; // 1=single, 2=double, 3=triple
         let deleteBondMode = false;
         let replaceMode = false;
+        let selectMode = false;
+        let eraserMode = false;
+        let selectionStart = null;
+        let selectionEnd = null;
+        let selectedAtoms = [];
         const MAX_HISTORY = 30;
         let atomIdCounter = 0;
 
@@ -374,26 +322,27 @@ def chemical_drawing_tool():
                 'S': '#FFFF30', 'P': '#FF8000', 'F': '#90E050', 'Cl': '#1FF01F',
                 'Br': '#A62929', 'I': '#940094', 'OH': '#FF0000', 'OMe': '#CD5C5C',
                 'OBn': '#8B4513', 'OBz': '#8B6914', 'OAc': '#CD853F', 'N3': '#4169E1',
-                'NH2': '#4169E1', 'OTs': '#DAA520', 'TBDMS': '#2E8B57', 'TIPS': '#2E8B57',
-                'Bz': '#8B6914', 'Bn': '#8B4513', 'Ac': '#CD853F'
+                'NH2': '#4169E1', 'OTs': '#DAA520', 'STol': '#8B008B', 
+                'TBDMS': '#2E8B57', 'TIPS': '#2E8B57', 'Bz': '#8B6914', 'Bn': '#8B4513', 'Ac': '#CD853F'
             };
             return colors[label] || '#333333';
         }
 
-        function drawAtom(x, y, label, highlight) {
-            const radius = highlight ? 22 : 18;
+        function drawAtom(x, y, label, highlight, selected) {
+            const radius = selected ? 24 : (highlight ? 22 : 18);
             const color = getAtomColor(label);
             if (highlight) { ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 15; }
+            if (selected) { ctx.shadowColor = '#3b82f6'; ctx.shadowBlur = 20; }
             ctx.beginPath();
             ctx.arc(x, y, radius, 0, Math.PI*2);
-            ctx.fillStyle = color;
+            ctx.fillStyle = selected ? '#93c5fd' : color;
             ctx.fill();
             ctx.shadowBlur = 0;
-            ctx.strokeStyle = highlight ? '#f59e0b' : '#333';
-            ctx.lineWidth = highlight ? 3 : 2;
+            ctx.strokeStyle = selected ? '#2563eb' : (highlight ? '#f59e0b' : '#333');
+            ctx.lineWidth = selected ? 4 : (highlight ? 3 : 2);
             ctx.stroke();
             if (label) {
-                ctx.fillStyle = 'white';
+                ctx.fillStyle = selected ? '#1e3a5f' : 'white';
                 ctx.font = 'bold 11px Inter, Arial, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -401,13 +350,48 @@ def chemical_drawing_tool():
             }
         }
 
-        function drawBond(x1, y1, x2, y2, highlight) {
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.strokeStyle = highlight ? '#ef4444' : '#333';
-            ctx.lineWidth = highlight ? 6 : 3;
-            ctx.stroke();
+        function drawBond(x1, y1, x2, y2, type, highlight) {
+            const color = highlight ? '#ef4444' : '#333';
+            const offset = 6;
+            const dx = x2 - x1, dy = y2 - y1;
+            const len = Math.hypot(dx, dy);
+            if (len === 0) return;
+            const nx = -dy / len, ny = dx / len;
+            
+            if (type === 1 || type === undefined) {
+                // Single bond
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = highlight ? 6 : 3;
+                ctx.stroke();
+            } else if (type === 2) {
+                // Double bond
+                for (let d = -1; d <= 1; d += 2) {
+                    const ox = d * offset * nx;
+                    const oy = d * offset * ny;
+                    ctx.beginPath();
+                    ctx.moveTo(x1 + ox, y1 + oy);
+                    ctx.lineTo(x2 + ox, y2 + oy);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = highlight ? 6 : 3;
+                    ctx.stroke();
+                }
+            } else if (type === 3) {
+                // Triple bond
+                for (let d = -1; d <= 1; d++) {
+                    const ox = d * offset * nx;
+                    const oy = d * offset * ny;
+                    ctx.beginPath();
+                    ctx.moveTo(x1 + ox, y1 + oy);
+                    ctx.lineTo(x2 + ox, y2 + oy);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = highlight ? 6 : 2;
+                    ctx.stroke();
+                }
+            }
+            
             if (highlight) {
                 const mx = (x1+x2)/2, my = (y1+y2)/2;
                 ctx.strokeStyle = '#ef4444';
@@ -421,31 +405,64 @@ def chemical_drawing_tool():
         }
 
         function drawBenzene(x, y) {
-            const size = 45;
-            const pts = [0,60,120,180,240,300].map(d => ({
+            const size = 50;
+            const angles = [0, 60, 120, 180, 240, 300];
+            const pts = angles.map(d => ({
                 x: x + size * Math.cos(d * Math.PI / 180),
                 y: y + size * Math.sin(d * Math.PI / 180)
             }));
-            for (let i=0; i<6; i++) {
-                let j=(i+1)%6;
-                drawBond(pts[i].x, pts[i].y, pts[j].x, pts[j].y);
-            }
-            for (let i=0; i<6; i++) {
-                const label = i%2===0 ? 'CH₂' : 'CH';
-                const color = getAtomColor('C');
+            
+            for (let i = 0; i < 6; i++) {
+                let j = (i + 1) % 6;
+                // Single bond
                 ctx.beginPath();
-                ctx.arc(pts[i].x, pts[i].y, 18, 0, Math.PI*2);
+                ctx.moveTo(pts[i].x, pts[i].y);
+                ctx.lineTo(pts[j].x, pts[j].y);
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // Double bond on alternating sides
+                if (i % 2 === 0) {
+                    const midX = (pts[i].x + pts[j].x) / 2;
+                    const midY = (pts[i].y + pts[j].y) / 2;
+                    const angle = Math.atan2(pts[j].y - pts[i].y, pts[j].x - pts[i].x);
+                    const perpAngle = angle + Math.PI / 2;
+                    const offset = 8;
+                    
+                    for (let d = -1; d <= 1; d += 2) {
+                        const dx = d * offset * Math.cos(perpAngle);
+                        const dy = d * offset * Math.sin(perpAngle);
+                        const sx = midX + dx - 22 * Math.cos(angle);
+                        const sy = midY + dy - 22 * Math.sin(angle);
+                        const ex = midX + dx + 22 * Math.cos(angle);
+                        const ey = midY + dy + 22 * Math.sin(angle);
+                        ctx.beginPath();
+                        ctx.moveTo(sx, sy);
+                        ctx.lineTo(ex, ey);
+                        ctx.strokeStyle = '#333';
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+                    }
+                }
+            }
+            
+            for (let i = 0; i < 6; i++) {
+                const color = getAtomColor('C');
+                const radius = 18;
+                ctx.beginPath();
+                ctx.arc(pts[i].x, pts[i].y, radius, 0, Math.PI*2);
                 ctx.fillStyle = color;
                 ctx.fill();
                 ctx.strokeStyle = '#333';
                 ctx.lineWidth = 2;
                 ctx.stroke();
                 ctx.fillStyle = 'white';
-                ctx.font = 'bold 11px Inter, Arial, sans-serif';
+                ctx.font = 'bold 12px Inter, Arial, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(label, pts[i].x, pts[i].y);
-                atoms.push({x: pts[i].x, y: pts[i].y, label: label, id: atomIdCounter++});
+                ctx.fillText('C', pts[i].x, pts[i].y);
+                atoms.push({x: pts[i].x, y: pts[i].y, label: 'C', id: atomIdCounter++});
             }
         }
 
@@ -474,8 +491,15 @@ def chemical_drawing_tool():
             return nearest;
         }
 
+        function getAtomsInRect(x1, y1, x2, y2) {
+            const minX = Math.min(x1, x2), maxX = Math.max(x1, x2);
+            const minY = Math.min(y1, y2), maxY = Math.max(y1, y2);
+            return atoms.filter(a => a.x >= minX && a.x <= maxX && a.y >= minY && a.y <= maxY);
+        }
+
         function drawAll() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Grid
             ctx.strokeStyle = '#f1f5f9';
             ctx.lineWidth = 0.5;
             for (let x=0; x<=canvas.width; x+=30) {
@@ -484,12 +508,29 @@ def chemical_drawing_tool():
             for (let y=0; y<=canvas.height; y+=30) {
                 ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke();
             }
-            bonds.forEach(b => drawBond(b.x1,b.y1,b.x2,b.y2,false));
-            atoms.forEach(a => drawAtom(a.x,a.y,a.label,false));
+            bonds.forEach(b => drawBond(b.x1,b.y1,b.x2,b.y2,b.type||1,false));
+            atoms.forEach(a => {
+                const sel = selectedAtoms.some(s => s.id === a.id);
+                drawAtom(a.x,a.y,a.label,false,sel);
+            });
+            // Selection box
+            if (selectMode && selectionStart && selectionEnd) {
+                const x = Math.min(selectionStart.x, selectionEnd.x);
+                const y = Math.min(selectionStart.y, selectionEnd.y);
+                const w = Math.abs(selectionStart.x - selectionEnd.x);
+                const h = Math.abs(selectionStart.y - selectionEnd.y);
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.strokeRect(x, y, w, h);
+                ctx.setLineDash([]);
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+                ctx.fillRect(x, y, w, h);
+            }
         }
 
         function saveState() {
-            history.push(JSON.parse(JSON.stringify({atoms,bonds})));
+            history.push(JSON.parse(JSON.stringify({atoms, bonds})));
             if (history.length > MAX_HISTORY) history.shift();
         }
 
@@ -503,13 +544,21 @@ def chemical_drawing_tool():
 
         function updateModeStatus() {
             const status = document.getElementById('mode-status');
-            if (replaceMode) {
+            if (eraserMode) {
+                status.className = 'mode-status mode-eraser';
+                status.textContent = '🧹 Eraser Mode (click to remove)';
+                canvas.style.cursor = 'not-allowed';
+            } else if (selectMode) {
+                status.className = 'mode-status mode-select';
+                status.textContent = '⬜ Select Mode (drag to select, Delete key to remove)';
+                canvas.style.cursor = 'default';
+            } else if (replaceMode) {
                 status.className = 'mode-status mode-replace';
                 status.textContent = '🔄 Replace Mode (click atom)';
                 canvas.style.cursor = 'pointer';
             } else if (deleteBondMode) {
                 status.className = 'mode-status mode-delete';
-                status.textContent = '✖️ Delete Mode (click bond)';
+                status.textContent = '✖️ Delete Bond Mode (click bond)';
                 canvas.style.cursor = 'crosshair';
             } else {
                 status.className = 'mode-status mode-draw';
@@ -518,8 +567,42 @@ def chemical_drawing_tool():
             }
         }
 
+        // ─── CANVAS EVENTS ────────────────────────────────
         canvas.onmousedown = function(e) {
             const pos = getPos(e);
+            
+            // Eraser mode - click to delete atom or bond
+            if (eraserMode) {
+                // Check if clicking on an atom
+                const atom = findNearestAtom(pos.x, pos.y);
+                if (atom) {
+                    saveState();
+                    atoms = atoms.filter(a => a !== atom);
+                    bonds = bonds.filter(b => b.x1 !== atom.x || b.y1 !== atom.y);
+                    bonds = bonds.filter(b => b.x2 !== atom.x || b.y2 !== atom.y);
+                    drawAll();
+                    return;
+                }
+                // Check if clicking on a bond
+                const bond = findNearestBond(pos.x, pos.y);
+                if (bond) {
+                    saveState();
+                    bonds = bonds.filter(b => b !== bond);
+                    drawAll();
+                }
+                return;
+            }
+            
+            // Select mode
+            if (selectMode) {
+                selectionStart = pos;
+                selectionEnd = pos;
+                selectedAtoms = [];
+                drawAll();
+                return;
+            }
+            
+            // Replace mode
             if (replaceMode) {
                 const atom = findNearestAtom(pos.x, pos.y);
                 if (atom) {
@@ -531,6 +614,8 @@ def chemical_drawing_tool():
                 }
                 return;
             }
+            
+            // Delete bond mode
             if (deleteBondMode) {
                 const bond = findNearestBond(pos.x, pos.y);
                 if (bond) {
@@ -540,6 +625,8 @@ def chemical_drawing_tool():
                 }
                 return;
             }
+            
+            // Right click = delete atom
             if (e.button === 2) {
                 const atom = findNearestAtom(pos.x, pos.y);
                 if (atom) {
@@ -551,6 +638,7 @@ def chemical_drawing_tool():
                 }
                 return;
             }
+            
             if (tool === 'draw') {
                 saveState();
                 atoms.push({x: pos.x, y: pos.y, label: selectedAtom, id: atomIdCounter++});
@@ -568,32 +656,64 @@ def chemical_drawing_tool():
 
         canvas.onmousemove = function(e) {
             const pos = getPos(e);
+            
+            if (selectMode && selectionStart) {
+                selectionEnd = pos;
+                drawAll();
+                const selected = getAtomsInRect(selectionStart.x, selectionStart.y, pos.x, pos.y);
+                selectedAtoms = selected;
+                selected.forEach(a => drawAtom(a.x, a.y, a.label, false, true));
+                return;
+            }
+            
             if (isDrawing && tool === 'line') {
                 drawAll();
-                drawBond(lastX, lastY, pos.x, pos.y, false);
+                drawBond(lastX, lastY, pos.x, pos.y, bondType, false);
             }
             if (replaceMode) {
                 canvas.style.cursor = findNearestAtom(pos.x, pos.y) ? 'pointer' : 'default';
             }
+            if (eraserMode) {
+                const atom = findNearestAtom(pos.x, pos.y);
+                const bond = findNearestBond(pos.x, pos.y);
+                canvas.style.cursor = (atom || bond) ? 'pointer' : 'not-allowed';
+            }
         };
 
         canvas.onmouseup = function(e) {
+            // Select mode - finish selection
+            if (selectMode && selectionStart) {
+                const pos = getPos(e);
+                const selected = getAtomsInRect(selectionStart.x, selectionStart.y, pos.x, pos.y);
+                selectedAtoms = selected;
+                drawAll();
+                selected.forEach(a => drawAtom(a.x, a.y, a.label, false, true));
+                if (selected.length > 0) {
+                    // Highlight the selection
+                    document.getElementById('mode-status').textContent = `✅ ${selected.length} atoms selected. Press Delete to remove.`;
+                }
+                selectionStart = null;
+                selectionEnd = null;
+                return;
+            }
+            
+            // Line drawing
             if (isDrawing && tool === 'line') {
                 const pos = getPos(e);
                 saveState();
                 let endAtom = findNearestAtom(pos.x, pos.y);
                 let startAtom = findNearestAtom(lastX, lastY);
                 if (startAtom && endAtom && startAtom !== endAtom) {
-                    bonds.push({x1: startAtom.x, y1: startAtom.y, x2: endAtom.x, y2: endAtom.y});
+                    bonds.push({x1: startAtom.x, y1: startAtom.y, x2: endAtom.x, y2: endAtom.y, type: bondType});
                 } else if (startAtom) {
                     const na = {x: pos.x, y: pos.y, label: selectedAtom, id: atomIdCounter++};
                     atoms.push(na);
-                    bonds.push({x1: startAtom.x, y1: startAtom.y, x2: na.x, y2: na.y});
+                    bonds.push({x1: startAtom.x, y1: startAtom.y, x2: na.x, y2: na.y, type: bondType});
                 } else {
                     const a1 = {x: lastX, y: lastY, label: selectedAtom, id: atomIdCounter++};
                     const a2 = {x: pos.x, y: pos.y, label: selectedAtom, id: atomIdCounter++};
                     atoms.push(a1); atoms.push(a2);
-                    bonds.push({x1: a1.x, y1: a1.y, x2: a2.x, y2: a2.y});
+                    bonds.push({x1: a1.x, y1: a1.y, x2: a2.x, y2: a2.y, type: bondType});
                 }
                 drawAll();
                 isDrawing = false;
@@ -602,16 +722,36 @@ def chemical_drawing_tool():
 
         canvas.oncontextmenu = e => e.preventDefault();
 
+        // ─── KEYBOARD SHORTCUTS ────────────────────────────
+        document.addEventListener('keydown', function(e) {
+            if ((e.key === 'Delete' || e.key === 'Backspace') && selectedAtoms.length > 0) {
+                saveState();
+                const ids = selectedAtoms.map(a => a.id);
+                atoms = atoms.filter(a => !ids.includes(a.id));
+                bonds = bonds.filter(b => {
+                    const a1 = atoms.find(a => a.x === b.x1 && a.y === b.y1);
+                    const a2 = atoms.find(a => a.x === b.x2 && a.y === b.y2);
+                    return a1 && a2;
+                });
+                selectedAtoms = [];
+                drawAll();
+                document.getElementById('mode-status').textContent = '🗑️ Deleted selected atoms';
+            }
+        });
+
+        // ─── TOOLBAR BUTTONS ───────────────────────────────
         document.getElementById('btn-draw').onclick = function() {
-            tool = 'draw'; replaceMode = false; deleteBondMode = false;
+            tool = 'draw'; replaceMode = false; deleteBondMode = false; selectMode = false; eraserMode = false;
+            selectionStart = null; selectionEnd = null; selectedAtoms = [];
             document.querySelectorAll('.draw-toolbar button').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             updateModeStatus();
         };
+        
         document.getElementById('btn-replace').onclick = function() {
             replaceMode = !replaceMode;
             if (replaceMode) {
-                deleteBondMode = false;
+                deleteBondMode = false; selectMode = false; eraserMode = false;
                 document.querySelectorAll('.draw-toolbar button').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 tool = 'replace';
@@ -622,24 +762,22 @@ def chemical_drawing_tool():
             }
             updateModeStatus();
         };
+        
         document.getElementById('btn-line').onclick = function() {
-            tool = 'line'; replaceMode = false; deleteBondMode = false;
+            tool = 'line'; replaceMode = false; deleteBondMode = false; selectMode = false; eraserMode = false;
+            selectionStart = null; selectionEnd = null; selectedAtoms = [];
             document.querySelectorAll('.draw-toolbar button').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             updateModeStatus();
         };
-        document.getElementById('btn-benzene').onclick = function() {
-            tool = 'benzene'; replaceMode = false; deleteBondMode = false;
-            document.querySelectorAll('.draw-toolbar button').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            updateModeStatus();
-        };
-        document.getElementById('btn-delete-bond').onclick = function() {
-            deleteBondMode = !deleteBondMode;
-            if (deleteBondMode) {
-                replaceMode = false;
+        
+        document.getElementById('btn-eraser').onclick = function() {
+            eraserMode = !eraserMode;
+            if (eraserMode) {
+                replaceMode = false; deleteBondMode = false; selectMode = false;
                 document.querySelectorAll('.draw-toolbar button').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
+                tool = 'eraser';
             } else {
                 this.classList.remove('active');
                 tool = 'draw';
@@ -647,27 +785,78 @@ def chemical_drawing_tool():
             }
             updateModeStatus();
         };
+        
+        document.getElementById('btn-select').onclick = function() {
+            selectMode = !selectMode;
+            if (selectMode) {
+                replaceMode = false; deleteBondMode = false; eraserMode = false;
+                document.querySelectorAll('.draw-toolbar button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                tool = 'select';
+            } else {
+                this.classList.remove('active');
+                tool = 'draw';
+                document.getElementById('btn-draw').classList.add('active');
+            }
+            updateModeStatus();
+        };
+        
+        document.getElementById('btn-benzene').onclick = function() {
+            tool = 'benzene'; replaceMode = false; deleteBondMode = false; selectMode = false; eraserMode = false;
+            selectionStart = null; selectionEnd = null; selectedAtoms = [];
+            document.querySelectorAll('.draw-toolbar button').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            updateModeStatus();
+        };
+        
+        // Bond type buttons
+        document.getElementById('btn-single-bond').onclick = function() {
+            bondType = 1;
+            document.querySelectorAll('#btn-single-bond, #btn-double-bond, #btn-triple-bond').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('bond-type-indicator').textContent = 'Bond: Single';
+        };
+        document.getElementById('btn-double-bond').onclick = function() {
+            bondType = 2;
+            document.querySelectorAll('#btn-single-bond, #btn-double-bond, #btn-triple-bond').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('bond-type-indicator').textContent = 'Bond: Double';
+        };
+        document.getElementById('btn-triple-bond').onclick = function() {
+            bondType = 3;
+            document.querySelectorAll('#btn-single-bond, #btn-double-bond, #btn-triple-bond').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('bond-type-indicator').textContent = 'Bond: Triple';
+        };
+        
         document.getElementById('btn-undo').onclick = function() {
             if (history.length > 0) {
                 const state = history.pop();
                 atoms = state.atoms; bonds = state.bonds;
+                selectedAtoms = [];
                 drawAll();
             }
         };
+        
         document.getElementById('btn-clear').onclick = function() {
             if (atoms.length > 0 || bonds.length > 0) {
-                saveState();
-                atoms = []; bonds = [];
-                drawAll();
+                if (confirm('Clear everything?')) {
+                    saveState();
+                    atoms = []; bonds = [];
+                    selectedAtoms = [];
+                    drawAll();
+                }
             }
         };
+        
         document.getElementById('btn-smiles').onclick = function() {
-            const sm = atoms.length > 0 ? atoms.map(a => a.label||'C').join('-') : 'No atoms drawn';
-            document.getElementById('smiles-output').value = sm;
+            const sm = atoms.length > 0 ? atoms.map(a => a.label||'C').join('') : 'No atoms drawn';
+            document.getElementById('smiles-output').value = 'SMILES: ' + sm;
             navigator.clipboard.writeText(sm);
         };
 
-        drawBenzene(350, 225);
+        // ─── INIT ──────────────────────────────────────────
+        drawBenzene(375, 240);
         drawAll();
         saveState();
         updateModeStatus();
@@ -857,7 +1046,7 @@ else:
         st.markdown("### 🧪 Chemical Structure Editor")
         st.markdown("""
         <p style="font-family:'Inter',sans-serif;font-size:0.9rem;color:#64748b;margin-bottom:1rem;">
-            Select an atom type, then click to add or replace atoms. Click "Replace Atom" to change existing atoms.
+            <b>Tools:</b> Draw atoms • Single/Double/Triple bonds • Eraser • Select + Delete • Replace atoms • STol leaving group
         </p>
         """, unsafe_allow_html=True)
         
