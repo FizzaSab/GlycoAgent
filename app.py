@@ -4,6 +4,8 @@ import os
 import streamlit.components.v1 as components
 from datetime import datetime
 import csv
+import re
+from collections import defaultdict
 
 # ─── PAGE CONFIG ──────────────────────────────────────────
 st.set_page_config(
@@ -144,39 +146,77 @@ st.markdown("""
         letter-spacing: 0.06em;
     }
     
+    /* ─── ENHANCED TABS ─── */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 0.2rem;
+        gap: 0.3rem;
         background: #ffffff;
-        padding: 0.3rem 0.5rem;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        border: 1px solid #e8ecf2;
-        margin-bottom: 1.2rem;
+        padding: 0.4rem 0.6rem;
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        border: 1px solid #e2e8f0;
+        margin-bottom: 1.5rem;
     }
     
     .stTabs [data-baseweb="tab"] {
         font-family: 'Inter', sans-serif;
-        font-weight: 500;
-        font-size: 0.85rem !important;
-        color: #64748b;
-        padding: 0.4rem 1.2rem !important;
-        border-radius: 8px;
-        transition: all 0.2s ease;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+        color: #1e293b !important;
+        padding: 0.5rem 1.4rem !important;
+        border-radius: 10px !important;
+        transition: all 0.25s ease;
         background: transparent;
+        letter-spacing: 0.01em;
     }
     
     .stTabs [data-baseweb="tab"]:hover {
         background: #f1f5f9;
-        color: #0f172a;
+        color: #0f172a !important;
+        transform: translateY(-1px);
     }
     
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        background: #0f172a;
-        color: #ffffff;
-        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.12);
-        font-weight: 600;
+        background: linear-gradient(135deg, #0f172a, #1e293b) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
+        font-weight: 700 !important;
+        transform: translateY(-2px);
     }
     
+    .stTabs [data-baseweb="tab"] .tab-icon {
+        margin-right: 6px;
+    }
+    
+    /* ─── CLICKABLE EXAMPLE QUESTIONS ─── */
+    .example-question {
+        display: block;
+        padding: 0.6rem 1rem;
+        margin: 0.3rem 0;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        color: #1e293b;
+        text-decoration: none;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .example-question:hover {
+        background: #eef2ff;
+        border-color: #818cf8;
+        transform: translateX(4px);
+        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+    }
+    
+    .example-question .q-icon {
+        margin-right: 8px;
+        color: #6366f1;
+    }
+    
+    /* ─── SEARCH ─── */
     .search-wrapper {
         background: #ffffff;
         padding: 1rem 1.5rem;
@@ -249,6 +289,58 @@ st.markdown("""
         border-top: 1px solid #f1f5f9;
     }
     
+    /* ─── AI CHAT ─── */
+    .ai-answer {
+        background: #ffffff;
+        padding: 1.2rem 1.5rem;
+        border-radius: 14px;
+        border: 2px solid #e2e8f0;
+        margin: 0.5rem 0;
+        border-left: 4px solid #818cf8;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .ai-answer .answer-text {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9rem;
+        color: #0f172a;
+        line-height: 1.7;
+        margin-bottom: 0.8rem;
+    }
+    
+    .ai-answer .ref {
+        font-size: 0.75rem;
+        color: #64748b;
+        background: #f1f5f9;
+        padding: 0.2rem 0.8rem;
+        border-radius: 4px;
+        display: inline-block;
+        margin: 0.2rem 0.2rem;
+    }
+    
+    .ai-answer .ref a {
+        color: #6366f1;
+        text-decoration: none;
+    }
+    
+    .ai-answer .ref a:hover {
+        text-decoration: underline;
+    }
+    
+    .ai-answer .source-count {
+        font-size: 0.7rem;
+        color: #94a3b8;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #f1f5f9;
+    }
+    
+    /* ─── FOOTER ─── */
     .footer-container {
         background: linear-gradient(135deg, #0f172a, #1e293b);
         padding: 1.2rem 0;
@@ -342,47 +434,15 @@ st.markdown("""
         text-decoration: underline;
     }
     
-    /* ─── CLICKABLE LINK STYLES ─── */
-    .clickable-link {
-        color: #818cf8;
-        text-decoration: none;
-        font-weight: 500;
-        transition: color 0.2s;
-    }
-    
-    .clickable-link:hover {
-        color: #c084fc;
-        text-decoration: underline;
-        cursor: pointer;
-    }
-    
-    .contact-link {
-        display: inline-block;
-        padding: 0.3rem 1rem;
-        background: #eef2ff;
-        border-radius: 8px;
-        color: #4f46e5;
-        text-decoration: none;
-        font-family: 'Inter', sans-serif;
-        font-size: 0.85rem;
-        font-weight: 500;
-        transition: all 0.2s;
-        border: 1px solid #c7d2fe;
-    }
-    
-    .contact-link:hover {
-        background: #c7d2fe;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
-    }
-    
+    /* ─── RESPONSIVE ─── */
     @media (max-width: 768px) {
         .header-content { flex-direction: column; align-items: flex-start; padding: 0 1rem; }
         .header-stats { flex-wrap: wrap; gap: 0.5rem; padding: 0.25rem 0.8rem; }
         .header-title { font-size: 1.2rem; }
-        .stTabs [data-baseweb="tab"] { font-size: 0.7rem !important; padding: 0.3rem 0.8rem !important; }
+        .stTabs [data-baseweb="tab"] { font-size: 0.75rem !important; padding: 0.4rem 0.8rem !important; }
     }
     
+    /* ─── ABOUT ─── */
     .about-box {
         background: #ffffff;
         padding: 1.5rem 2rem;
@@ -396,6 +456,34 @@ st.markdown("""
     .about-box .highlight { color: #6366f1; font-weight: 500; }
     .about-box .highlight a { color: #6366f1; text-decoration: none; }
     .about-box .highlight a:hover { text-decoration: underline; }
+    
+    .about-box .clickable-link {
+        color: #6366f1;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .about-box .clickable-link:hover {
+        text-decoration: underline;
+    }
+    
+    /* ─── ANALYTICS - Black Text ─── */
+    .analytics-title {
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #0f172a !important;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* ─── CHAT CONTAINER ─── */
+    .chat-container {
+        background: #ffffff;
+        padding: 1.5rem;
+        border-radius: 14px;
+        border: 1px solid #e8ecf2;
+        min-height: 400px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -411,6 +499,123 @@ def load_data():
     return pd.DataFrame()
 
 papers = load_data()
+
+# ─── RAG KNOWLEDGE ENGINE ──────────────────────────────
+class GlycoKnowledgeEngine:
+    def __init__(self, papers_df):
+        self.papers = papers_df
+        self.index = []
+        self.topic_index = defaultdict(list)
+        self.keyword_index = defaultdict(list)
+        self.build_index()
+    
+    def build_index(self):
+        if len(self.papers) == 0:
+            return
+        
+        for idx, row in self.papers.iterrows():
+            title = str(row.get('Title', ''))
+            abstract = str(row.get('Abstract', ''))
+            year = str(row.get('Year', ''))
+            journal = str(row.get('Journal', ''))
+            topic = str(row.get('Topic', ''))
+            url = str(row.get('URL', ''))
+            
+            clean_title = title.lower()
+            clean_abstract = abstract.lower()
+            clean_topic = topic.lower()
+            terms = re.findall(r'\b[a-z]{3,}\b', f"{clean_title} {clean_abstract} {clean_topic}")
+            
+            paper_data = {
+                'title': title,
+                'abstract': abstract,
+                'year': year,
+                'journal': journal,
+                'topic': topic,
+                'url': url,
+                'text': f"{title} {abstract}",
+                'terms': terms,
+                'row': row
+            }
+            
+            self.index.append(paper_data)
+            if topic:
+                self.topic_index[topic.lower()].append(paper_data)
+            for term in set(terms):
+                if len(term) > 2:
+                    self.keyword_index[term].append(paper_data)
+    
+    def search(self, query, top_n=5):
+        if len(self.index) == 0:
+            return []
+        
+        query_terms = set(re.findall(r'\b[a-z]{3,}\b', query.lower()))
+        scores = []
+        
+        for paper in self.index:
+            matches = sum(1 for t in query_terms if t in paper['terms'])
+            title_boost = sum(1 for t in query_terms if t in paper['title'].lower()) * 2
+            topic_boost = sum(1 for t in query_terms if t in paper['topic'].lower()) * 1.5
+            score = matches + title_boost + topic_boost
+            if score > 0:
+                scores.append((score, paper))
+        
+        scores.sort(key=lambda x: x[0], reverse=True)
+        return [p for _, p in scores[:top_n]]
+    
+    def answer_question(self, question):
+        relevant = self.search(question, top_n=10)
+        
+        if not relevant:
+            return {
+                'answer': "I couldn't find specific information about this in our database.",
+                'references': [],
+                'source_count': 0
+            }
+        
+        key_points = []
+        references = []
+        
+        for paper in relevant[:5]:
+            abstract = paper['abstract']
+            if abstract and len(abstract) > 20:
+                sentences = re.split(r'[.!?]+', abstract)
+                for sent in sentences:
+                    if len(sent.strip()) > 30:
+                        q_words = set(re.findall(r'\b[a-z]{3,}\b', question.lower()))
+                        sent_words = set(re.findall(r'\b[a-z]{3,}\b', sent.lower()))
+                        if len(q_words.intersection(sent_words)) > 1:
+                            key_points.append(sent.strip())
+                            break
+            
+            ref = f"{paper['title']} ({paper['year']}) - {paper['journal']}"
+            if paper['url'] and paper['url'] != '#':
+                ref = f"{paper['title']} ({paper['year']}) - {paper['journal']} [PubMed]({paper['url']})"
+            references.append(ref)
+        
+        if key_points:
+            answer = "Based on the research in our database:\n\n"
+            answer += "• " + "\n• ".join(key_points[:3])
+        else:
+            excerpts = []
+            for paper in relevant[:3]:
+                abstract = paper['abstract']
+                if abstract and len(abstract) > 50:
+                    excerpt = abstract[:300] + "..."
+                    excerpts.append(f"From '{paper['title']}' ({paper['year']}): {excerpt}")
+            
+            if excerpts:
+                answer = "Here's what I found in the literature:\n\n" + "\n\n".join(excerpts)
+            else:
+                answer = "I found some relevant papers but couldn't extract specific sentences. Here are the most relevant titles:\n\n"
+                for paper in relevant[:3]:
+                    answer += f"• {paper['title']} ({paper['year']})\n"
+        
+        return {
+            'answer': answer,
+            'references': references,
+            'source_count': len(relevant)
+        }
 
 # ─── DRAWING TOOL ──────────────────────────────────────
 def chemical_drawing_tool():
@@ -1035,8 +1240,16 @@ if len(papers) == 0:
 else:
     render_header()
     
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    # Initialize knowledge engine
+    @st.cache_resource
+    def get_knowledge_engine():
+        return GlycoKnowledgeEngine(papers)
+    
+    engine = get_knowledge_engine()
+    
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
         "🔍 Search",
+        "💬 Ask AI",
         "📊 Analytics", 
         "📚 Methods",
         "🧪 Draw",
@@ -1105,26 +1318,109 @@ else:
                         if url != '#':
                             st.markdown(f"[🔗 View in PubMed]({url})")
 
-    # ─── TAB 2: ANALYTICS ──────────────────────────────
+    # ─── TAB 2: ASK AI ──────────────────────────────────
     with tab2:
-        st.markdown("### 📊 Research Analytics")
+        st.markdown("### 💬 Ask GlycoAI - Research Assistant")
+        st.markdown("Ask questions about glycosylation research and get answers with references from our database.")
+        
+        # ─── CLICKABLE EXAMPLE QUESTIONS ───
+        st.markdown("#### 💡 Click a question to ask:")
+        
+        example_questions = [
+            "Can environmental effects influence glycosylation?",
+            "What are the best methods for sialic acid activation?",
+            "How does temperature affect glycosylation stereoselectivity?",
+            "What is the role of NIS in thioglycoside activation?",
+            "Compare Koenigs-Knorr and Schmidt glycosylation methods",
+            "What factors influence α/β selectivity?"
+        ]
+        
+        # Create clickable example questions using columns
+        cols = st.columns(2)
+        for i, q in enumerate(example_questions):
+            col_idx = i % 2
+            # Use a button that looks like a clickable card
+            if cols[col_idx].button(
+                f"💡 {q}",
+                key=f"example_{i}",
+                use_container_width=True,
+                type="secondary"
+            ):
+                # Set the question in session state
+                st.session_state['ask_question'] = q
+                st.rerun()
+        
+        # Get question from session state or text input
+        default_question = st.session_state.get('ask_question', '')
+        
+        # Question input
+        question = st.text_area(
+            "Or type your own question:",
+            value=default_question,
+            placeholder="e.g., Can environmental effects influence glycosylation?",
+            height=80
+        )
+        
+        col1, col2 = st.columns([1, 5])
+        with col1:
+            ask_button = st.button("🔍 Ask", type="primary", use_container_width=True)
+        
+        if ask_button and question:
+            with st.spinner("🔬 Searching through all papers..."):
+                result = engine.answer_question(question)
+            
+            # Display answer
+            st.markdown(f"""
+            <div class="ai-answer">
+                <div class="answer-text">{result['answer']}</div>
+                <div class="source-count">📚 Based on {result['source_count']} relevant papers</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Display references
+            if result['references']:
+                st.markdown("**📖 References:**")
+                for ref in result['references']:
+                    st.markdown(f"- {ref}")
+            
+            # Show relevant papers in detail
+            with st.expander("📄 View relevant papers"):
+                relevant = engine.search(question, top_n=5)
+                for paper in relevant:
+                    st.markdown(f"""
+                    **{paper['title']}** ({paper['year']})  
+                    *{paper['journal']}*  
+                    {paper['abstract'][:200]}...
+                    """)
+                    if paper['url'] and paper['url'] != '#':
+                        st.markdown(f"[🔗 Link]({paper['url']})")
+                    st.markdown("---")
+        
+        elif ask_button and not question:
+            st.warning("Please enter a question.")
+
+    # ─── TAB 3: ANALYTICS ──────────────────────────────
+    with tab3:
+        st.markdown('<p class="analytics-title">📊 Research Analytics</p>', unsafe_allow_html=True)
         
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("**📅 Publications by Year**")
+            st.markdown('<p class="analytics-title">📅 Publications by Year</p>', unsafe_allow_html=True)
             year_counts = papers['Year'].value_counts().sort_index()
             if len(year_counts) > 0:
-                st.bar_chart(year_counts)
+                # Custom bar chart with eye-catching color
+                st.bar_chart(year_counts, color='#6366f1')
         
         with col2:
-            st.markdown("**📂 Papers by Topic**")
+            st.markdown('<p class="analytics-title">📂 Papers by Topic</p>', unsafe_allow_html=True)
             topic_counts = papers['Topic'].value_counts()
             if len(topic_counts) > 0:
-                st.bar_chart(topic_counts.head(10))
+                # Custom bar chart with eye-catching color
+                st.bar_chart(topic_counts.head(10), color='#ec4899')
         
         st.markdown("---")
-        st.markdown("**🏆 Top Journals**")
+        st.markdown('<p class="analytics-title">🏆 Top Journals</p>', unsafe_allow_html=True)
         journal_counts = papers['Journal'].value_counts().head(10)
         if len(journal_counts) > 0:
             st.dataframe(
@@ -1133,8 +1429,8 @@ else:
                 hide_index=True
             )
 
-    # ─── TAB 3: METHODS ─────────────────────────────────
-    with tab3:
+    # ─── TAB 4: METHODS ─────────────────────────────────
+    with tab4:
         st.markdown("### 📚 Glycosylation Methods Reference")
         
         methods_data = {
@@ -1165,12 +1461,12 @@ else:
         for term, definition in terms.items():
             st.markdown(f"**{term}:** {definition}")
 
-    # ─── TAB 4: DRAW ────────────────────────────────────
-    with tab4:
+    # ─── TAB 5: DRAW ────────────────────────────────────
+    with tab5:
         chemical_drawing_tool()
 
-    # ─── TAB 5: SETTINGS ────────────────────────────────
-    with tab5:
+    # ─── TAB 6: SETTINGS ────────────────────────────────
+    with tab6:
         st.markdown("### ⚙️ Settings")
         
         col1, col2 = st.columns(2)
@@ -1179,6 +1475,7 @@ else:
             st.markdown("**Data Management**")
             if st.button("🔄 Reload Data"):
                 st.cache_data.clear()
+                st.cache_resource.clear()
                 st.rerun()
             
             st.markdown("**Export**")
@@ -1190,13 +1487,10 @@ else:
             st.markdown("**System Info**")
             st.code(f"Papers: {len(papers)}")
             st.code(f"Topics: {papers['Topic'].nunique() if len(papers) > 0 else 0}")
-            
-            if os.path.exists("feedback.csv"):
-                fb_df = pd.read_csv("feedback.csv")
-                st.metric("📊 Feedback Entries", len(fb_df))
+            st.code(f"Knowledge Index: {len(engine.index)} papers")
 
-    # ─── TAB 6: ABOUT ────────────────────────────────────
-    with tab6:
+    # ─── TAB 7: ABOUT ────────────────────────────────────
+    with tab7:
         st.markdown("### 📋 About GlycoSearch")
         
         st.markdown("""
@@ -1209,6 +1503,15 @@ else:
                 <b>Email:</b> <a href="mailto:wangcc7280@gate.sinica.edu.tw" class="clickable-link">wangcc7280@gate.sinica.edu.tw</a>
             </p>
             <hr>
+            <h4>🤖 AI Research Assistant</h4>
+            <p>
+                GlycoSearch includes an AI-powered research assistant that:
+                <ul>
+                    <li>Reads and understands all papers in the database</li>
+                    <li>Answers questions with relevant references</li>
+                    <li>Helps you find connections between different studies</li>
+                </ul>
+            </p>
             <h4>📄 License</h4>
             <p>MIT License — Free for academic and research use.</p>
             <h4>© Copyright</h4>
