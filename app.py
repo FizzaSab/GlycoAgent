@@ -8,6 +8,7 @@ import re
 from collections import defaultdict
 import altair as alt
 import random
+import json
 
 # ─── PAGE CONFIG ──────────────────────────────────────────
 st.set_page_config(
@@ -260,12 +261,13 @@ st.markdown("""
     /* ─── AI CHAT ─── */
     .ai-answer {
         background: #ffffff;
-        padding: 1.2rem 1.5rem;
-        border-radius: 14px;
+        padding: 1.5rem 1.8rem;
+        border-radius: 16px;
         border: 2px solid #e2e8f0;
         margin: 0.5rem 0;
         border-left: 4px solid #818cf8;
         animation: fadeIn 0.5s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
     
     @keyframes fadeIn {
@@ -275,14 +277,22 @@ st.markdown("""
     
     .ai-answer .answer-text {
         font-family: 'Inter', sans-serif;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
         color: #0f172a;
-        line-height: 1.8;
+        line-height: 1.9;
         margin-bottom: 0.8rem;
     }
     
     .ai-answer .answer-text p {
-        margin: 0.5rem 0;
+        margin: 0.6rem 0;
+    }
+    
+    .ai-answer .answer-text .highlight {
+        background: #eef2ff;
+        padding: 0.1rem 0.3rem;
+        border-radius: 4px;
+        color: #4f46e5;
+        font-weight: 500;
     }
     
     .ai-answer .ref {
@@ -440,6 +450,31 @@ st.markdown("""
         border: 1px solid #e8ecf2;
         min-height: 400px;
     }
+
+    /* ─── WELCOME MESSAGE ─── */
+    .welcome-message {
+        background: linear-gradient(135deg, #eef2ff, #f5f7fb);
+        padding: 1.5rem 2rem;
+        border-radius: 14px;
+        border: 1px solid #c7d2fe;
+        margin: 0.5rem 0;
+    }
+    
+    .welcome-message h4 {
+        color: #0f172a;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        margin: 0 0 0.3rem 0;
+    }
+    
+    .welcome-message p {
+        color: #475569;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.85rem;
+        line-height: 1.6;
+        margin: 0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -456,7 +491,37 @@ def load_data():
 
 papers = load_data()
 
-# ─── RAG KNOWLEDGE ENGINE WITH EXPANDED KNOWLEDGE ──────
+# ─── HUMANIZED RESPONSES ─────────────────────────────────
+HUMANIZED_INTROS = [
+    "That's a really interesting question! Let me share what I've learned from the literature:",
+    "Great question! Here's what I've gathered from our research papers:",
+    "I've been looking into this recently. Here's what I found:",
+    "Wonderful question! Let me walk you through what the literature says:",
+    "That's something we've studied in our lab. Here's our understanding:",
+    "Excellent question! Let me break it down based on the research:",
+    "I've been digging into this topic. Here's what I can tell you:",
+    "This is such a fascinating area of glycoscience! Based on our database:"
+]
+
+HUMANIZED_ENDINGS = [
+    "Hope that helps with your research! Feel free to ask more questions - I really enjoy diving into this stuff! 😊",
+    "Let me know if you'd like me to find specific papers on any of these aspects!",
+    "There's so much more to explore here - happy to chat more anytime!",
+    "I could talk about glycosylation all day! Let me know what else you're curious about.",
+    "That's the beauty of glycoscience - there's always more to discover! What else would you like to know?",
+    "I hope this gives you a good starting point. Let's keep exploring together! 🧬",
+    "This is just scratching the surface - I'd love to explore more with you!",
+    "Thanks for asking such a thoughtful question! Let me know what you think."
+]
+
+FALLBACK_RESPONSES = [
+    "Hmm, that's a tricky one! I don't have enough information in my database yet. Could you ask it differently or try another aspect? I'm always learning! 😊",
+    "I'm not quite sure about that specific question. Maybe we can explore a related topic? I'm here to help!",
+    "That's not something I've come across in my readings yet. I'm constantly learning though - ask me something else!",
+    "I wish I had more information on that! Could you rephrase it or try asking about a different aspect of glycosylation?"
+]
+
+# ─── RAG KNOWLEDGE ENGINE WITH ENHANCED DETAILS ──────
 class GlycoKnowledgeEngine:
     def __init__(self, papers_df):
         self.papers = papers_df
@@ -535,6 +600,10 @@ class GlycoKnowledgeEngine:
                     'C4-participation': 'Less common but can influence selectivity in special cases',
                     'C6-participation': 'Especially relevant for mannopyranose and glucopyranose derivatives with C6 protecting groups',
                     'Remote acetates': 'Can participate to direct selectivity even from positions further away'
+                },
+                'specific_examples': {
+                    'DPPA_group': 'The 2-(diphenylphosphinoyl)acetyl (DPPA) group can act as a remote participating group. Unlike its role as a H-bond acceptor for syn-facial O-glycosylation, the phosphine oxide moiety can function as a remote participating group for highly anti-facial N-glycosylation.',
+                    'pivaloyl_group': 'The pivaloyl (Piv) group at C-3 position exhibits α-directing effects through remote participation, enabling stereoselective glycosylation reactions.'
                 },
                 'factors_affecting': [
                     'Distance from anomeric center',
@@ -719,7 +788,7 @@ class GlycoKnowledgeEngine:
         }
     
     def get_expert_response(self, question_lower):
-        """Get response from expert knowledge base"""
+        """Get response from expert knowledge base with detailed scientific information"""
         response_parts = []
         
         # Check for O-glycosylation questions
@@ -730,15 +799,15 @@ class GlycoKnowledgeEngine:
                 if 'overview' in knowledge:
                     parts.append(knowledge['overview'])
                 if 'types' in knowledge:
-                    parts.append("Key types include: " + ", ".join(knowledge['types']))
+                    parts.append("**Key types include:** " + ", ".join(knowledge['types']))
                 if 'biological_significance' in knowledge:
-                    parts.append("Biological importance: " + knowledge['biological_significance'])
+                    parts.append("**Biological importance:** " + knowledge['biological_significance'])
                 if 'pathological_implications' in knowledge:
-                    parts.append("Clinical relevance: " + knowledge['pathological_implications'])
+                    parts.append("**Clinical relevance:** " + knowledge['pathological_implications'])
                 response_parts.append("\n\n".join(parts))
         
         # Check for chemical glycosylation questions
-        if any(term in question_lower for term in ['chemical glycosylation', 'glycosylation method', 'glycosylation reaction', 'glycosidic bond']):
+        if any(term in question_lower for term in ['chemical glycosylation', 'glycosylation method', 'glycosylation reaction', 'glycosidic bond', 'koenigs-knorr', 'schmidt', 'thioglycoside']):
             knowledge = self.expert_knowledge.get('chemical glycosylation', {})
             if knowledge:
                 parts = []
@@ -746,35 +815,42 @@ class GlycoKnowledgeEngine:
                     parts.append(knowledge['overview'])
                 if 'key_methods' in knowledge:
                     methods = knowledge['key_methods']
-                    method_text = "Key methods include:\n"
+                    method_text = "**Key methods include:**\n"
                     for name, desc in methods.items():
-                        method_text += f"• {name}: {desc}\n"
+                        method_text += f"• **{name}:** {desc}\n"
                     parts.append(method_text)
                 if 'modern_advances' in knowledge:
-                    parts.append("Modern advances: " + ", ".join(knowledge['modern_advances']))
+                    parts.append("**Modern advances:** " + ", ".join(knowledge['modern_advances']))
                 response_parts.append("\n\n".join(parts))
         
         # Check for remote participation questions
-        if any(term in question_lower for term in ['remote participation', 'remote directing', 'remote group', 'c3 participation', 'c4 participation']):
+        if any(term in question_lower for term in ['remote participation', 'remote directing', 'remote group', 'c3 participation', 'c4 participation', 'dppa', 'pivaloyl']):
             knowledge = self.expert_knowledge.get('remote participation', {})
             if knowledge:
                 parts = []
                 if 'overview' in knowledge:
                     parts.append(knowledge['overview'])
+                if 'mechanism' in knowledge:
+                    parts.append("**Mechanism:** " + knowledge['mechanism'])
                 if 'types' in knowledge:
                     types = knowledge['types']
-                    type_text = "Types of remote participation:\n"
+                    type_text = "**Types of remote participation:**\n"
                     for name, desc in types.items():
-                        type_text += f"• {name}: {desc}\n"
+                        type_text += f"• **{name}:** {desc}\n"
                     parts.append(type_text)
+                if 'specific_examples' in knowledge:
+                    examples = knowledge['specific_examples']
+                    parts.append("**Specific examples from the literature:**\n")
+                    for name, desc in examples.items():
+                        parts.append(f"• **{name.upper()}:** {desc}")
                 if 'factors_affecting' in knowledge:
-                    parts.append("Key factors: " + ", ".join(knowledge['factors_affecting']))
+                    parts.append("**Key factors:** " + ", ".join(knowledge['factors_affecting']))
                 if 'significance' in knowledge:
-                    parts.append("Significance: " + knowledge['significance'])
+                    parts.append("**Significance:** " + knowledge['significance'])
                 response_parts.append("\n\n".join(parts))
         
         # Check for environmental effects questions
-        if any(term in question_lower for term in ['environmental', 'temperature', 'solvent', 'water', 'pressure', 'additive', 'moisture']):
+        if any(term in question_lower for term in ['environmental', 'temperature', 'solvent', 'water', 'pressure', 'additive', 'moisture', 'reaction conditions']):
             knowledge = self.expert_knowledge.get('environmental effects', {})
             if knowledge:
                 parts = []
@@ -782,12 +858,12 @@ class GlycoKnowledgeEngine:
                     parts.append(knowledge['overview'])
                 if 'key_factors' in knowledge:
                     factors = knowledge['key_factors']
-                    factor_text = "Key environmental factors:\n"
+                    factor_text = "**Key environmental factors:**\n"
                     for name, desc in factors.items():
-                        factor_text += f"• {name}: {desc}\n"
+                        factor_text += f"• **{name}:** {desc}\n"
                     parts.append(factor_text)
                 if 'practical_guidelines' in knowledge:
-                    parts.append("Practical guidelines: " + "; ".join(knowledge['practical_guidelines'][:5]))
+                    parts.append("**Practical guidelines:** " + "; ".join(knowledge['practical_guidelines'][:5]))
                 response_parts.append("\n\n".join(parts))
         
         # Check for L vs D sugar questions
@@ -799,21 +875,21 @@ class GlycoKnowledgeEngine:
                     parts.append(knowledge['overview'])
                 if 'key_differences' in knowledge:
                     diffs = knowledge['key_differences']
-                    diff_text = "Key differences:\n"
+                    diff_text = "**Key differences:**\n"
                     for name, desc in diffs.items():
                         if isinstance(desc, dict):
-                            diff_text += f"• {name}:\n"
+                            diff_text += f"• **{name}:**\n"
                             for sub_name, sub_desc in desc.items():
                                 diff_text += f"  - {sub_name}: {sub_desc}\n"
                         else:
-                            diff_text += f"• {name}: {desc}\n"
+                            diff_text += f"• **{name}:** {desc}\n"
                     parts.append(diff_text)
                 if 'synthetic_challenges' in knowledge:
-                    parts.append("Challenges: " + ", ".join(knowledge['synthetic_challenges'][:4]))
+                    parts.append("**Challenges:** " + ", ".join(knowledge['synthetic_challenges'][:4]))
                 response_parts.append("\n\n".join(parts))
         
         # Check for automation/ML/AI questions
-        if any(term in question_lower for term in ['automation', 'machine learning', 'ml', 'artificial intelligence', 'ai', 'automated', 'prediction']):
+        if any(term in question_lower for term in ['automation', 'machine learning', 'ml', 'artificial intelligence', 'ai', 'automated', 'prediction', 'optimization']):
             knowledge = self.expert_knowledge.get('automation ML AI', {})
             if knowledge:
                 parts = []
@@ -821,64 +897,54 @@ class GlycoKnowledgeEngine:
                     parts.append(knowledge['overview'])
                 if 'key_applications' in knowledge:
                     apps = knowledge['key_applications']
-                    app_text = "Key applications:\n"
+                    app_text = "**Key applications:**\n"
                     for name, desc in apps.items():
-                        app_text += f"• {name}: {desc}\n"
+                        app_text += f"• **{name.replace('_', ' ').title()}:** {desc}\n"
                     parts.append(app_text)
                 if 'future_directions' in knowledge:
-                    parts.append("Future directions: " + ", ".join(knowledge['future_directions'][:4]))
+                    parts.append("**Future directions:** " + ", ".join(knowledge['future_directions'][:4]))
                 response_parts.append("\n\n".join(parts))
         
         return "\n\n".join(response_parts) if response_parts else None
     
     def combine_knowledge(self, question_lower, expert_response, relevant_papers):
-        """Combine expert knowledge with paper findings for a comprehensive answer"""
+        """Combine expert knowledge with paper findings for a comprehensive, humanized answer"""
         if not expert_response and not relevant_papers:
-            return "I couldn't find specific information about this in our database. Could you rephrase your question or ask about another aspect of glycosylation?"
+            return random.choice(FALLBACK_RESPONSES)
         
         # Start with expert knowledge if available
         answer_parts = []
         
         if expert_response:
-            # Humanize the expert response
-            intro = random.choice([
-                "Great question! Let me share what I know about this:",
-                "That's a fascinating topic in glycoscience! Here's what I can tell you:",
-                "Based on my knowledge of carbohydrate chemistry, here's the information:",
-                "I'd be happy to help you understand this better:"
-            ])
+            # Add a humanized intro
+            intro = random.choice(HUMANIZED_INTROS)
             answer_parts.append(f"{intro}\n\n{expert_response}")
-        
-        # Add relevant paper findings
-        if relevant_papers:
-            paper_findings = []
-            for paper in relevant_papers[:3]:
-                abstract = paper['abstract']
-                if abstract and len(abstract) > 50:
-                    # Extract relevant sentences
-                    sentences = re.split(r'[.!?]+', abstract)
-                    for sent in sentences:
-                        if len(sent.strip()) > 40 and any(term in sent.lower() for term in re.findall(r'\b[a-z]{4,}\b', question_lower)):
-                            paper_findings.append(f"• {sent.strip()}")
-                            break
             
-            if paper_findings:
-                findings_intro = random.choice([
-                    "\n\nI also found some relevant research in our database:",
-                    "\n\nHere are some key findings from the literature:",
-                    "\n\nThe published research adds more context:"
-                ])
-                answer_parts.append(f"{findings_intro}\n" + "\n".join(paper_findings[:2]))
+            # Add specific paper details if available
+            if relevant_papers:
+                paper_specific = []
+                for paper in relevant_papers[:3]:
+                    title = paper['title']
+                    abstract = paper['abstract']
+                    if title and len(title) > 10:
+                        # Try to find specific details from the abstract
+                        if abstract and len(abstract) > 50:
+                            # Extract sentences that might contain specific details
+                            sentences = re.split(r'[.!?]+', abstract)
+                            for sent in sentences:
+                                sent = sent.strip()
+                                # Look for sentences with specific details
+                                if len(sent) > 40 and any(term in sent.lower() for term in re.findall(r'\b[a-z]{4,}\b', question_lower)):
+                                    paper_specific.append(f"• {sent.strip()} (from '{title[:50]}...')")
+                                    break
+                
+                if paper_specific:
+                    answer_parts.append("\n\n**Here's what I found in the literature:**")
+                    answer_parts.extend(paper_specific[:2])
         
-        # Add a conversational ending
-        if answer_parts:
-            ending = random.choice([
-                "\n\nI hope this helps! Feel free to ask follow-up questions.",
-                "\n\nThere's much more to explore in this area - let me know if you want deeper insights.",
-                "\n\nThis is a rich area of research with many exciting developments.",
-                "\n\nI'm always learning more - keep the questions coming!"
-            ])
-            answer_parts.append(ending)
+        # Add a humanized ending
+        ending = random.choice(HUMANIZED_ENDINGS)
+        answer_parts.append(f"\n\n{ending}")
         
         return "\n".join(answer_parts)
     
@@ -891,19 +957,19 @@ class GlycoKnowledgeEngine:
             refs = self.expert_knowledge.get('o-glycosylation', {}).get('references', [])
             references.extend(refs[:2])
         
-        if 'chemical glycosylation' in question_lower or 'glycosylation method' in question_lower:
+        if any(term in question_lower for term in ['chemical glycosylation', 'glycosylation method', 'koenigs-knorr', 'schmidt']):
             refs = self.expert_knowledge.get('chemical glycosylation', {}).get('references', [])
             references.extend(refs[:2])
         
-        if 'remote participation' in question_lower:
+        if any(term in question_lower for term in ['remote participation', 'dppa', 'pivaloyl']):
             refs = self.expert_knowledge.get('remote participation', {}).get('references', [])
-            references.extend(refs[:2])
+            references.extend(refs[:3])
         
-        if 'environmental' in question_lower or 'temperature' in question_lower or 'solvent' in question_lower:
+        if any(term in question_lower for term in ['environmental', 'temperature', 'solvent']):
             refs = self.expert_knowledge.get('environmental effects', {}).get('references', [])
             references.extend(refs[:2])
         
-        if 'l-sugar' in question_lower or 'd-sugar' in question_lower:
+        if any(term in question_lower for term in ['l-sugar', 'd-sugar']):
             refs = self.expert_knowledge.get('L vs D sugar selectivity', {}).get('references', [])
             references.extend(refs[:2])
         
@@ -1838,7 +1904,7 @@ else:
         <div class="about-box">
             <h3>🧬 GlycoSearch</h3>
             <p>
-                <b>Developer:</b> Wang Research Group<br>
+                <b>Developed by:</b> Fizza Sabbor and Dr. Sabbor Hussain<br>
                 <b>Institute:</b> <a href="https://www.chem.sinica.edu.tw" target="_blank" class="clickable-link">Institute of Chemistry, Academia Sinica</a><br>
                 <b>Principal Investigator:</b> <a href="https://www.chem.sinica.edu.tw/en/faculty/104/" target="_blank" class="clickable-link">Dr. Cheng-Chung Wang</a><br>
                 <b>Email:</b> <a href="mailto:wangcc7280@gate.sinica.edu.tw" class="clickable-link">wangcc7280@gate.sinica.edu.tw</a>
@@ -1865,7 +1931,7 @@ else:
             <h4>🔗 Citation</h4>
             <p>
                 If you use this tool, please cite:<br>
-                <i>Wang Research Group, GlycoSearch: Glycosylation Research Agent, 
+                <i>Fizza Sabbor, Dr. Sabbor Hussain, Wang Research Group, GlycoSearch: Glycosylation Research Agent, 
                 Institute of Chemistry, Academia Sinica, 2026.</i>
             </p>
         </div>
@@ -1878,7 +1944,7 @@ st.markdown("""
         <span class="org-icon">🏛️</span>
         <span class="org-name">
             <a href="https://www.chem.sinica.edu.tw" target="_blank">Institute of Chemistry, Academia Sinica</a>
-            <span class="org-desc">· Wang Research Group</span>
+            <span class="org-desc">· Fizza Sabbor & Dr. Sabbor Hussain</span>
         </span>
         <span class="divider-dot">·</span>
         <a href="mailto:wangcc7280@gate.sinica.edu.tw" class="footer-email-link">wangcc7280@gate.sinica.edu.tw</a>
