@@ -6,6 +6,7 @@ from datetime import datetime
 import csv
 import re
 from collections import defaultdict
+import altair as alt
 
 # ─── PAGE CONFIG ──────────────────────────────────────────
 st.set_page_config(
@@ -183,10 +184,6 @@ st.markdown("""
         transform: translateY(-2px);
     }
     
-    .stTabs [data-baseweb="tab"] .tab-icon {
-        margin-right: 6px;
-    }
-    
     /* ─── CLICKABLE EXAMPLE QUESTIONS ─── */
     .example-question {
         display: block;
@@ -211,12 +208,6 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
     }
     
-    .example-question .q-icon {
-        margin-right: 8px;
-        color: #6366f1;
-    }
-    
-    /* ─── SEARCH ─── */
     .search-wrapper {
         background: #ffffff;
         padding: 1rem 1.5rem;
@@ -289,7 +280,6 @@ st.markdown("""
         border-top: 1px solid #f1f5f9;
     }
     
-    /* ─── AI CHAT ─── */
     .ai-answer {
         background: #ffffff;
         padding: 1.2rem 1.5rem;
@@ -340,109 +330,120 @@ st.markdown("""
         border-top: 1px solid #f1f5f9;
     }
     
-    /* ─── FOOTER ─── */
-    .footer-container {
+    /* ─── COMPACT FOOTER ─── */
+    .footer-compact {
         background: linear-gradient(135deg, #0f172a, #1e293b);
-        padding: 1.2rem 0;
-        border-radius: 16px 16px 0 0;
+        padding: 0.8rem 2rem;
+        border-radius: 12px 12px 0 0;
         margin-top: 2rem;
-        text-align: center;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
         border-top: 3px solid transparent;
         border-image: linear-gradient(90deg, #818cf8, #c084fc) 1;
+        gap: 0.5rem;
     }
     
-    .footer-container .org-name {
+    .footer-compact .footer-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .footer-compact .footer-brand .org-icon {
+        font-size: 1.2rem;
+    }
+    
+    .footer-compact .footer-brand .org-name {
         color: #ffffff;
         font-family: 'Inter', sans-serif;
         font-weight: 500;
-        font-size: 0.9rem;
-        margin-bottom: 0.1rem;
+        font-size: 0.8rem;
     }
     
-    .footer-container .org-name a {
+    .footer-compact .footer-brand .org-name a {
         color: #a78bfa;
+        text-decoration: none;
+    }
+    
+    .footer-compact .footer-brand .org-name a:hover {
+        text-decoration: underline;
+    }
+    
+    .footer-compact .footer-brand .org-desc {
+        color: rgba(255,255,255,0.3);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.6rem;
+        margin-left: 0.3rem;
+    }
+    
+    .footer-compact .footer-links {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .footer-compact .footer-links a,
+    .footer-compact .footer-links span {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.65rem;
+        color: rgba(255,255,255,0.4);
         text-decoration: none;
         transition: color 0.2s;
     }
     
-    .footer-container .org-name a:hover {
-        color: #c084fc;
-        text-decoration: underline;
-    }
-    
-    .footer-container .org-desc {
-        color: rgba(255,255,255,0.4);
-        font-family: 'Inter', sans-serif;
-        font-size: 0.75rem;
-    }
-    
-    .footer-container .org-desc a {
+    .footer-compact .footer-links a:hover {
         color: #a78bfa;
-        text-decoration: none;
-    }
-    
-    .footer-container .org-desc a:hover {
         text-decoration: underline;
     }
     
-    .footer-container .divider {
-        border: none;
-        border-top: 1px solid rgba(255,255,255,0.06);
-        margin: 0.5rem auto;
-        width: 25%;
+    .footer-compact .footer-links .divider-dot {
+        color: rgba(255,255,255,0.1);
     }
     
-    .footer-container .footer-links {
+    .footer-compact .footer-contact {
         display: flex;
-        justify-content: center;
-        gap: 1.2rem;
-        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .footer-compact .footer-contact a {
         font-family: 'Inter', sans-serif;
-        font-size: 0.7rem;
-        color: rgba(255,255,255,0.3);
-    }
-    
-    .footer-container .footer-links a {
-        color: #a78bfa;
+        font-size: 0.65rem;
+        color: rgba(255,255,255,0.4);
         text-decoration: none;
+        transition: color 0.2s;
     }
     
-    .footer-container .footer-links a:hover {
+    .footer-compact .footer-contact a:hover {
+        color: #a78bfa;
         text-decoration: underline;
     }
     
-    .footer-container .footer-address {
+    .footer-compact .footer-address {
         font-family: 'Inter', sans-serif;
-        font-size: 0.6rem;
-        color: rgba(255,255,255,0.12);
-        margin-top: 0.3rem;
+        font-size: 0.55rem;
+        color: rgba(255,255,255,0.15);
     }
     
-    .footer-container .footer-email {
-        font-family: 'Inter', sans-serif;
-        font-size: 0.7rem;
-        color: rgba(255,255,255,0.25);
-        margin-top: 0.1rem;
-    }
-    
-    .footer-container .footer-email a {
-        color: #a78bfa;
-        text-decoration: none;
-    }
-    
-    .footer-container .footer-email a:hover {
-        text-decoration: underline;
-    }
-    
-    /* ─── RESPONSIVE ─── */
     @media (max-width: 768px) {
+        .footer-compact {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 0.8rem 1rem;
+        }
+        .footer-compact .footer-links {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
         .header-content { flex-direction: column; align-items: flex-start; padding: 0 1rem; }
         .header-stats { flex-wrap: wrap; gap: 0.5rem; padding: 0.25rem 0.8rem; }
         .header-title { font-size: 1.2rem; }
         .stTabs [data-baseweb="tab"] { font-size: 0.75rem !important; padding: 0.4rem 0.8rem !important; }
     }
     
-    /* ─── ABOUT ─── */
     .about-box {
         background: #ffffff;
         padding: 1.5rem 2rem;
@@ -467,7 +468,6 @@ st.markdown("""
         text-decoration: underline;
     }
     
-    /* ─── ANALYTICS - Black Text ─── */
     .analytics-title {
         font-family: 'Inter', sans-serif;
         font-weight: 600;
@@ -476,7 +476,6 @@ st.markdown("""
         margin-bottom: 0.5rem;
     }
     
-    /* ─── CHAT CONTAINER ─── */
     .chat-container {
         background: #ffffff;
         padding: 1.5rem;
@@ -1230,6 +1229,42 @@ def render_header():
     </div>
     """, unsafe_allow_html=True)
 
+# ─── CREATE COLORFUL CHARTS ─────────────────────────────
+def create_colorful_bar_chart(data, title, color_scheme):
+    """Create a beautiful bar chart with gradient colors"""
+    if len(data) == 0:
+        return None
+    
+    df = data.reset_index()
+    df.columns = ['Category', 'Count']
+    
+    # Create Altair chart with gradient colors
+    chart = alt.Chart(df).mark_bar(
+        cornerRadiusTopLeft=4,
+        cornerRadiusTopRight=4
+    ).encode(
+        x=alt.X('Category:N', sort='-y', title=None),
+        y=alt.Y('Count:Q', title=None),
+        color=alt.Color('Count:Q', 
+                       scale=alt.Scale(scheme=color_scheme),
+                       legend=None),
+        tooltip=['Category', 'Count']
+    ).properties(
+        height=300,
+        title=title
+    ).configure_axis(
+        labelFontSize=11,
+        labelFontWeight='500',
+        labelColor='#1e293b'
+    ).configure_title(
+        fontSize=14,
+        fontWeight='600',
+        color='#0f172a',
+        anchor='start'
+    )
+    
+    return chart
+
 # ─── MAIN ──────────────────────────────────────────────
 if len(papers) == 0:
     st.warning("📁 Upload your Excel file to get started")
@@ -1323,7 +1358,6 @@ else:
         st.markdown("### 💬 Ask GlycoAI - Research Assistant")
         st.markdown("Ask questions about glycosylation research and get answers with references from our database.")
         
-        # ─── CLICKABLE EXAMPLE QUESTIONS ───
         st.markdown("#### 💡 Click a question to ask:")
         
         example_questions = [
@@ -1335,25 +1369,20 @@ else:
             "What factors influence α/β selectivity?"
         ]
         
-        # Create clickable example questions using columns
         cols = st.columns(2)
         for i, q in enumerate(example_questions):
             col_idx = i % 2
-            # Use a button that looks like a clickable card
             if cols[col_idx].button(
                 f"💡 {q}",
                 key=f"example_{i}",
                 use_container_width=True,
                 type="secondary"
             ):
-                # Set the question in session state
                 st.session_state['ask_question'] = q
                 st.rerun()
         
-        # Get question from session state or text input
         default_question = st.session_state.get('ask_question', '')
         
-        # Question input
         question = st.text_area(
             "Or type your own question:",
             value=default_question,
@@ -1369,7 +1398,6 @@ else:
             with st.spinner("🔬 Searching through all papers..."):
                 result = engine.answer_question(question)
             
-            # Display answer
             st.markdown(f"""
             <div class="ai-answer">
                 <div class="answer-text">{result['answer']}</div>
@@ -1377,13 +1405,11 @@ else:
             </div>
             """, unsafe_allow_html=True)
             
-            # Display references
             if result['references']:
                 st.markdown("**📖 References:**")
                 for ref in result['references']:
                     st.markdown(f"- {ref}")
             
-            # Show relevant papers in detail
             with st.expander("📄 View relevant papers"):
                 relevant = engine.search(question, top_n=5)
                 for paper in relevant:
@@ -1406,18 +1432,26 @@ else:
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown('<p class="analytics-title">📅 Publications by Year</p>', unsafe_allow_html=True)
             year_counts = papers['Year'].value_counts().sort_index()
             if len(year_counts) > 0:
-                # Custom bar chart with eye-catching color
-                st.bar_chart(year_counts, color='#6366f1')
+                chart = create_colorful_bar_chart(
+                    year_counts, 
+                    "📅 Publications by Year",
+                    "viridis"
+                )
+                if chart:
+                    st.altair_chart(chart, use_container_width=True)
         
         with col2:
-            st.markdown('<p class="analytics-title">📂 Papers by Topic</p>', unsafe_allow_html=True)
             topic_counts = papers['Topic'].value_counts()
             if len(topic_counts) > 0:
-                # Custom bar chart with eye-catching color
-                st.bar_chart(topic_counts.head(10), color='#ec4899')
+                chart = create_colorful_bar_chart(
+                    topic_counts.head(10),
+                    "📂 Papers by Topic",
+                    "plasma"
+                )
+                if chart:
+                    st.altair_chart(chart, use_container_width=True)
         
         st.markdown("---")
         st.markdown('<p class="analytics-title">🏆 Top Journals</p>', unsafe_allow_html=True)
@@ -1527,30 +1561,31 @@ else:
         </div>
         """, unsafe_allow_html=True)
 
-# ─── FOOTER ─────────────────────────────────────────────
+# ─── COMPACT FOOTER ────────────────────────────────────────
 st.markdown("""
-<div class="footer-container">
-    <div class="org-name">
-        🏛️ <a href="https://www.chem.sinica.edu.tw" target="_blank">Institute of Chemistry, Academia Sinica</a>
-    </div>
-    <div class="org-desc">
-        <a href="https://www.chem.sinica.edu.tw/en/faculty/104/" target="_blank">Wang Research Group</a> · Dr. Cheng-Chung Wang
-    </div>
-    <div class="footer-email">
-        📧 <a href="mailto:wangcc7280@gate.sinica.edu.tw">wangcc7280@gate.sinica.edu.tw</a>
+<div class="footer-compact">
+    <div class="footer-brand">
+        <span class="org-icon">🏛️</span>
+        <span class="org-name">
+            <a href="https://www.chem.sinica.edu.tw" target="_blank">Institute of Chemistry, Academia Sinica</a>
+            <span class="org-desc">· Wang Research Group</span>
+        </span>
     </div>
     
-    <hr class="divider">
+    <div class="footer-contact">
+        <a href="https://www.chem.sinica.edu.tw/en/faculty/104/" target="_blank">👨‍🔬 Dr. Wang</a>
+        <span class="divider-dot">·</span>
+        <a href="mailto:wangcc7280@gate.sinica.edu.tw">📧 wangcc7280@gate.sinica.edu.tw</a>
+        <span class="divider-dot">·</span>
+        <span class="footer-address">📍 Taipei, Taiwan</span>
+    </div>
     
     <div class="footer-links">
-        <span>📄 MIT License</span>
-        <span>© 2026 Academia Sinica</span>
-        <span><a href="https://github.com/FizzaSab/GlycoAgent" target="_blank">GitHub</a></span>
-        <span><a href="https://www.chem.sinica.edu.tw" target="_blank">Institute Website</a></span>
-    </div>
-    
-    <div class="footer-address">
-        128 Academia Road, Section 2, Nankang, Taipei 115201, Taiwan
+        <a href="https://github.com/FizzaSab/GlycoAgent" target="_blank">GitHub</a>
+        <span class="divider-dot">·</span>
+        <span>📄 MIT</span>
+        <span class="divider-dot">·</span>
+        <span>© 2026</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
