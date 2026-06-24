@@ -333,33 +333,36 @@ st.markdown("""
     /* ─── COMPACT FOOTER ─── */
     .footer-compact {
         background: linear-gradient(135deg, #0f172a, #1e293b);
-        padding: 0.8rem 2rem;
+        padding: 0.6rem 2rem;
         border-radius: 12px 12px 0 0;
         margin-top: 2rem;
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center;
         border-top: 3px solid transparent;
         border-image: linear-gradient(90deg, #818cf8, #c084fc) 1;
         gap: 0.5rem;
+        min-height: 48px;
     }
     
     .footer-compact .footer-brand {
         display: flex;
         align-items: center;
-        gap: 0.8rem;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+        justify-content: center;
     }
     
     .footer-compact .footer-brand .org-icon {
-        font-size: 1.2rem;
+        font-size: 1rem;
     }
     
     .footer-compact .footer-brand .org-name {
         color: #ffffff;
         font-family: 'Inter', sans-serif;
         font-weight: 500;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
     }
     
     .footer-compact .footer-brand .org-name a {
@@ -375,68 +378,32 @@ st.markdown("""
         color: rgba(255,255,255,0.3);
         font-family: 'Inter', sans-serif;
         font-size: 0.6rem;
-        margin-left: 0.3rem;
     }
     
-    .footer-compact .footer-links {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-    
-    .footer-compact .footer-links a,
-    .footer-compact .footer-links span {
-        font-family: 'Inter', sans-serif;
-        font-size: 0.65rem;
-        color: rgba(255,255,255,0.4);
-        text-decoration: none;
-        transition: color 0.2s;
-    }
-    
-    .footer-compact .footer-links a:hover {
-        color: #a78bfa;
-        text-decoration: underline;
-    }
-    
-    .footer-compact .footer-links .divider-dot {
-        color: rgba(255,255,255,0.1);
-    }
-    
-    .footer-compact .footer-contact {
-        display: flex;
-        align-items: center;
-        gap: 0.8rem;
-    }
-    
-    .footer-compact .footer-contact a {
-        font-family: 'Inter', sans-serif;
-        font-size: 0.65rem;
-        color: rgba(255,255,255,0.4);
-        text-decoration: none;
-        transition: color 0.2s;
-    }
-    
-    .footer-compact .footer-contact a:hover {
-        color: #a78bfa;
-        text-decoration: underline;
-    }
-    
-    .footer-compact .footer-address {
-        font-family: 'Inter', sans-serif;
-        font-size: 0.55rem;
+    .footer-compact .footer-brand .divider-dot {
         color: rgba(255,255,255,0.15);
+        font-size: 0.5rem;
+    }
+    
+    .footer-compact .footer-email-link {
+        color: rgba(255,255,255,0.4);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.65rem;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    
+    .footer-compact .footer-email-link:hover {
+        color: #a78bfa;
+        text-decoration: underline;
     }
     
     @media (max-width: 768px) {
         .footer-compact {
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 0.8rem 1rem;
+            padding: 0.6rem 1rem;
         }
-        .footer-compact .footer-links {
-            flex-wrap: wrap;
-            gap: 0.5rem;
+        .footer-compact .footer-brand {
+            gap: 0.4rem;
         }
         .header-content { flex-direction: column; align-items: flex-start; padding: 0 1rem; }
         .header-stats { flex-wrap: wrap; gap: 0.5rem; padding: 0.25rem 0.8rem; }
@@ -1229,7 +1196,7 @@ def render_header():
     </div>
     """, unsafe_allow_html=True)
 
-# ─── CREATE COLORFUL CHARTS (SIMPLIFIED) ──────────────
+# ─── CREATE COLORFUL CHARTS ─────────────────────────────
 def create_colorful_bar_chart(data, title, color_scheme):
     """Create a beautiful bar chart with gradient colors"""
     if len(data) == 0:
@@ -1238,7 +1205,6 @@ def create_colorful_bar_chart(data, title, color_scheme):
     df = data.reset_index()
     df.columns = ['Category', 'Count']
     
-    # Simple Altair chart with color scheme
     chart = alt.Chart(df).mark_bar(
         cornerRadiusTopLeft=4,
         cornerRadiusTopRight=4
@@ -1552,7 +1518,7 @@ else:
         </div>
         """, unsafe_allow_html=True)
 
-# ─── COMPACT FOOTER ────────────────────────────────────────
+# ─── COMPACT FOOTER (CLEAN & MINIMAL) ────────────────────
 st.markdown("""
 <div class="footer-compact">
     <div class="footer-brand">
@@ -1561,22 +1527,8 @@ st.markdown("""
             <a href="https://www.chem.sinica.edu.tw" target="_blank">Institute of Chemistry, Academia Sinica</a>
             <span class="org-desc">· Wang Research Group</span>
         </span>
-    </div>
-    
-    <div class="footer-contact">
-        <a href="https://www.chem.sinica.edu.tw/en/faculty/104/" target="_blank">👨‍🔬 Dr. Wang</a>
         <span class="divider-dot">·</span>
-        <a href="mailto:wangcc7280@gate.sinica.edu.tw">📧 wangcc7280@gate.sinica.edu.tw</a>
-        <span class="divider-dot">·</span>
-        <span class="footer-address">📍 Taipei, Taiwan</span>
-    </div>
-    
-    <div class="footer-links">
-        <a href="https://github.com/FizzaSab/GlycoAgent" target="_blank">GitHub</a>
-        <span class="divider-dot">·</span>
-        <span>📄 MIT</span>
-        <span class="divider-dot">·</span>
-        <span>© 2026</span>
+        <a href="mailto:wangcc7280@gate.sinica.edu.tw" class="footer-email-link">wangcc7280@gate.sinica.edu.tw</a>
     </div>
 </div>
 """, unsafe_allow_html=True)
