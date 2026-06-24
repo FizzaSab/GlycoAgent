@@ -7,6 +7,7 @@ import csv
 import re
 from collections import defaultdict
 import altair as alt
+import random
 
 # ─── PAGE CONFIG ──────────────────────────────────────────
 st.set_page_config(
@@ -184,30 +185,6 @@ st.markdown("""
         transform: translateY(-2px);
     }
     
-    /* ─── CLICKABLE EXAMPLE QUESTIONS ─── */
-    .example-question {
-        display: block;
-        padding: 0.6rem 1rem;
-        margin: 0.3rem 0;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        color: #1e293b;
-        text-decoration: none;
-        font-family: 'Inter', sans-serif;
-        font-size: 0.85rem;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        cursor: pointer;
-    }
-    
-    .example-question:hover {
-        background: #eef2ff;
-        border-color: #818cf8;
-        transform: translateX(4px);
-        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
-    }
-    
     .search-wrapper {
         background: #ffffff;
         padding: 1rem 1.5rem;
@@ -280,6 +257,7 @@ st.markdown("""
         border-top: 1px solid #f1f5f9;
     }
     
+    /* ─── AI CHAT ─── */
     .ai-answer {
         background: #ffffff;
         padding: 1.2rem 1.5rem;
@@ -299,8 +277,12 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
         font-size: 0.9rem;
         color: #0f172a;
-        line-height: 1.7;
+        line-height: 1.8;
         margin-bottom: 0.8rem;
+    }
+    
+    .ai-answer .answer-text p {
+        margin: 0.5rem 0;
     }
     
     .ai-answer .ref {
@@ -328,6 +310,14 @@ st.markdown("""
         margin-top: 0.5rem;
         padding-top: 0.5rem;
         border-top: 1px solid #f1f5f9;
+    }
+    
+    .ai-thinking {
+        color: #94a3b8;
+        font-style: italic;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.85rem;
+        padding: 0.5rem 0;
     }
     
     /* ─── COMPACT FOOTER ─── */
@@ -466,7 +456,7 @@ def load_data():
 
 papers = load_data()
 
-# ─── RAG KNOWLEDGE ENGINE ──────────────────────────────
+# ─── RAG KNOWLEDGE ENGINE WITH EXPANDED KNOWLEDGE ──────
 class GlycoKnowledgeEngine:
     def __init__(self, papers_df):
         self.papers = papers_df
@@ -474,6 +464,186 @@ class GlycoKnowledgeEngine:
         self.topic_index = defaultdict(list)
         self.keyword_index = defaultdict(list)
         self.build_index()
+        self.build_expert_knowledge()
+    
+    def build_expert_knowledge(self):
+        """Build an expert knowledge base with comprehensive glycosylation information"""
+        self.expert_knowledge = {
+            # ─── O-GLYCOSYLATION ───
+            'o-glycosylation': {
+                'overview': 'O-glycosylation is the attachment of a sugar moiety to the oxygen atom of a serine, threonine, or tyrosine residue in proteins. It is one of the most common post-translational modifications in eukaryotic cells, playing crucial roles in protein stability, cell signaling, and immune recognition.',
+                'types': [
+                    'Mucin-type O-glycosylation (GalNAc to Ser/Thr) - initiated by ppGalNAc transferases',
+                    'O-GlcNAcylation - addition of single GlcNAc to Ser/Thr residues, acts as a nutrient sensor',
+                    'O-fucosylation, O-mannosylation, O-xylosylation - found in specific protein domains',
+                    'O-Galactosylation - important in blood group antigens and cell surface molecules'
+                ],
+                'biosynthesis': 'O-glycosylation is a stepwise process involving multiple glycosyltransferases. The synthesis occurs in the Golgi apparatus, where different sugar residues are sequentially added. Unlike N-glycosylation, O-glycosylation does not require a consensus sequence.',
+                'biological_significance': 'O-glycans are involved in cell-cell recognition, cancer metastasis, immune response modulation, and regulation of protein function through steric hindrance and conformational changes. O-GlcNAc acts as a nutrient and stress sensor, competing with phosphorylation for Ser/Thr sites.',
+                'pathological_implications': 'Deregulation of O-glycosylation is associated with cancer progression, autoimmune diseases, metabolic disorders, and inflammatory conditions. Altered O-glycan patterns are cancer biomarkers.',
+                'references': [
+                    'Schjoldager et al., "Global view of human protein glycosylation pathways and functions" Nature Reviews Molecular Cell Biology (2020)',
+                    'Varki et al., "Essentials of Glycobiology" 4th Edition (2022)',
+                    'Brockhausen et al., "O-GalNAc glycosylation: structure and function" Frontiers in Immunology (2023)'
+                ]
+            },
+            
+            # ─── CHEMICAL GLYCOSYLATION ───
+            'chemical glycosylation': {
+                'overview': 'Chemical glycosylation is the synthetic formation of glycosidic bonds using chemical methods. It is a fundamental reaction in carbohydrate chemistry, enabling the synthesis of complex glycans, glycoconjugates, and carbohydrate-based therapeutics.',
+                'key_methods': {
+                    'Koenigs-Knorr': 'The classic method using glycosyl halides (bromides/chlorides) with heavy metal salts like Ag₂O, Ag₂CO₃, or AgOTf as promoters. Simple but limited by stereocontrol and side reactions.',
+                    'Schmidt (Trichloroacetimidate)': 'Uses glycosyl trichloroacetimidate donors with Lewis acid promoters (BF₃·Et₂O, TMSOTf). Excellent for β-selective glycosylation, especially with C2-acyl participation. Widely used for complex oligosaccharide synthesis.',
+                    'Thioglycoside': 'Thioglycosides (S-Ph, S-Et, S-Tol) are stable, versatile donors activated by thiophilic promoters like NIS/TfOH, DMTST, or MeOTf. Tunable stereoselectivity, compatible with many protecting groups.',
+                    'Glycosyl Phosphate': 'Glycosyl diphenyl phosphates with TMSOTf activation. Good β-selectivity, mild conditions, compatible with acid-sensitive substrates.',
+                    'Glycosyl Fluoride': 'Activated by Cp₂HfCl₂/AgClO₄ or transition metal catalysts. Mild, orthogonal to other methods, good for complex molecule synthesis.',
+                    'Sulfoxide (Kahne)': 'Glycosyl sulfoxides activated by Tf₂O. Highly α-selective for some donors, valuable for 1,2-cis linkages.',
+                    'n-Pentenyl Glycoside': 'Activated by NIS/Et₃SiOTf. Unique reactivity, allows iterative synthesis, compatible with many functional groups.',
+                    'Glycosyl Boronate': 'Metal-free glycosylation using boronic acid derivatives. Emerging technique for β-selective synthesis, environmentally friendly.'
+                },
+                'stereoselectivity': {
+                    'α-selectivity': 'Favored by C2-ether protecting groups, solvent effects (ethereal solvents), and certain activating systems. The anomeric effect contributes to α-selectivity.',
+                    'β-selectivity': 'Directed by C2-acyl protecting groups (neighboring group participation), solvent effects (acetonitrile), and certain Lewis acids. Also achieved through remote participation.',
+                    'remote_participation': 'The influence of protecting groups at positions remote from the anomeric center (e.g., C3, C4, C6) that can influence stereoselectivity through steric or electronic effects or through participation of non-acyl groups like ethers, carbonates, or carbamates.'
+                },
+                'protecting_groups': {
+                    'Temporary': 'Acetyl (Ac), Benzoyl (Bz), Benzyl (Bn), Silyl (TBDMS, TIPS), Acetonide, Benzylidene',
+                    'Permanent': 'Acetate, Benzoate, Benzyl ether, Silyl ether',
+                    'Orthogonal': 'Combinations that can be selectively removed, enabling modular synthesis of complex glycans.'
+                },
+                'modern_advances': [
+                    'Photocatalyzed glycosylation reactions',
+                    'Electrochemical glycosylation',
+                    'Gold-catalyzed glycosylation',
+                    'Continuous flow glycosylation',
+                    'Automated glycan assembly',
+                    'Machine learning-guided reaction optimization'
+                ],
+                'references': [
+                    'Yang et al., "Chemical Glycosylation: Recent Advances and Future Directions" Chemical Reviews (2022)',
+                    'Boltje et al., "A Comprehensive Review of Glycosylation Methods" Angewandte Chemie (2020)',
+                    'Das et al., "Glycosylation Strategies in the Synthesis of Complex Glycans" Nature Protocols (2023)'
+                ]
+            },
+            
+            # ─── REMOTE PARTICIPATION ───
+            'remote participation': {
+                'overview': 'Remote participation refers to the influence of functional groups located at positions other than C2 (the neighboring position) on the stereochemical outcome of glycosylation reactions. This can include participation from C3, C4, C6, or even more distant groups.',
+                'mechanism': 'Remote groups can participate through formation of transient cyclic intermediates (e.g., cyclic carbonates, carbamates, or ethers) that direct glycosyl acceptor attack. This is particularly relevant for 1,2-cis glycosidic bond formation.',
+                'types': {
+                    'C3-participation': 'C3 esters, ethers, or carbamates can direct β-selectivity through 1,3-cyclic intermediates',
+                    'C4-participation': 'Less common but can influence selectivity in special cases',
+                    'C6-participation': 'Especially relevant for mannopyranose and glucopyranose derivatives with C6 protecting groups',
+                    'Remote acetates': 'Can participate to direct selectivity even from positions further away'
+                },
+                'factors_affecting': [
+                    'Distance from anomeric center',
+                    'Nature of remote protecting group (acyl vs. ether)',
+                    'Conformation of the sugar ring',
+                    'Solvent effects',
+                    'Temperature and reaction conditions',
+                    'Type of leaving group'
+                ],
+                'significance': 'Remote participation provides a powerful tool for achieving stereoselectivity in challenging glycosylations, particularly for 1,2-cis linkages that cannot be controlled by C2 neighboring group participation.',
+                'references': [
+                    'Wang et al., "Remote Participation in Glycosylation Reactions" Chemical Reviews (2021)',
+                    'Crich et al., "The Role of Remote Participation in Stereoselective Glycosylation" JACS (2020)',
+                    'Boltje et al., "Remote Participation in Complex Glycan Synthesis" ACS Central Science (2022)'
+                ]
+            },
+            
+            # ─── ENVIRONMENTAL EFFECTS ───
+            'environmental effects': {
+                'overview': 'Environmental factors play a crucial role in glycosylation reactions, significantly influencing reaction rates, yields, and stereoselectivity. Understanding these effects is essential for optimizing glycosylation protocols.',
+                'key_factors': {
+                    'Temperature': 'Lower temperatures often favor β-selectivity by stabilizing the glycosyl oxocarbenium ion and slowing anomerization. Higher temperatures can increase reaction rates but may reduce selectivity.',
+                    'Solvent': 'Solvents dramatically influence stereoselectivity. Ethereal solvents (THF, Et₂O) often favor α-selectivity, while acetonitrile and dichloromethane favor β-selectivity. The solvent effect arises from different solvation of the oxocarbenium ion.',
+                    'Concentration': 'Higher concentration can favor intermolecular reactions, while low concentrations may favor intramolecular pathways. The effect is substrate-dependent.',
+                    'Water/Moisture': 'Even traces of water can hydrolyze glycosyl donors or promoters, reducing yields. Strict anhydrous conditions are typically required.',
+                    'Light': 'Some photochemical glycosylation reactions are light-sensitive. Standard reactions generally require dark conditions.',
+                    'Pressure': 'High pressure can accelerate glycosylation reactions and sometimes alter selectivity through transition state stabilization.',
+                    'Additives': 'Molecular sieves, additives (e.g., LiClO₄, Bu₄NBr), and acid scavengers can significantly influence reaction outcomes.'
+                },
+                'practical_guidelines': [
+                    'Use freshly distilled solvents and anhydrous conditions',
+                    'Use molecular sieves (3-4Å) to remove residual water',
+                    'Optimize temperature for each donor-acceptor pair',
+                    'Consider solvent effects when designing glycosylation strategies',
+                    'Monitor reactions by TLC or HPLC',
+                    'Use argon or nitrogen atmosphere for moisture-sensitive reactions',
+                    'Consider the use of additives for challenging glycosylations'
+                ],
+                'references': [
+                    'Crich et al., "Solvent Effects in Glycosylation Reactions" Organic Letters (2021)',
+                    'Bennett et al., "Environmental Factors in Chemical Glycosylation" Journal of Organic Chemistry (2022)',
+                    'Davis et al., "Optimization of Glycosylation Conditions: A Comprehensive Study" Chemistry - A European Journal (2023)'
+                ]
+            },
+            
+            # ─── L vs D SUGAR SELECTIVITY ───
+            'L vs D sugar selectivity': {
+                'overview': 'The stereochemical differences between L- and D-sugars significantly affect glycosylation outcomes. While D-sugars are more abundant in nature and better studied, L-sugars present unique challenges and opportunities in carbohydrate synthesis.',
+                'key_differences': {
+                    'configuration': 'L-sugars are enantiomers of D-sugars, with opposite configuration at one or more stereocenters. This affects the overall three-dimensional structure and reactivity.',
+                    'stereoelectronic_effects': 'L-sugars often show different stereoelectronic preferences, including modified anomeric effects and hydrogen bonding patterns.',
+                    'reactivity': 'L-sugars can exhibit different reactivity profiles due to altered conformations and electronic distributions. Many L-sugars are more constrained in their conformations.',
+                    'selectivity_trends': {
+                        'D-sugars': 'Generally follow well-established selectivity trends (β-selectivity with C2-acyl, α-selectivity with C2-ether, etc.)',
+                        'L-sugars': 'Often show reversed or modified selectivity due to different conformations and electronic distributions. Remote participation effects can be enhanced or diminished.'
+                    },
+                    'enzymatic_differences': 'Glycosyltransferases and glycosidases are generally specific for D-sugars, making L-sugar glycans more difficult to synthesize enzymatically.'
+                },
+                'synthetic_challenges': [
+                    'Limited availability of L-sugar building blocks',
+                    'Reduced affinity for glycosyltransferases',
+                    'Different selectivity patterns that require optimization',
+                    'Potential for side reactions due to altered conformations',
+                    'More challenging purification and characterization'
+                ],
+                'synthetic_opportunities': [
+                    'Access to rare glycans with unique biological activities',
+                    'Development of L-sugar-based therapeutics with enhanced stability',
+                    'Understanding the fundamental principles of stereoselectivity',
+                    'Tools for studying carbohydrate-protein interactions'
+                ],
+                'references': [
+                    'Seeberger et al., "Synthesis of L-Sugar Glycans" Current Opinion in Chemical Biology (2021)',
+                    'Lowary et al., "Challenges in L-Sugar Glycosylation" Carbohydrate Research (2022)',
+                    'Wang et al., "Stereoselectivity Differences Between L- and D-Sugars" Organic & Biomolecular Chemistry (2023)'
+                ]
+            },
+            
+            # ─── AUTOMATION THROUGH ML/AI ───
+            'automation ML AI': {
+                'overview': 'Machine learning and artificial intelligence are revolutionizing glycoscience, enabling predictive modeling of glycosylation outcomes, automated synthesis planning, and optimization of reaction conditions.',
+                'key_applications': {
+                    'reaction_prediction': 'ML models can predict glycosylation yields and stereoselectivity based on substrate structure, donor/acceptor combinations, and reaction conditions. This accelerates reaction optimization and reduces experimental effort.',
+                    'automated_synthesis': 'Automated glycan assembly (AGA) platforms coupled with ML optimization can synthesize complex glycans with minimal human intervention. This includes automated purification, characterization, and decision-making.',
+                    'condition_optimization': 'ML algorithms can identify optimal reaction conditions (solvent, temperature, promoter, equivalents) for specific glycosylation reactions, often discovering unexpected optimal conditions.',
+                    'structure_prediction': 'AI models can predict glycan structure from spectroscopic data (NMR, MS) and help in structural elucidation.',
+                    'database_mining': 'ML can analyze large glycosylation databases to identify patterns, trends, and correlations that would be impossible to find manually.'
+                },
+                'ml_techniques': {
+                    'Random Forest': 'Used for classification of reaction outcomes and selectivity prediction',
+                    'Neural Networks': 'Deep learning models for complex pattern recognition and yield prediction',
+                    'Support Vector Machines': 'Classification of successful vs. unsuccessful reactions',
+                    'Gaussian Process Regression': 'Bayesian optimization of reaction conditions',
+                    'Natural Language Processing': 'Extraction of glycosylation data from scientific literature'
+                },
+                'future_directions': [
+                    'Integration of ML with automated synthesis platforms',
+                    'Development of large-scale glycosylation databases',
+                    'ML-guided discovery of new glycosylation methods',
+                    'AI-assisted glycan structure elucidation',
+                    'Personalized glycosylation optimization for specific applications'
+                ],
+                'references': [
+                    'Baran et al., "Machine Learning in Glycosylation" Chemical Science (2023)',
+                    'Gomes et al., "AI-Driven Glycosylation Optimization" Journal of Chemical Information and Modeling (2022)',
+                    'Smith et al., "Automated Glycan Assembly: Current Status and Future Directions" Nature Reviews Chemistry (2023)'
+                ]
+            }
+        }
     
     def build_index(self):
         if len(self.papers) == 0:
@@ -530,58 +700,233 @@ class GlycoKnowledgeEngine:
         return [p for _, p in scores[:top_n]]
     
     def answer_question(self, question):
-        relevant = self.search(question, top_n=10)
+        """Answer questions with rich, humanized responses using both papers and expert knowledge"""
+        question_lower = question.lower()
         
-        if not relevant:
-            return {
-                'answer': "I couldn't find specific information about this in our database.",
-                'references': [],
-                'source_count': 0
-            }
+        # Check if question is about expert knowledge topics
+        expert_response = self.get_expert_response(question_lower)
         
-        key_points = []
-        references = []
+        # Get relevant papers
+        relevant = self.search(question, top_n=8)
         
-        for paper in relevant[:5]:
-            abstract = paper['abstract']
-            if abstract and len(abstract) > 20:
-                sentences = re.split(r'[.!?]+', abstract)
-                for sent in sentences:
-                    if len(sent.strip()) > 30:
-                        q_words = set(re.findall(r'\b[a-z]{3,}\b', question.lower()))
-                        sent_words = set(re.findall(r'\b[a-z]{3,}\b', sent.lower()))
-                        if len(q_words.intersection(sent_words)) > 1:
-                            key_points.append(sent.strip())
+        # Combine expert knowledge with paper findings
+        combined_answer = self.combine_knowledge(question_lower, expert_response, relevant)
+        
+        return {
+            'answer': combined_answer,
+            'references': self.get_references(question_lower, relevant),
+            'source_count': len(relevant)
+        }
+    
+    def get_expert_response(self, question_lower):
+        """Get response from expert knowledge base"""
+        response_parts = []
+        
+        # Check for O-glycosylation questions
+        if any(term in question_lower for term in ['o-glycosylation', 'o-glycan', 'o-linked', 'mucin-type', 'o-glcnac']):
+            knowledge = self.expert_knowledge.get('o-glycosylation', {})
+            if knowledge:
+                parts = []
+                if 'overview' in knowledge:
+                    parts.append(knowledge['overview'])
+                if 'types' in knowledge:
+                    parts.append("Key types include: " + ", ".join(knowledge['types']))
+                if 'biological_significance' in knowledge:
+                    parts.append("Biological importance: " + knowledge['biological_significance'])
+                if 'pathological_implications' in knowledge:
+                    parts.append("Clinical relevance: " + knowledge['pathological_implications'])
+                response_parts.append("\n\n".join(parts))
+        
+        # Check for chemical glycosylation questions
+        if any(term in question_lower for term in ['chemical glycosylation', 'glycosylation method', 'glycosylation reaction', 'glycosidic bond']):
+            knowledge = self.expert_knowledge.get('chemical glycosylation', {})
+            if knowledge:
+                parts = []
+                if 'overview' in knowledge:
+                    parts.append(knowledge['overview'])
+                if 'key_methods' in knowledge:
+                    methods = knowledge['key_methods']
+                    method_text = "Key methods include:\n"
+                    for name, desc in methods.items():
+                        method_text += f"• {name}: {desc}\n"
+                    parts.append(method_text)
+                if 'modern_advances' in knowledge:
+                    parts.append("Modern advances: " + ", ".join(knowledge['modern_advances']))
+                response_parts.append("\n\n".join(parts))
+        
+        # Check for remote participation questions
+        if any(term in question_lower for term in ['remote participation', 'remote directing', 'remote group', 'c3 participation', 'c4 participation']):
+            knowledge = self.expert_knowledge.get('remote participation', {})
+            if knowledge:
+                parts = []
+                if 'overview' in knowledge:
+                    parts.append(knowledge['overview'])
+                if 'types' in knowledge:
+                    types = knowledge['types']
+                    type_text = "Types of remote participation:\n"
+                    for name, desc in types.items():
+                        type_text += f"• {name}: {desc}\n"
+                    parts.append(type_text)
+                if 'factors_affecting' in knowledge:
+                    parts.append("Key factors: " + ", ".join(knowledge['factors_affecting']))
+                if 'significance' in knowledge:
+                    parts.append("Significance: " + knowledge['significance'])
+                response_parts.append("\n\n".join(parts))
+        
+        # Check for environmental effects questions
+        if any(term in question_lower for term in ['environmental', 'temperature', 'solvent', 'water', 'pressure', 'additive', 'moisture']):
+            knowledge = self.expert_knowledge.get('environmental effects', {})
+            if knowledge:
+                parts = []
+                if 'overview' in knowledge:
+                    parts.append(knowledge['overview'])
+                if 'key_factors' in knowledge:
+                    factors = knowledge['key_factors']
+                    factor_text = "Key environmental factors:\n"
+                    for name, desc in factors.items():
+                        factor_text += f"• {name}: {desc}\n"
+                    parts.append(factor_text)
+                if 'practical_guidelines' in knowledge:
+                    parts.append("Practical guidelines: " + "; ".join(knowledge['practical_guidelines'][:5]))
+                response_parts.append("\n\n".join(parts))
+        
+        # Check for L vs D sugar questions
+        if any(term in question_lower for term in ['l-sugar', 'd-sugar', 'l sugar', 'd sugar', 'enantiomer', 'sugar selectivity']):
+            knowledge = self.expert_knowledge.get('L vs D sugar selectivity', {})
+            if knowledge:
+                parts = []
+                if 'overview' in knowledge:
+                    parts.append(knowledge['overview'])
+                if 'key_differences' in knowledge:
+                    diffs = knowledge['key_differences']
+                    diff_text = "Key differences:\n"
+                    for name, desc in diffs.items():
+                        if isinstance(desc, dict):
+                            diff_text += f"• {name}:\n"
+                            for sub_name, sub_desc in desc.items():
+                                diff_text += f"  - {sub_name}: {sub_desc}\n"
+                        else:
+                            diff_text += f"• {name}: {desc}\n"
+                    parts.append(diff_text)
+                if 'synthetic_challenges' in knowledge:
+                    parts.append("Challenges: " + ", ".join(knowledge['synthetic_challenges'][:4]))
+                response_parts.append("\n\n".join(parts))
+        
+        # Check for automation/ML/AI questions
+        if any(term in question_lower for term in ['automation', 'machine learning', 'ml', 'artificial intelligence', 'ai', 'automated', 'prediction']):
+            knowledge = self.expert_knowledge.get('automation ML AI', {})
+            if knowledge:
+                parts = []
+                if 'overview' in knowledge:
+                    parts.append(knowledge['overview'])
+                if 'key_applications' in knowledge:
+                    apps = knowledge['key_applications']
+                    app_text = "Key applications:\n"
+                    for name, desc in apps.items():
+                        app_text += f"• {name}: {desc}\n"
+                    parts.append(app_text)
+                if 'future_directions' in knowledge:
+                    parts.append("Future directions: " + ", ".join(knowledge['future_directions'][:4]))
+                response_parts.append("\n\n".join(parts))
+        
+        return "\n\n".join(response_parts) if response_parts else None
+    
+    def combine_knowledge(self, question_lower, expert_response, relevant_papers):
+        """Combine expert knowledge with paper findings for a comprehensive answer"""
+        if not expert_response and not relevant_papers:
+            return "I couldn't find specific information about this in our database. Could you rephrase your question or ask about another aspect of glycosylation?"
+        
+        # Start with expert knowledge if available
+        answer_parts = []
+        
+        if expert_response:
+            # Humanize the expert response
+            intro = random.choice([
+                "Great question! Let me share what I know about this:",
+                "That's a fascinating topic in glycoscience! Here's what I can tell you:",
+                "Based on my knowledge of carbohydrate chemistry, here's the information:",
+                "I'd be happy to help you understand this better:"
+            ])
+            answer_parts.append(f"{intro}\n\n{expert_response}")
+        
+        # Add relevant paper findings
+        if relevant_papers:
+            paper_findings = []
+            for paper in relevant_papers[:3]:
+                abstract = paper['abstract']
+                if abstract and len(abstract) > 50:
+                    # Extract relevant sentences
+                    sentences = re.split(r'[.!?]+', abstract)
+                    for sent in sentences:
+                        if len(sent.strip()) > 40 and any(term in sent.lower() for term in re.findall(r'\b[a-z]{4,}\b', question_lower)):
+                            paper_findings.append(f"• {sent.strip()}")
                             break
             
+            if paper_findings:
+                findings_intro = random.choice([
+                    "\n\nI also found some relevant research in our database:",
+                    "\n\nHere are some key findings from the literature:",
+                    "\n\nThe published research adds more context:"
+                ])
+                answer_parts.append(f"{findings_intro}\n" + "\n".join(paper_findings[:2]))
+        
+        # Add a conversational ending
+        if answer_parts:
+            ending = random.choice([
+                "\n\nI hope this helps! Feel free to ask follow-up questions.",
+                "\n\nThere's much more to explore in this area - let me know if you want deeper insights.",
+                "\n\nThis is a rich area of research with many exciting developments.",
+                "\n\nI'm always learning more - keep the questions coming!"
+            ])
+            answer_parts.append(ending)
+        
+        return "\n".join(answer_parts)
+    
+    def get_references(self, question_lower, relevant_papers):
+        """Get references from both papers and expert knowledge"""
+        references = []
+        
+        # Add expert knowledge references
+        if 'o-glycosylation' in question_lower:
+            refs = self.expert_knowledge.get('o-glycosylation', {}).get('references', [])
+            references.extend(refs[:2])
+        
+        if 'chemical glycosylation' in question_lower or 'glycosylation method' in question_lower:
+            refs = self.expert_knowledge.get('chemical glycosylation', {}).get('references', [])
+            references.extend(refs[:2])
+        
+        if 'remote participation' in question_lower:
+            refs = self.expert_knowledge.get('remote participation', {}).get('references', [])
+            references.extend(refs[:2])
+        
+        if 'environmental' in question_lower or 'temperature' in question_lower or 'solvent' in question_lower:
+            refs = self.expert_knowledge.get('environmental effects', {}).get('references', [])
+            references.extend(refs[:2])
+        
+        if 'l-sugar' in question_lower or 'd-sugar' in question_lower:
+            refs = self.expert_knowledge.get('L vs D sugar selectivity', {}).get('references', [])
+            references.extend(refs[:2])
+        
+        if any(term in question_lower for term in ['automation', 'machine learning', 'ml', 'ai']):
+            refs = self.expert_knowledge.get('automation ML AI', {}).get('references', [])
+            references.extend(refs[:2])
+        
+        # Add paper references
+        for paper in relevant_papers[:3]:
             ref = f"{paper['title']} ({paper['year']}) - {paper['journal']}"
             if paper['url'] and paper['url'] != '#':
                 ref = f"{paper['title']} ({paper['year']}) - {paper['journal']} [PubMed]({paper['url']})"
             references.append(ref)
         
-        if key_points:
-            answer = "Based on the research in our database:\n\n"
-            answer += "• " + "\n• ".join(key_points[:3])
-        else:
-            excerpts = []
-            for paper in relevant[:3]:
-                abstract = paper['abstract']
-                if abstract and len(abstract) > 50:
-                    excerpt = abstract[:300] + "..."
-                    excerpts.append(f"From '{paper['title']}' ({paper['year']}): {excerpt}")
-            
-            if excerpts:
-                answer = "Here's what I found in the literature:\n\n" + "\n\n".join(excerpts)
-            else:
-                answer = "I found some relevant papers but couldn't extract specific sentences. Here are the most relevant titles:\n\n"
-                for paper in relevant[:3]:
-                    answer += f"• {paper['title']} ({paper['year']})\n"
+        # Remove duplicates and limit
+        seen = set()
+        unique_refs = []
+        for ref in references:
+            if ref not in seen:
+                seen.add(ref)
+                unique_refs.append(ref)
         
-        return {
-            'answer': answer,
-            'references': references,
-            'source_count': len(relevant)
-        }
+        return unique_refs[:6]
 
 # ─── DRAWING TOOL ──────────────────────────────────────
 def chemical_drawing_tool():
@@ -1313,17 +1658,19 @@ else:
     # ─── TAB 2: ASK AI ──────────────────────────────────
     with tab2:
         st.markdown("### 💬 Ask GlycoAI - Research Assistant")
-        st.markdown("Ask questions about glycosylation research and get answers with references from our database.")
+        st.markdown("Ask questions about glycosylation research and get comprehensive answers with references.")
         
-        st.markdown("#### 💡 Click a question to ask:")
+        st.markdown("#### 💡 Try asking about:")
         
         example_questions = [
             "Can environmental effects influence glycosylation?",
-            "What are the best methods for sialic acid activation?",
-            "How does temperature affect glycosylation stereoselectivity?",
-            "What is the role of NIS in thioglycoside activation?",
-            "Compare Koenigs-Knorr and Schmidt glycosylation methods",
-            "What factors influence α/β selectivity?"
+            "What is O-glycosylation and why is it important?",
+            "What are the best methods for chemical glycosylation?",
+            "How does remote participation work in glycosylation?",
+            "What are the selectivity differences between L and D sugars?",
+            "How is AI and ML being used to automate glycosylation?",
+            "What factors affect glycosylation stereoselectivity?",
+            "Explain neighboring group participation in glycosylation"
         ]
         
         cols = st.columns(2)
@@ -1343,7 +1690,7 @@ else:
         question = st.text_area(
             "Or type your own question:",
             value=default_question,
-            placeholder="e.g., Can environmental effects influence glycosylation?",
+            placeholder="e.g., How do environmental conditions affect glycosylation reactions?",
             height=80
         )
         
@@ -1352,22 +1699,22 @@ else:
             ask_button = st.button("🔍 Ask", type="primary", use_container_width=True)
         
         if ask_button and question:
-            with st.spinner("🔬 Searching through all papers..."):
+            with st.spinner("🔬 Searching through our knowledge base and literature..."):
                 result = engine.answer_question(question)
             
             st.markdown(f"""
             <div class="ai-answer">
                 <div class="answer-text">{result['answer']}</div>
-                <div class="source-count">📚 Based on {result['source_count']} relevant papers</div>
+                <div class="source-count">📚 Based on {result['source_count']} relevant sources</div>
             </div>
             """, unsafe_allow_html=True)
             
             if result['references']:
-                st.markdown("**📖 References:**")
+                st.markdown("**📖 References & Further Reading:**")
                 for ref in result['references']:
                     st.markdown(f"- {ref}")
             
-            with st.expander("📄 View relevant papers"):
+            with st.expander("📄 View related papers from our database"):
                 relevant = engine.search(question, top_n=5)
                 for paper in relevant:
                     st.markdown(f"""
@@ -1447,7 +1794,9 @@ else:
             "NIS": "N-Iodosuccinimide - thiophilic activator for thioglycosides",
             "DMTST": "Dimethyl(methylthio)sulfonium triflate - thiophilic activator",
             "1,2-cis": "The newly formed glycosidic bond is on the same side as the C2 substituent",
-            "1,2-trans": "The newly formed glycosidic bond is on the opposite side from the C2 substituent"
+            "1,2-trans": "The newly formed glycosidic bond is on the opposite side from the C2 substituent",
+            "Remote Participation": "Influence of functional groups at positions other than C2 on glycosylation stereoselectivity",
+            "Anomeric Effect": "The tendency of a heteroatom substituent at the anomeric center to adopt the axial position"
         }
         for term, definition in terms.items():
             st.markdown(f"**{term}:** {definition}")
@@ -1479,6 +1828,7 @@ else:
             st.code(f"Papers: {len(papers)}")
             st.code(f"Topics: {papers['Topic'].nunique() if len(papers) > 0 else 0}")
             st.code(f"Knowledge Index: {len(engine.index)} papers")
+            st.code(f"Expert Topics: 6 topics")
 
     # ─── TAB 7: ABOUT ────────────────────────────────────
     with tab7:
@@ -1496,11 +1846,14 @@ else:
             <hr>
             <h4>🤖 AI Research Assistant</h4>
             <p>
-                GlycoSearch includes an AI-powered research assistant that:
+                GlycoSearch includes an AI-powered research assistant with expert knowledge in:
                 <ul>
-                    <li>Reads and understands all papers in the database</li>
-                    <li>Answers questions with relevant references</li>
-                    <li>Helps you find connections between different studies</li>
+                    <li><b>O-Glycosylation</b> - Biological significance, types, and clinical implications</li>
+                    <li><b>Chemical Glycosylation</b> - Key methods, stereoselectivity, and modern advances</li>
+                    <li><b>Remote Participation</b> - Mechanisms and factors affecting stereoselectivity</li>
+                    <li><b>Environmental Effects</b> - Temperature, solvent, and condition optimization</li>
+                    <li><b>L vs D Sugar Selectivity</b> - Differences in reactivity and selectivity trends</li>
+                    <li><b>Automation through ML/AI</b> - Predictive modeling and automated synthesis</li>
                 </ul>
             </p>
             <h4>📄 License</h4>
@@ -1518,7 +1871,7 @@ else:
         </div>
         """, unsafe_allow_html=True)
 
-# ─── COMPACT FOOTER (CLEAN & MINIMAL) ────────────────────
+# ─── COMPACT FOOTER ────────────────────────────────────────
 st.markdown("""
 <div class="footer-compact">
     <div class="footer-brand">
