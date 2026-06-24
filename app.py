@@ -16,14 +16,14 @@ st.set_page_config(
 # ─── CUSTOM CSS ──────────────────────────────────────────
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
     
     .stApp { background: #f5f7fb; }
     
     /* ── HEADER ── */
     .header-wrapper {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        padding: 1.2rem 0 0.8rem 0;
+        padding: 1rem 0 0.8rem 0;
         border-radius: 0 0 30px 30px;
         margin-bottom: 1.5rem;
         box-shadow: 0 4px 20px rgba(15, 23, 42, 0.12);
@@ -57,30 +57,25 @@ st.markdown("""
     .header-left {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 0.8rem;
     }
     
     .logo-box {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 0.1rem;
-        padding: 0.2rem 1rem 0.2rem 0.6rem;
-    }
-    
-    .logo-svg {
-        width: 50px;
-        height: 50px;
+        gap: 0.05rem;
+        padding: 0.1rem 0.8rem 0.1rem 0.4rem;
     }
     
     .logo-label {
         font-family: 'Inter', sans-serif;
-        font-weight: 600;
-        font-size: 0.6rem;
-        color: rgba(255,255,255,0.5);
-        letter-spacing: 0.08em;
+        font-weight: 500;
+        font-size: 0.5rem;
+        color: rgba(255,255,255,0.35);
+        letter-spacing: 0.06em;
         text-transform: uppercase;
-        margin-top: 0.1rem;
+        margin-top: 0.05rem;
     }
     
     .header-title-block {
@@ -91,7 +86,7 @@ st.markdown("""
     .header-title {
         font-family: 'Inter', sans-serif;
         font-weight: 700;
-        font-size: 1.6rem;
+        font-size: 1.5rem;
         color: #ffffff;
         letter-spacing: -0.02em;
         margin: 0;
@@ -107,9 +102,9 @@ st.markdown("""
     .header-subtitle {
         font-family: 'Inter', sans-serif;
         font-weight: 300;
-        font-size: 0.75rem;
-        color: rgba(255, 255, 255, 0.4);
-        letter-spacing: 0.05em;
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.35);
+        letter-spacing: 0.04em;
     }
     
     .header-right {
@@ -123,7 +118,7 @@ st.markdown("""
         display: flex;
         gap: 1.2rem;
         background: rgba(255, 255, 255, 0.04);
-        padding: 0.3rem 1rem;
+        padding: 0.25rem 1rem;
         border-radius: 50px;
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.05);
@@ -131,20 +126,20 @@ st.markdown("""
     
     .stat-item {
         text-align: center;
-        padding: 0.1rem 0.3rem;
+        padding: 0.1rem 0.2rem;
     }
     
     .stat-number {
         font-family: 'Inter', sans-serif;
         font-weight: 600;
-        font-size: 1rem;
+        font-size: 0.95rem;
         color: #ffffff;
     }
     
     .stat-label {
         font-family: 'Inter', sans-serif;
         font-weight: 400;
-        font-size: 0.55rem;
+        font-size: 0.5rem;
         color: rgba(255, 255, 255, 0.3);
         text-transform: uppercase;
         letter-spacing: 0.06em;
@@ -152,22 +147,22 @@ st.markdown("""
     
     /* ── TABS ── */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 0.3rem;
+        gap: 0.2rem;
         background: #ffffff;
-        padding: 0.4rem 0.6rem;
-        border-radius: 14px;
+        padding: 0.3rem 0.5rem;
+        border-radius: 12px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         border: 1px solid #e8ecf2;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.2rem;
     }
     
     .stTabs [data-baseweb="tab"] {
         font-family: 'Inter', sans-serif;
         font-weight: 500;
-        font-size: 0.9rem !important;
+        font-size: 0.85rem !important;
         color: #64748b;
-        padding: 0.5rem 1.4rem !important;
-        border-radius: 10px;
+        padding: 0.4rem 1.2rem !important;
+        border-radius: 8px;
         transition: all 0.2s ease;
         background: transparent;
     }
@@ -180,35 +175,35 @@ st.markdown("""
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
         background: #0f172a;
         color: #ffffff;
-        box-shadow: 0 2px 12px rgba(15, 23, 42, 0.12);
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.12);
         font-weight: 600;
     }
     
     /* ── SEARCH ── */
     .search-wrapper {
         background: #ffffff;
-        padding: 1.2rem 1.5rem;
-        border-radius: 14px;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         border: 1px solid #e8ecf2;
-        margin-bottom: 1.2rem;
+        margin-bottom: 1rem;
     }
     
     .search-label {
         font-family: 'Inter', sans-serif;
         font-weight: 500;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         color: #0f172a;
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.2rem;
     }
     
     /* ── RESULT CARDS ── */
     .result-card {
         background: #ffffff;
-        padding: 0.8rem 1.2rem;
+        padding: 0.7rem 1.2rem;
         border-radius: 10px;
         border: 1px solid #e8ecf2;
-        margin-bottom: 0.6rem;
+        margin-bottom: 0.5rem;
         transition: all 0.2s ease;
     }
     
@@ -220,27 +215,27 @@ st.markdown("""
     .result-title {
         font-family: 'Inter', sans-serif;
         font-weight: 600;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         color: #0f172a;
         line-height: 1.4;
     }
     
     .result-meta {
         font-family: 'Inter', sans-serif;
-        font-size: 0.7rem;
+        font-size: 0.65rem;
         color: #94a3b8;
         margin-top: 0.2rem;
         display: flex;
         flex-wrap: wrap;
-        gap: 0.5rem;
+        gap: 0.4rem;
         align-items: center;
     }
     
     .badge {
         display: inline-block;
-        padding: 0.1rem 0.6rem;
+        padding: 0.08rem 0.6rem;
         border-radius: 50px;
-        font-size: 0.6rem;
+        font-size: 0.55rem;
         font-weight: 500;
     }
     .badge-year { background: #f1f5f9; color: #475569; }
@@ -250,50 +245,87 @@ st.markdown("""
     .result-abstract {
         font-family: 'Inter', sans-serif;
         font-weight: 400;
-        font-size: 0.82rem;
+        font-size: 0.78rem;
         color: #475569;
         line-height: 1.5;
-        margin-top: 0.4rem;
-        padding-top: 0.4rem;
+        margin-top: 0.3rem;
+        padding-top: 0.3rem;
         border-top: 1px solid #f1f5f9;
     }
     
-    /* ── ANALYTICS ── */
-    .section-title {
-        font-family: 'Inter', sans-serif;
-        font-weight: 600;
-        font-size: 1rem;
-        color: #0f172a;
-        margin-bottom: 0.5rem;
-    }
-    
     /* ── FOOTER ── */
-    .sinica-footer {
+    .footer-container {
         background: linear-gradient(135deg, #0f172a, #1e293b);
-        padding: 1.2rem 0 1rem 0;
+        padding: 1.2rem 0;
         border-radius: 16px 16px 0 0;
-        margin-top: 2.5rem;
-        color: rgba(255,255,255,0.6);
-        font-family: 'Inter', sans-serif;
+        margin-top: 2rem;
         text-align: center;
         border-top: 3px solid transparent;
         border-image: linear-gradient(90deg, #818cf8, #c084fc) 1;
     }
     
-    .sinica-footer a { color: #a78bfa; text-decoration: none; }
-    .sinica-footer a:hover { text-decoration: underline; }
-    .sinica-footer .org-name { color: #ffffff; font-weight: 500; font-size: 0.95rem; }
-    .sinica-footer .org-desc { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
-    .sinica-footer .divider { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 0.5rem auto; width: 30%; }
+    .footer-container .org-name {
+        color: #ffffff;
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        font-size: 0.9rem;
+        margin-bottom: 0.1rem;
+    }
+    
+    .footer-container .org-desc {
+        color: rgba(255,255,255,0.4);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.75rem;
+    }
+    
+    .footer-container .divider {
+        border: none;
+        border-top: 1px solid rgba(255,255,255,0.06);
+        margin: 0.5rem auto;
+        width: 25%;
+    }
+    
+    .footer-container .footer-links {
+        display: flex;
+        justify-content: center;
+        gap: 1.2rem;
+        flex-wrap: wrap;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.7rem;
+        color: rgba(255,255,255,0.3);
+    }
+    
+    .footer-container .footer-links a {
+        color: #a78bfa;
+        text-decoration: none;
+    }
+    
+    .footer-container .footer-links a:hover {
+        text-decoration: underline;
+    }
+    
+    .footer-container .footer-address {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.6rem;
+        color: rgba(255,255,255,0.12);
+        margin-top: 0.3rem;
+    }
+    
+    .footer-container .footer-email {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.7rem;
+        color: rgba(255,255,255,0.25);
+        margin-top: 0.1rem;
+    }
     
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
         .header-content { flex-direction: column; align-items: flex-start; padding: 0 1rem; }
-        .header-stats { flex-wrap: wrap; gap: 0.5rem; padding: 0.3rem 0.8rem; }
+        .header-stats { flex-wrap: wrap; gap: 0.5rem; padding: 0.25rem 0.8rem; }
         .header-title { font-size: 1.2rem; }
-        .logo-svg { width: 40px; height: 40px; }
-        .stTabs [data-baseweb="tab"] { font-size: 0.75rem !important; padding: 0.3rem 0.8rem !important; }
-        .sinica-footer { padding: 0.8rem 0; }
+        .stTabs [data-baseweb="tab"] { font-size: 0.7rem !important; padding: 0.3rem 0.8rem !important; }
+        .footer-container { padding: 0.8rem 0; }
+        .footer-container .org-name { font-size: 0.8rem; }
     }
     
     /* ── ABOUT TAB ── */
@@ -304,10 +336,19 @@ st.markdown("""
         border: 1px solid #e8ecf2;
         margin: 0.5rem 0;
     }
-    .about-box h3 { color: #0f172a; font-family: 'Inter', sans-serif; font-weight: 600; }
-    .about-box p { color: #475569; font-family: 'Inter', sans-serif; font-size: 0.9rem; line-height: 1.6; }
-    .about-box hr { border: none; border-top: 1px solid #e8ecf2; margin: 0.8rem 0; }
+    .about-box h3 { color: #0f172a; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 1.1rem; }
+    .about-box p { color: #475569; font-family: 'Inter', sans-serif; font-size: 0.85rem; line-height: 1.6; }
+    .about-box hr { border: none; border-top: 1px solid #e8ecf2; margin: 0.6rem 0; }
     .about-box .highlight { color: #6366f1; font-weight: 500; }
+    
+    /* ── SECTION TITLES ── */
+    .section-title {
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #0f172a;
+        margin-bottom: 0.3rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -328,73 +369,153 @@ papers = load_data()
 def chemical_drawing_tool():
     components.html("""
     <style>
-        .draw-toolbar { display: flex; gap: 4px; padding: 8px 0; flex-wrap: wrap; align-items: center; }
-        .draw-toolbar button { padding: 4px 10px; border: none; border-radius: 6px; background: #eef2f6; color: #0f172a; cursor: pointer; font-size: 11px; font-family: 'Inter', sans-serif; font-weight: 500; transition: all 0.2s; }
+        .draw-header {
+            background: linear-gradient(135deg, #f8fafc, #eef2ff);
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.8rem;
+            text-align: center;
+        }
+        .draw-header h2 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: #0f172a;
+            margin: 0;
+        }
+        .draw-header h2 span {
+            background: linear-gradient(135deg, #6366f1, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .draw-header p {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 0.2rem 0 0 0;
+        }
+        .draw-toolbar {
+            display: flex;
+            gap: 4px;
+            padding: 6px 0;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .draw-toolbar button {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 6px;
+            background: #f1f5f9;
+            color: #0f172a;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
         .draw-toolbar button:hover { background: #e2e8f0; }
         .draw-toolbar button.active { background: #0f172a; color: white; }
         .draw-toolbar button.danger { background: #fee2e2; color: #991b1b; }
+        .draw-toolbar button.danger:hover { background: #fecaca; }
         .draw-toolbar button.success { background: #dcfce7; color: #166534; }
+        .draw-toolbar button.success:hover { background: #bbf7d0; }
         .draw-toolbar button.warning { background: #fef3c7; color: #92400e; }
+        .draw-toolbar button.warning:hover { background: #fde68a; }
         .draw-toolbar button.info { background: #dbeafe; color: #1e40af; }
+        .draw-toolbar button.info:hover { background: #bfdbfe; }
         .draw-toolbar button.purple { background: #f3e8ff; color: #6b21a8; }
-        .draw-toolbar select { padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 11px; font-family: 'Inter', sans-serif; background: white; }
-        #canvas { border: 2px solid #e2e8f0; background: white; border-radius: 12px; cursor: crosshair; width: 100%; height: auto; }
-        #smiles-output { width: 100%; padding: 8px; border: 2px solid #e2e8f0; border-radius: 8px; margin-top: 8px; font-family: monospace; font-size: 12px; }
-        .mode-status { padding: 2px 10px; border-radius: 50px; font-size: 10px; font-weight: 500; font-family: 'Inter', sans-serif; display: inline-block; }
+        .draw-toolbar button.purple:hover { background: #e9d5ff; }
+        .draw-toolbar select {
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            font-size: 11px;
+            font-family: 'Inter', sans-serif;
+            background: white;
+        }
+        #canvas {
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 12px;
+            cursor: crosshair;
+            width: 100%;
+            height: auto;
+        }
+        #smiles-output {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            margin-top: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            background: #f8fafc;
+        }
+        .mode-status {
+            padding: 2px 10px;
+            border-radius: 50px;
+            font-size: 10px;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            display: inline-block;
+        }
         .mode-draw { background: #dcfce7; color: #166534; }
         .mode-replace { background: #fef3c7; color: #92400e; }
         .mode-delete { background: #fee2e2; color: #991b1b; }
         .mode-select { background: #dbeafe; color: #1e40af; }
         .mode-eraser { background: #fce4ec; color: #880e4f; }
         .draw-info { color: #94a3b8; font-size: 10px; font-family: 'Inter', sans-serif; }
-        .toolbar-group { display: flex; gap: 3px; align-items: center; background: #f8fafc; padding: 2px 6px; border-radius: 6px; }
-        .toolbar-label { font-size: 9px; color: #94a3b8; font-weight: 600; margin-right: 2px; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
-        .bond-type-indicator { font-size: 10px; color: #64748b; padding: 1px 6px; background: #f1f5f9; border-radius: 4px; }
+        .toolbar-group { display: flex; gap: 3px; align-items: center; background: #f8fafc; padding: 2px 8px; border-radius: 8px; }
+        .toolbar-label { font-size: 9px; color: #94a3b8; font-weight: 600; margin-right: 3px; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
+        .bond-type-indicator { font-size: 10px; color: #64748b; padding: 1px 8px; background: #f1f5f9; border-radius: 4px; }
     </style>
-    <div>
-        <div class="draw-toolbar">
-            <div class="toolbar-group">
-                <span class="toolbar-label">Mode</span>
-                <button id="btn-draw" class="active">✏️ Atom</button>
-                <button id="btn-replace" class="warning">🔄 Replace</button>
-                <button id="btn-line">🔗 Bond</button>
-                <button id="btn-eraser" class="danger">🧹 Eraser</button>
-                <button id="btn-select" class="info">⬜ Select</button>
-                <button id="btn-benzene" class="purple">⬡ Benzene</button>
-            </div>
-            <div class="toolbar-group">
-                <span class="toolbar-label">Atom</span>
-                <select id="atom-select">
-                    <option value="C">C</option><option value="O">O</option><option value="N">N</option><option value="H">H</option>
-                    <option value="S">S</option><option value="P">P</option><option value="F">F</option><option value="Cl">Cl</option>
-                    <option value="Br">Br</option><option value="I">I</option>
-                    <option value="OH">OH</option><option value="OMe">OMe</option><option value="OBn">OBn</option><option value="OBz">OBz</option>
-                    <option value="OAc">OAc</option><option value="N3">N3</option><option value="NH2">NH2</option><option value="OTs">OTs</option>
-                    <option value="STol">STol</option>
-                    <option value="TBDMS">TBDMS</option><option value="TIPS">TIPS</option>
-                    <option value="Bz">Bz</option><option value="Bn">Bn</option><option value="Ac">Ac</option>
-                </select>
-            </div>
-            <div class="toolbar-group">
-                <span class="toolbar-label">Bond</span>
-                <button id="btn-single-bond" class="active">─</button>
-                <button id="btn-double-bond">═</button>
-                <button id="btn-triple-bond">≡</button>
-            </div>
-            <div class="toolbar-group">
-                <button id="btn-undo">↩️ Undo</button>
-                <button id="btn-clear" class="danger">🗑️ Clear</button>
-                <button id="btn-smiles" class="success">📋 SMILES</button>
-            </div>
-        </div>
-        <div style="display:flex; gap:8px; margin-bottom:4px; align-items:center; flex-wrap:wrap;">
-            <span id="mode-status" class="mode-status mode-draw">✏️ Draw Mode</span>
-            <span class="bond-type-indicator" id="bond-type-indicator">Bond: Single</span>
-            <span class="draw-info">💡 Click atom • Eraser: click to remove • Select: drag box + Delete</span>
-        </div>
-        <canvas id="canvas" width="750" height="480"></canvas>
-        <input id="smiles-output" placeholder="SMILES will appear here...">
+    <div class="draw-header">
+        <h2>🧪 Draw <span>Chemical Structure</span></h2>
+        <p>Build molecules by adding atoms and bonds • Select from tool palette below</p>
     </div>
+    <div class="draw-toolbar">
+        <div class="toolbar-group">
+            <span class="toolbar-label">Mode</span>
+            <button id="btn-draw" class="active">✏️ Atom</button>
+            <button id="btn-replace" class="warning">🔄 Replace</button>
+            <button id="btn-line">🔗 Bond</button>
+            <button id="btn-eraser" class="danger">🧹 Eraser</button>
+            <button id="btn-select" class="info">⬜ Select</button>
+            <button id="btn-benzene" class="purple">⬡ Benzene</button>
+        </div>
+        <div class="toolbar-group">
+            <span class="toolbar-label">Atom</span>
+            <select id="atom-select">
+                <option value="C">C</option><option value="O">O</option><option value="N">N</option><option value="H">H</option>
+                <option value="S">S</option><option value="P">P</option><option value="F">F</option><option value="Cl">Cl</option>
+                <option value="Br">Br</option><option value="I">I</option>
+                <option value="OH">OH</option><option value="OMe">OMe</option><option value="OBn">OBn</option><option value="OBz">OBz</option>
+                <option value="OAc">OAc</option><option value="N3">N3</option><option value="NH2">NH2</option><option value="OTs">OTs</option>
+                <option value="STol">STol</option>
+                <option value="TBDMS">TBDMS</option><option value="TIPS">TIPS</option>
+                <option value="Bz">Bz</option><option value="Bn">Bn</option><option value="Ac">Ac</option>
+            </select>
+        </div>
+        <div class="toolbar-group">
+            <span class="toolbar-label">Bond</span>
+            <button id="btn-single-bond" class="active">─</button>
+            <button id="btn-double-bond">═</button>
+            <button id="btn-triple-bond">≡</button>
+        </div>
+        <div class="toolbar-group">
+            <button id="btn-undo">↩️ Undo</button>
+            <button id="btn-clear" class="danger">🗑️ Clear</button>
+            <button id="btn-smiles" class="success">📋 SMILES</button>
+        </div>
+    </div>
+    <div style="display:flex; gap:8px; margin-bottom:6px; align-items:center; flex-wrap:wrap;">
+        <span id="mode-status" class="mode-status mode-draw">✏️ Draw Mode</span>
+        <span class="bond-type-indicator" id="bond-type-indicator">Bond: Single</span>
+        <span class="draw-info">💡 Click to add • Eraser: click to remove • Select: drag + Delete</span>
+    </div>
+    <canvas id="canvas" width="750" height="480"></canvas>
+    <input id="smiles-output" placeholder="SMILES will appear here...">
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -909,42 +1030,43 @@ def render_header():
     valid_years = papers['Year'].dropna() if len(papers) > 0 else []
     topics = papers['Topic'].dropna().unique() if len(papers) > 0 else []
     
-    # Logo: Sugar chair ring + AI Chip
     logo_svg = '''
-    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="24,4 38,12 38,28 24,36 10,28 10,12" stroke="#6366f1" stroke-width="2" fill="rgba(99,102,241,0.06)"/>
-        <line x1="10" y1="12" x2="24" y2="20" stroke="#818cf8" stroke-width="1.2"/>
-        <line x1="24" y1="20" x2="38" y2="12" stroke="#818cf8" stroke-width="1.2"/>
-        <line x1="24" y1="36" x2="38" y2="28" stroke="#818cf8" stroke-width="1.2"/>
-        <line x1="24" y1="36" x2="10" y2="28" stroke="#818cf8" stroke-width="1.2"/>
-        <circle cx="24" cy="4" r="3" fill="#ef4444" stroke="#dc2626" stroke-width="1"/>
-        <text x="24" y="6" font-size="5" fill="white" text-anchor="middle" font-weight="bold">O</text>
-        <circle cx="38" cy="12" r="3" fill="#333" stroke="#333"/>
-        <circle cx="38" cy="28" r="3" fill="#333" stroke="#333"/>
-        <circle cx="24" cy="36" r="3" fill="#333" stroke="#333"/>
-        <circle cx="10" cy="28" r="3" fill="#333" stroke="#333"/>
-        <circle cx="10" cy="12" r="3" fill="#333" stroke="#333"/>
-        <text x="44" y="10" font-size="4" fill="#ef4444" font-weight="bold">OH</text>
-        <text x="44" y="30" font-size="4" fill="#ef4444" font-weight="bold">OH</text>
-        <text x="24" y="42" font-size="4" fill="#ef4444" font-weight="bold">OH</text>
-        <text x="3" y="30" font-size="4" fill="#ef4444" font-weight="bold">OH</text>
-        <text x="3" y="10" font-size="4" fill="#ef4444" font-weight="bold">OH</text>
-        <rect x="17" y="12" width="14" height="14" rx="3" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
-        <line x1="17" y1="16" x2="14" y2="16" stroke="#a78bfa" stroke-width="1"/>
-        <line x1="17" y1="22" x2="14" y2="22" stroke="#a78bfa" stroke-width="1"/>
-        <line x1="31" y1="16" x2="34" y2="16" stroke="#a78bfa" stroke-width="1"/>
-        <line x1="31" y1="22" x2="34" y2="22" stroke="#a78bfa" stroke-width="1"/>
-        <line x1="24" y1="12" x2="24" y2="10" stroke="#a78bfa" stroke-width="1"/>
-        <line x1="24" y1="26" x2="24" y2="28" stroke="#a78bfa" stroke-width="1"/>
-        <circle cx="24" cy="19" r="4.5" fill="rgba(167,139,250,0.12)" stroke="#c084fc" stroke-width="1"/>
-        <circle cx="21.5" cy="17" r="1.2" fill="#a78bfa"/>
-        <circle cx="26.5" cy="17" r="1.2" fill="#a78bfa"/>
-        <circle cx="24" cy="21" r="1.2" fill="#c084fc"/>
-        <line x1="21.5" y1="17" x2="24" y2="21" stroke="#a78bfa" stroke-width="0.8"/>
-        <line x1="26.5" y1="17" x2="24" y2="21" stroke="#a78bfa" stroke-width="0.8"/>
-        <line x1="21.5" y1="17" x2="26.5" y2="17" stroke="#a78bfa" stroke-width="0.8"/>
-        <text x="24" y="14" font-size="3.5" fill="#c084fc" text-anchor="middle" font-weight="700">AI</text>
-        <circle cx="24" cy="11" r="1.5" fill="#22d3ee"><animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/></circle>
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="28,4 44,12 44,30 28,38 12,30 12,12" stroke="#6366f1" stroke-width="2" fill="rgba(99,102,241,0.06)"/>
+        <line x1="12" y1="12" x2="28" y2="20" stroke="#818cf8" stroke-width="1.5"/>
+        <line x1="28" y1="20" x2="44" y2="12" stroke="#818cf8" stroke-width="1.5"/>
+        <line x1="28" y1="38" x2="44" y2="30" stroke="#818cf8" stroke-width="1.5"/>
+        <line x1="28" y1="38" x2="12" y2="30" stroke="#818cf8" stroke-width="1.5"/>
+        <circle cx="28" cy="4" r="4" fill="#ef4444" stroke="#dc2626" stroke-width="1.2"/>
+        <text x="28" y="7" font-size="6.5" fill="white" text-anchor="middle" font-weight="bold">O</text>
+        <circle cx="44" cy="12" r="3.5" fill="#333" stroke="#333"/>
+        <circle cx="44" cy="30" r="3.5" fill="#333" stroke="#333"/>
+        <circle cx="28" cy="38" r="3.5" fill="#333" stroke="#333"/>
+        <circle cx="12" cy="30" r="3.5" fill="#333" stroke="#333"/>
+        <circle cx="12" cy="12" r="3.5" fill="#333" stroke="#333"/>
+        <text x="50" y="10" font-size="5" fill="#ef4444" font-weight="bold">OH</text>
+        <text x="50" y="32" font-size="5" fill="#ef4444" font-weight="bold">OH</text>
+        <text x="28" y="44" font-size="5" fill="#ef4444" font-weight="bold">OH</text>
+        <text x="5" y="32" font-size="5" fill="#ef4444" font-weight="bold">OH</text>
+        <text x="5" y="10" font-size="5" fill="#ef4444" font-weight="bold">OH</text>
+        <rect x="21" y="14" width="14" height="14" rx="3" fill="#0f172a" stroke="#a78bfa" stroke-width="1.8"/>
+        <line x1="21" y1="18" x2="18" y2="18" stroke="#a78bfa" stroke-width="1.2"/>
+        <line x1="21" y1="24" x2="18" y2="24" stroke="#a78bfa" stroke-width="1.2"/>
+        <line x1="35" y1="18" x2="38" y2="18" stroke="#a78bfa" stroke-width="1.2"/>
+        <line x1="35" y1="24" x2="38" y2="24" stroke="#a78bfa" stroke-width="1.2"/>
+        <line x1="28" y1="14" x2="28" y2="12" stroke="#a78bfa" stroke-width="1.2"/>
+        <line x1="28" y1="28" x2="28" y2="30" stroke="#a78bfa" stroke-width="1.2"/>
+        <circle cx="28" cy="21" r="5" fill="rgba(167,139,250,0.12)" stroke="#c084fc" stroke-width="1.2"/>
+        <circle cx="25.5" cy="18.5" r="1.5" fill="#a78bfa"/>
+        <circle cx="30.5" cy="18.5" r="1.5" fill="#a78bfa"/>
+        <circle cx="28" cy="24" r="1.5" fill="#c084fc"/>
+        <line x1="25.5" y1="18.5" x2="28" y2="24" stroke="#a78bfa" stroke-width="1"/>
+        <line x1="30.5" y1="18.5" x2="28" y2="24" stroke="#a78bfa" stroke-width="1"/>
+        <line x1="25.5" y1="18.5" x2="30.5" y2="18.5" stroke="#a78bfa" stroke-width="1"/>
+        <text x="28" y="16" font-size="4" fill="#c084fc" text-anchor="middle" font-weight="700">AI</text>
+        <circle cx="28" cy="12.5" r="2" fill="#22d3ee">
+            <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
+        </circle>
     </svg>
     '''
     
@@ -953,7 +1075,7 @@ def render_header():
         <div class="header-content">
             <div class="header-left">
                 <div class="logo-box">
-                    <div class="logo-svg">{logo_svg}</div>
+                    <div style="width:56px;height:56px;">{logo_svg}</div>
                     <div class="logo-label">CCWang_FizSab</div>
                 </div>
                 <div class="header-title-block">
@@ -1029,7 +1151,7 @@ else:
             results = papers[mask].copy()
             
             st.markdown(f"""
-            <p style="font-family:'Inter',sans-serif;font-weight:500;font-size:0.95rem;color:#0f172a;">
+            <p style="font-family:'Inter',sans-serif;font-weight:500;font-size:0.9rem;color:#0f172a;">
                 📊 Found <strong>{len(results)}</strong> papers
             </p>
             """, unsafe_allow_html=True)
@@ -1123,12 +1245,6 @@ else:
 
     # ─── TAB 4: DRAW ────────────────────────────────────
     with tab4:
-        st.markdown("### 🧪 Chemical Structure Editor")
-        st.markdown("""
-        <p style="font-family:'Inter',sans-serif;font-size:0.85rem;color:#64748b;margin-bottom:0.8rem;">
-            <b>Tools:</b> Draw atoms • Single/Double/Triple bonds • Eraser • Select + Delete • Replace • STol
-        </p>
-        """, unsafe_allow_html=True)
         chemical_drawing_tool()
 
     # ─── TAB 5: SETTINGS ────────────────────────────────
@@ -1186,37 +1302,24 @@ else:
         </div>
         """, unsafe_allow_html=True)
 
-# ─── FOOTER ─────────────────────────────────────────────
+# ─── CLEAN FOOTER ─────────────────────────────────────────
 st.markdown("""
-<div class="sinica-footer">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 0 2rem;">
-        <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin-bottom: 0.3rem;">
-            <span style="font-size: 1.2rem;">🧬</span>
-            <span style="font-weight: 500; font-size: 0.95rem; color: #ffffff;">GlycoSearch</span>
-            <span style="color: rgba(255,255,255,0.25);">·</span>
-            <span style="color: rgba(255,255,255,0.4); font-size: 0.8rem;">v2.0</span>
-        </div>
-        
-        <hr class="divider">
-        
-        <div class="org-name">🏛️ Institute of Chemistry, Academia Sinica</div>
-        <div class="org-desc">Wang Research Group · Dr. Cheng-Chung Wang</div>
-        <div style="font-size: 0.7rem; color: rgba(255,255,255,0.35); margin-top: 0.2rem;">
-            wangcc7280@gate.sinica.edu.tw
-        </div>
-        
-        <hr class="divider">
-        
-        <div style="font-size: 0.7rem; display: flex; justify-content: center; gap: 1.2rem; flex-wrap: wrap;">
-            <span>📄 MIT License</span>
-            <span>© 2026 Academia Sinica</span>
-            <span><a href="https://github.com/FizzaSab/GlycoAgent" target="_blank">GitHub</a></span>
-            <span><a href="https://www.chem.sinica.edu.tw" target="_blank">Institute Website</a></span>
-        </div>
-        
-        <div style="font-size: 0.6rem; color: rgba(255,255,255,0.15); margin-top: 0.4rem;">
-            128 Academia Road, Section 2, Nankang, Taipei 115201, Taiwan
-        </div>
+<div class="footer-container">
+    <div class="org-name">🏛️ Institute of Chemistry, Academia Sinica</div>
+    <div class="org-desc">Wang Research Group · Dr. Cheng-Chung Wang</div>
+    <div class="footer-email">wangcc7280@gate.sinica.edu.tw</div>
+    
+    <hr class="divider">
+    
+    <div class="footer-links">
+        <span>📄 MIT License</span>
+        <span>© 2026 Academia Sinica</span>
+        <span><a href="https://github.com/FizzaSab/GlycoAgent" target="_blank">GitHub</a></span>
+        <span><a href="https://www.chem.sinica.edu.tw" target="_blank">Institute Website</a></span>
+    </div>
+    
+    <div class="footer-address">
+        128 Academia Road, Section 2, Nankang, Taipei 115201, Taiwan
     </div>
 </div>
 """, unsafe_allow_html=True)
