@@ -1229,7 +1229,7 @@ def render_header():
     </div>
     """, unsafe_allow_html=True)
 
-# ─── CREATE COLORFUL CHARTS ─────────────────────────────
+# ─── CREATE COLORFUL CHARTS (SIMPLIFIED) ──────────────
 def create_colorful_bar_chart(data, title, color_scheme):
     """Create a beautiful bar chart with gradient colors"""
     if len(data) == 0:
@@ -1238,26 +1238,20 @@ def create_colorful_bar_chart(data, title, color_scheme):
     df = data.reset_index()
     df.columns = ['Category', 'Count']
     
-    # Create Altair chart with gradient colors
+    # Simple Altair chart with color scheme
     chart = alt.Chart(df).mark_bar(
         cornerRadiusTopLeft=4,
         cornerRadiusTopRight=4
     ).encode(
-        x=alt.X('Category:N', sort='-y', title=None, axis=alt.Axis(labelFontSize=11, labelColor='#1e293b')),
-        y=alt.Y('Count:Q', title=None, axis=alt.Axis(labelFontSize=11, labelColor='#1e293b')),
+        x=alt.X('Category:N', sort='-y', title=None),
+        y=alt.Y('Count:Q', title=None),
         color=alt.Color('Count:Q', 
                        scale=alt.Scale(scheme=color_scheme),
                        legend=None),
         tooltip=['Category', 'Count']
     ).properties(
         height=300,
-        title=alt.TitleParams(
-            title,
-            fontSize=14,
-            fontWeight='600',
-            color='#0f172a',
-            anchor='start'
-        )
+        title=title
     )
     
     return chart
