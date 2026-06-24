@@ -37,15 +37,20 @@ def chemical_drawing_tool():
         .info-text { color: #666; font-size: 12px; text-align: center; }
         .toolbar-group { display: flex; gap: 4px; align-items: center; background: #f8f9fa; padding: 4px 8px; border-radius: 6px; }
         .toolbar-label { font-size: 11px; color: #888; font-weight: bold; margin-right: 4px; }
+        .mode-indicator { padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .mode-draw { background: #d4edda; color: #155724; }
+        .mode-replace { background: #fff3cd; color: #856404; }
+        .mode-delete { background: #f8d7da; color: #721c24; }
     </style>
     <div>
         <div class="toolbar">
             <div class="toolbar-group">
-                <span class="toolbar-label">✏️ Draw:</span>
-                <button id="btn-draw" class="active">Atom</button>
-                <button id="btn-line">Bond</button>
-                <button id="btn-benzene">Benzene</button>
-                <button id="btn-delete-bond" class="warning">🗑️ Delete Bond</button>
+                <span class="toolbar-label">✏️ Mode:</span>
+                <button id="btn-draw" class="active">Draw Atom</button>
+                <button id="btn-replace" class="warning">🔄 Replace Atom</button>
+                <button id="btn-line">🔗 Bond</button>
+                <button id="btn-benzene">⬡ Benzene</button>
+                <button id="btn-delete-bond" class="danger">✖️ Delete Bond</button>
             </div>
             <div class="toolbar-group">
                 <span class="toolbar-label">🔬 Atom:</span>
@@ -81,9 +86,13 @@ def chemical_drawing_tool():
                 <button id="btn-smiles" class="success">📋 Get SMILES</button>
             </div>
         </div>
+        <div style="display:flex; gap:10px; margin-bottom:5px;">
+            <span id="mode-status" class="mode-indicator mode-draw">🔵 Mode: Draw Atom</span>
+            <span style="color:#888;font-size:12px;">💡 Select atom → Click canvas to draw • Click "Replace Atom" → Click existing atom to change it</span>
+        </div>
         <canvas id="canvas" width="700" height="450"></canvas>
         <input id="smiles-output" placeholder="SMILES will appear here...">
-        <p class="info-text">💡 Click to add selected atom • Drag to make bonds • Click "Delete Bond" then click a bond to remove it</p>
+        <p class="info-text">💡 Click to add selected atom • Replace mode: click on existing atom to change it • Right-click to delete atom</p>
     </div>
     <script>
         const canvas = document.getElementById('canvas');
@@ -93,31 +102,70 @@ def chemical_drawing_tool():
         let tool = 'draw';
         let selectedAtom = 'C';
         let deleteBondMode = false;
+        let replaceMode = false;
         const MAX_HISTORY = 30;
+        let atomIdCounter = 0;
 
         // Get atom label from dropdown
         document.getElementById('atom-select').onchange = function() {
             selectedAtom = this.value;
         };
 
-        function drawAtom(x, y, color, label) {
-            const radius = 18;
+        function getAtomColor(label) {
+            const colors = {
+                'C': '#333333',
+                'O': '#FF0000',
+                'N': '#3050F8',
+                'H': '#FFFFFF',
+                'S': '#FFFF30',
+                'P': '#FF8000',
+                'F': '#90E050',
+                'Cl': '#1FF01F',
+                'Br': '#A62929',
+                'I': '#940094',
+                'OBn': '#8B4513',
+                'OBz': '#8B6914',
+                'OAc': '#CD853F',
+                'N3': '#4169E1',
+                'NH2': '#4169E1',
+                'OH': '#FF0000',
+                'OMe': '#CD5C5C',
+                'OTs': '#DAA520',
+                'TBDMS': '#2E8B57',
+                'TIPS': '#2E8B57',
+                'Bz': '#8B6914',
+                'Bn': '#8B4513',
+                'Ac': '#CD853F'
+            };
+            return colors[label] || '#333333';
+        }
+
+        function drawAtom(x, y, label, highlight) {
+            const radius = highlight ? 22 : 18;
+            const color = getAtomColor(label);
+            
+            // Glow effect for highlight
+            if (highlight) {
+                ctx.shadowColor = '#f39c12';
+                ctx.shadowBlur = 15;
+            }
+            
             ctx.beginPath();
             ctx.arc(x, y, radius, 0, Math.PI*2);
-            ctx.fillStyle = color || '#000000';
+            ctx.fillStyle = color;
             ctx.fill();
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 2;
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = highlight ? '#f39c12' : '#333';
+            ctx.lineWidth = highlight ? 3 : 2;
             ctx.stroke();
+            
             if (label) {
                 ctx.fillStyle = 'white';
                 ctx.font = 'bold 11px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                // Handle longer labels
-                const displayLabel = label.length > 3 ? label.substring(0,3) : label;
+                const displayLabel = label.length > 4 ? label.substring(0,4) : label;
                 ctx.fillText(displayLabel, x, y);
-                // Show full label on hover via title
                 ctx.canvas.title = label;
             }
         }
@@ -127,10 +175,9 @@ def chemical_drawing_tool():
             ctx.moveTo(x1, y1);
             ctx.lineTo(x2, y2);
             ctx.strokeStyle = highlight ? '#e74c3c' : '#333';
-            ctx.lineWidth = highlight ? 6 : 4;
+            ctx.lineWidth = highlight ? 6 : 3;
             ctx.stroke();
             if (highlight) {
-                // Draw X on bond to indicate delete
                 const mx = (x1 + x2) / 2;
                 const my = (y1 + y2) / 2;
                 ctx.strokeStyle = '#e74c3c';
@@ -156,11 +203,22 @@ def chemical_drawing_tool():
                 drawBond(pts[i].x, pts[i].y, pts[j].x, pts[j].y);
             }
             for (let i = 0; i < 6; i++) {
-                ctx.fillStyle = '#333';
-                ctx.font = '12px Arial';
+                const label = i % 2 === 0 ? 'CH₂' : 'CH';
+                const color = getAtomColor('C');
+                ctx.beginPath();
+                ctx.arc(pts[i].x, pts[i].y, 18, 0, Math.PI*2);
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 11px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(i % 2 === 0 ? 'CH₂' : 'CH', pts[i].x, pts[i].y);
+                ctx.fillText(label, pts[i].x, pts[i].y);
+                // Store as atoms for editing
+                atoms.push({x: pts[i].x, y: pts[i].y, label: label, id: atomIdCounter++});
             }
         }
 
@@ -183,7 +241,6 @@ def chemical_drawing_tool():
             let nearest = null;
             let minDist = threshold;
             for (const b of bonds) {
-                // Check distance from point to line segment
                 const dx = b.x2 - b.x1;
                 const dy = b.y2 - b.y1;
                 const len = Math.hypot(dx, dy);
@@ -204,7 +261,7 @@ def chemical_drawing_tool():
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             // Grid
             ctx.strokeStyle = '#f0f0f0';
-            ctx.lineWidth = 1;
+            ctx.lineWidth = 0.5;
             for (let x = 0; x <= canvas.width; x += 30) {
                 ctx.beginPath();
                 ctx.moveTo(x, 0);
@@ -218,7 +275,7 @@ def chemical_drawing_tool():
                 ctx.stroke();
             }
             bonds.forEach(b => drawBond(b.x1, b.y1, b.x2, b.y2, false));
-            atoms.forEach(a => drawAtom(a.x, a.y, a.color, a.label));
+            atoms.forEach(a => drawAtom(a.x, a.y, a.label, false));
         }
 
         function saveState() {
@@ -234,10 +291,43 @@ def chemical_drawing_tool():
             };
         }
 
+        // Update mode status display
+        function updateModeStatus() {
+            const status = document.getElementById('mode-status');
+            if (replaceMode) {
+                status.className = 'mode-indicator mode-replace';
+                status.textContent = '🔄 Mode: Replace Atom (Click atom to change)';
+                canvas.style.cursor = 'pointer';
+            } else if (deleteBondMode) {
+                status.className = 'mode-indicator mode-delete';
+                status.textContent = '✖️ Mode: Delete Bond (Click bond to remove)';
+                canvas.style.cursor = 'crosshair';
+            } else {
+                status.className = 'mode-indicator mode-draw';
+                status.textContent = '🔵 Mode: Draw Atom (Click canvas to add)';
+                canvas.style.cursor = 'crosshair';
+            }
+        }
+
         // Mouse events
         canvas.onmousedown = function(e) {
             const pos = getPos(e);
             
+            // Replace mode - click atom to change it
+            if (replaceMode) {
+                const atom = findNearestAtom(pos.x, pos.y);
+                if (atom) {
+                    saveState();
+                    atom.label = selectedAtom;
+                    drawAll();
+                    // Highlight the changed atom briefly
+                    drawAtom(atom.x, atom.y, atom.label, true);
+                    // Reset after a moment
+                    setTimeout(() => drawAll(), 300);
+                }
+                return;
+            }
+
             // Delete bond mode
             if (deleteBondMode) {
                 const bond = findNearestBond(pos.x, pos.y);
@@ -245,8 +335,6 @@ def chemical_drawing_tool():
                     saveState();
                     bonds = bonds.filter(b => b !== bond);
                     drawAll();
-                    deleteBondMode = false;
-                    document.getElementById('btn-delete-bond').style.background = '#f39c12';
                 }
                 return;
             }
@@ -267,7 +355,7 @@ def chemical_drawing_tool():
             if (tool === 'draw') {
                 const label = selectedAtom;
                 saveState();
-                atoms.push({x: pos.x, y: pos.y, color: '#000000', label: label});
+                atoms.push({x: pos.x, y: pos.y, label: label, id: atomIdCounter++});
                 drawAll();
             } else if (tool === 'line') {
                 isDrawing = true;
@@ -276,6 +364,7 @@ def chemical_drawing_tool():
             } else if (tool === 'benzene') {
                 saveState();
                 drawBenzene(pos.x, pos.y);
+                drawAll();
             }
         };
 
@@ -285,8 +374,11 @@ def chemical_drawing_tool():
                 drawAll();
                 drawBond(lastX, lastY, pos.x, pos.y, false);
             }
-            // Update cursor for delete bond mode
-            if (deleteBondMode) {
+            // Update cursor for modes
+            if (replaceMode) {
+                const atom = findNearestAtom(pos.x, pos.y);
+                canvas.style.cursor = atom ? 'pointer' : 'default';
+            } else if (deleteBondMode) {
                 const bond = findNearestBond(pos.x, pos.y);
                 canvas.style.cursor = bond ? 'pointer' : 'crosshair';
             }
@@ -303,15 +395,14 @@ def chemical_drawing_tool():
                     bonds.push({x1: startAtom.x, y1: startAtom.y, x2: endAtom.x, y2: endAtom.y});
                 } else if (startAtom) {
                     const label = selectedAtom;
-                    const na = {x: pos.x, y: pos.y, color: '#000000', label: label};
+                    const na = {x: pos.x, y: pos.y, label: label, id: atomIdCounter++};
                     atoms.push(na);
                     bonds.push({x1: startAtom.x, y1: startAtom.y, x2: na.x, y2: na.y});
                 } else {
-                    // Just draw a line with atoms at both ends
                     const label1 = selectedAtom;
                     const label2 = selectedAtom;
-                    const a1 = {x: lastX, y: lastY, color: '#000000', label: label1};
-                    const a2 = {x: pos.x, y: pos.y, color: '#000000', label: label2};
+                    const a1 = {x: lastX, y: lastY, label: label1, id: atomIdCounter++};
+                    const a2 = {x: pos.x, y: pos.y, label: label2, id: atomIdCounter++};
                     atoms.push(a1);
                     atoms.push(a2);
                     bonds.push({x1: a1.x, y1: a1.y, x2: a2.x, y2: a2.y});
@@ -326,30 +417,60 @@ def chemical_drawing_tool():
         // Toolbar buttons
         document.getElementById('btn-draw').onclick = function() {
             tool = 'draw';
+            replaceMode = false;
             deleteBondMode = false;
-            document.getElementById('btn-delete-bond').style.background = '#f39c12';
+            document.getElementById('btn-delete-bond').textContent = '✖️ Delete Bond';
             document.querySelectorAll('.toolbar button').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
+            updateModeStatus();
+        };
+        document.getElementById('btn-replace').onclick = function() {
+            replaceMode = !replaceMode;
+            if (replaceMode) {
+                deleteBondMode = false;
+                document.getElementById('btn-delete-bond').textContent = '✖️ Delete Bond';
+                document.querySelectorAll('.toolbar button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                tool = 'replace';
+            } else {
+                this.classList.remove('active');
+                tool = 'draw';
+                document.getElementById('btn-draw').classList.add('active');
+            }
+            updateModeStatus();
         };
         document.getElementById('btn-line').onclick = function() {
             tool = 'line';
+            replaceMode = false;
             deleteBondMode = false;
-            document.getElementById('btn-delete-bond').style.background = '#f39c12';
+            document.getElementById('btn-delete-bond').textContent = '✖️ Delete Bond';
             document.querySelectorAll('.toolbar button').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
+            updateModeStatus();
         };
         document.getElementById('btn-benzene').onclick = function() {
             tool = 'benzene';
+            replaceMode = false;
             deleteBondMode = false;
-            document.getElementById('btn-delete-bond').style.background = '#f39c12';
+            document.getElementById('btn-delete-bond').textContent = '✖️ Delete Bond';
             document.querySelectorAll('.toolbar button').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
+            updateModeStatus();
         };
         document.getElementById('btn-delete-bond').onclick = function() {
             deleteBondMode = !deleteBondMode;
-            this.style.background = deleteBondMode ? '#e74c3c' : '#f39c12';
-            this.textContent = deleteBondMode ? '🔴 Click Bond to Delete' : '🗑️ Delete Bond';
-            canvas.style.cursor = deleteBondMode ? 'crosshair' : 'default';
+            if (deleteBondMode) {
+                replaceMode = false;
+                document.querySelectorAll('.toolbar button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                this.textContent = '🔴 Click Bond';
+            } else {
+                this.classList.remove('active');
+                this.textContent = '✖️ Delete Bond';
+                document.getElementById('btn-draw').classList.add('active');
+                tool = 'draw';
+            }
+            updateModeStatus();
         };
 
         document.getElementById('btn-undo').onclick = function() {
@@ -371,17 +492,14 @@ def chemical_drawing_tool():
         };
 
         document.getElementById('btn-smiles').onclick = function() {
-            // Generate a simple SMILES-like string
             let sm = '';
             if (atoms.length === 0) {
                 sm = 'No atoms drawn';
             } else {
-                // Create a connected graph representation
                 const labels = atoms.map(a => a.label || 'C');
-                // Simple: just list atoms and bonds
-                sm = labels.join('') + ' ';
+                sm = labels.join('-');
                 if (bonds.length > 0) {
-                    sm += 'bonds:' + bonds.length;
+                    sm += ' | bonds:' + bonds.length;
                 }
             }
             document.getElementById('smiles-output').value = sm;
@@ -392,12 +510,14 @@ def chemical_drawing_tool():
             });
         };
 
-        // Start with a benzene ring
-        drawBenzene(350, 225);
-        // Add some atoms as example
+        // Start with a benzene ring example
         saveState();
+        drawBenzene(350, 225);
+        drawAll();
+        saveState();
+        updateModeStatus();
     </script>
-    """, height=580)
+    """, height=600)
 
 if len(papers) == 0:
     st.warning("Upload your Excel file")
@@ -432,5 +552,5 @@ else:
     
     with tab3:
         st.markdown("### 🧪 Draw Chemical Structure")
-        st.markdown("Select atom from dropdown, click to add, drag to bond, click 'Delete Bond' then click a bond")
+        st.markdown("**🔄 Replace Atom**: Click 'Replace Atom' → Click any existing atom → It changes to your selected atom type!")
         chemical_drawing_tool()
