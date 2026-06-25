@@ -52,15 +52,8 @@ st.markdown("""
         flex-wrap: wrap;
         gap: 0.5rem;
     }
-    .header-left {
-        display: flex;
-        align-items: center;
-        gap: 0.8rem;
-    }
-    .header-title-block {
-        display: flex;
-        flex-direction: column;
-    }
+    .header-left { display: flex; align-items: center; gap: 0.8rem; }
+    .header-title-block { display: flex; flex-direction: column; }
     .header-title {
         font-family: 'Inter', sans-serif;
         font-weight: 700;
@@ -82,12 +75,7 @@ st.markdown("""
         color: rgba(255, 255, 255, 0.35);
         letter-spacing: 0.04em;
     }
-    .header-right {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
+    .header-right { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
     .header-stats {
         display: flex;
         gap: 1.2rem;
@@ -97,10 +85,7 @@ st.markdown("""
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.05);
     }
-    .stat-item {
-        text-align: center;
-        padding: 0.1rem 0.2rem;
-    }
+    .stat-item { text-align: center; padding: 0.1rem 0.2rem; }
     .stat-number {
         font-family: 'Inter', sans-serif;
         font-weight: 600;
@@ -146,6 +131,70 @@ st.markdown("""
         box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
         font-weight: 700 !important;
         transform: translateY(-2px);
+    }
+    .search-wrapper {
+        background: #ffffff;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        border: 1px solid #e8ecf2;
+        margin-bottom: 1rem;
+    }
+    .search-label {
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        font-size: 0.8rem;
+        color: #0f172a;
+        margin-bottom: 0.2rem;
+    }
+    .result-card {
+        background: #ffffff;
+        padding: 0.7rem 1.2rem;
+        border-radius: 10px;
+        border: 1px solid #e8ecf2;
+        margin-bottom: 0.5rem;
+        transition: all 0.2s ease;
+    }
+    .result-card:hover {
+        border-color: #c7d2fe;
+        box-shadow: 0 2px 12px rgba(99, 102, 241, 0.05);
+    }
+    .result-title {
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #0f172a;
+        line-height: 1.4;
+    }
+    .result-meta {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.65rem;
+        color: #94a3b8;
+        margin-top: 0.2rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        align-items: center;
+    }
+    .badge {
+        display: inline-block;
+        padding: 0.08rem 0.6rem;
+        border-radius: 50px;
+        font-size: 0.55rem;
+        font-weight: 500;
+    }
+    .badge-year { background: #f1f5f9; color: #475569; }
+    .badge-topic { background: #eef2ff; color: #4f46e5; }
+    .badge-journal { background: #fce7f3; color: #be185d; }
+    .result-abstract {
+        font-family: 'Inter', sans-serif;
+        font-weight: 400;
+        font-size: 0.78rem;
+        color: #475569;
+        line-height: 1.5;
+        margin-top: 0.3rem;
+        padding-top: 0.3rem;
+        border-top: 1px solid #f1f5f9;
     }
     .ai-answer {
         background: #ffffff;
@@ -196,9 +245,7 @@ st.markdown("""
         flex-wrap: wrap;
         justify-content: center;
     }
-    .footer-compact .footer-brand .org-icon {
-        font-size: 1rem;
-    }
+    .footer-compact .footer-brand .org-icon { font-size: 1rem; }
     .footer-compact .footer-brand .org-name {
         color: #ffffff;
         font-family: 'Inter', sans-serif;
@@ -209,9 +256,7 @@ st.markdown("""
         color: #a78bfa;
         text-decoration: none;
     }
-    .footer-compact .footer-brand .org-name a:hover {
-        text-decoration: underline;
-    }
+    .footer-compact .footer-brand .org-name a:hover { text-decoration: underline; }
     .footer-compact .footer-brand .org-desc {
         color: rgba(255,255,255,0.3);
         font-family: 'Inter', sans-serif;
@@ -255,9 +300,7 @@ st.markdown("""
         text-decoration: none;
         font-weight: 500;
     }
-    .about-box .clickable-link:hover {
-        text-decoration: underline;
-    }
+    .about-box .clickable-link:hover { text-decoration: underline; }
     .analytics-title {
         font-family: 'Inter', sans-serif;
         font-weight: 600;
@@ -273,6 +316,13 @@ st.markdown("""
 def load_data():
     excel_files = [f for f in os.listdir('.') if f.endswith('.xlsx')]
     if excel_files:
+        # Prefer the enhanced file with all papers
+        enhanced = [f for f in excel_files if 'enhanced' in f]
+        if enhanced:
+            try:
+                return pd.read_excel(enhanced[0], sheet_name='All Papers')
+            except:
+                pass
         try:
             return pd.read_excel(excel_files[0], sheet_name='All Papers')
         except:
@@ -286,14 +336,15 @@ HUMANIZED_INTROS = [
     "That's a really interesting question! Let me share what I've learned:",
     "Great question! Here's what I've gathered from the literature:",
     "I've been looking into this recently. Here's what I found:",
-    "Excellent question! Let me break it down based on the research:"
+    "Excellent question! Let me break it down based on the research:",
+    "This is such a fascinating topic! Let me explain:"
 ]
 
 HUMANIZED_ENDINGS = [
     "Hope that helps with your research! 😊",
     "Let me know if you'd like me to find specific papers!",
-    "There's so much more to explore here - happy to chat more anytime!",
-    "That's the beauty of glycoscience - there's always more to discover! 🧬"
+    "There's so much more to explore here - happy to chat more!",
+    "That's the beauty of glycoscience - always more to discover! 🧬"
 ]
 
 FALLBACK_RESPONSES = [
@@ -450,9 +501,6 @@ class GlycoKnowledgeEngine:
         if any(term in question_lower for term in ['rrv', 'aka', 'reactivity']):
             refs = self.expert_knowledge.get('reactivity', {}).get('references', [])
             references.extend(refs[:3])
-        if 'glycosylation' in question_lower:
-            refs = self.expert_knowledge.get('chemical_glycosylation', {}).get('references', [])
-            references.extend(refs[:2])
         for paper in relevant_papers[:2]:
             ref = f"{paper['title']} ({paper['year']}) - {paper['journal']}"
             references.append(ref)
@@ -534,7 +582,7 @@ def render_header():
     </div>
     """, unsafe_allow_html=True)
 
-# ─── CREATE COLORFUL CHARTS ─────────────────────────────
+# ─── CHARTS ─────────────────────────────────────────────
 def create_colorful_bar_chart(data, title, color_scheme):
     if len(data) == 0:
         return None
@@ -571,7 +619,11 @@ else:
     # ─── TAB 1: SEARCH ────────────────────────────────
     with tab1:
         st.markdown("### 🔎 Search Papers")
-        keyword = st.text_input("Search papers", placeholder="e.g. glycosylation, RRV, Koenigs-Knorr")
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            keyword = st.text_input("Search papers", placeholder="e.g. glycosylation, RRV, Koenigs-Knorr")
+        with col2:
+            max_results = st.selectbox("Results per page", [10, 20, 50, 100], index=0)
         topics_list = ['All Topics'] + sorted(papers['Topic'].dropna().unique().tolist())
         selected_topic = st.selectbox("Filter by Topic", topics_list, index=0)
         if keyword:
@@ -581,14 +633,19 @@ else:
             if selected_topic != 'All Topics':
                 mask = mask & (papers['Topic'] == selected_topic)
             results = papers[mask].copy()
-            st.write(f"Found {len(results)} papers")
-            for _, row in results.head(20).iterrows():
-                title = str(row.get('Title', 'No title'))
-                year = str(row.get('Year', '?'))
-                journal = str(row.get('Journal', '?'))
-                topic = str(row.get('Topic', '?'))
-                with st.expander(f"📄 {title[:80]}..."):
-                    st.write(f"**Year:** {year} | **Journal:** {journal} | **Topic:** {topic}")
+            st.write(f"📊 Found **{len(results)}** papers")
+            if len(results) == 0:
+                st.info("No matches found.")
+            else:
+                for _, row in results.head(max_results).iterrows():
+                    title = str(row.get('Title', 'No title'))
+                    year = str(row.get('Year', '?'))
+                    journal = str(row.get('Journal', '?'))
+                    topic = str(row.get('Topic', '?'))
+                    with st.expander(f"📄 {title[:80]}..."):
+                        st.write(f"**Year:** {year} | **Journal:** {journal} | **Topic:** {topic}")
+                        if str(row.get('Abstract', '')):
+                            st.write(f"**Abstract:** {str(row.get('Abstract', ''))[:300]}...")
 
     # ─── TAB 2: ASK AI ──────────────────────────────────
     with tab2:
@@ -608,7 +665,7 @@ else:
         question = st.text_area("Type your question:", value=st.session_state.get('ask_question', ''), height=80)
         if st.button("🔍 Ask", type="primary"):
             if question:
-                with st.spinner("Searching..."):
+                with st.spinner("Searching through your papers..."):
                     result = engine.answer_question(question)
                 st.markdown(f'<div class="ai-answer"><div class="answer-text">{result["answer"]}</div><div class="source-count">📚 Based on {result["source_count"]} sources</div></div>', unsafe_allow_html=True)
                 if result['references']:
