@@ -572,7 +572,7 @@ def create_branded_qr_card(app_url="https://glycosearch.streamlit.app", app_name
         </div>
         <div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid #e2e8f0;">
             <span style="font-family: 'Inter', sans-serif; font-size: 0.6rem; color: #94a3b8;">
-                Fizza Sabbor & Dr. Sabbor Hussain · Institute of Chemistry, Academia Sinica
+                Fizza Sabbor & Dr. Sabbor Hussain · Prof. Chen-Chung Wang.  Institute of Chemistry, Academia Sinica
             </span>
         </div>
     </div>
