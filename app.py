@@ -706,98 +706,264 @@ def screen_reactions(donor_type, acceptor_type, target_selectivity=None):
 # ─── COMPLETE DRAWING TOOL ──────────────────────────────
 def chemical_drawing_tool():
     components.html("""
+    <style>
+        .draw-toolbar-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding: 6px 0;
+            align-items: center;
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 6px 10px;
+            border: 1px solid #e2e8f0;
+            margin: 4px 0;
+        }
+        .draw-toolbar-row .label {
+            font-size: 9px;
+            color: #94a3b8;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-right: 4px;
+        }
+        .draw-btn {
+            padding: 4px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            background: #f8fafc;
+            color: #0f172a;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .draw-btn:hover { background: #e2e8f0; }
+        .draw-btn.active { background: #0f172a; color: white; border-color: #0f172a; }
+        .draw-btn.danger { background: #fee2e2; color: #991b1b; border-color: #fee2e2; }
+        .draw-btn.danger:hover { background: #fecaca; }
+        .draw-btn.success { background: #dcfce7; color: #166534; border-color: #dcfce7; }
+        .draw-btn.success:hover { background: #bbf7d0; }
+        .draw-btn.warning { background: #fef3c7; color: #92400e; border-color: #fef3c7; }
+        .draw-btn.warning:hover { background: #fde68a; }
+        .draw-btn.info { background: #dbeafe; color: #1e40af; border-color: #dbeafe; }
+        .draw-btn.info:hover { background: #bfdbfe; }
+        .draw-btn.purple { background: #f3e8ff; color: #6b21a8; border-color: #f3e8ff; }
+        .draw-btn.purple:hover { background: #e9d5ff; }
+        .atom-btn {
+            padding: 3px 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            background: #f8fafc;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .atom-btn:hover { background: #e2e8f0; transform: scale(1.02); }
+        .atom-btn.active { background: #0f172a; color: white; border-color: #0f172a; }
+        .fg-btn {
+            padding: 2px 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: #f8fafc;
+            cursor: pointer;
+            font-size: 10px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .fg-btn:hover { background: #e2e8f0; transform: scale(1.02); }
+        .fg-btn.active { background: #eef2ff; border-color: #818cf8; color: #4f46e5; }
+        .draw-header {
+            background: linear-gradient(135deg, #f8fafc, #eef2ff);
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.8rem;
+            text-align: center;
+        }
+        .draw-header h2 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: #0f172a;
+            margin: 0;
+        }
+        .draw-header h2 span {
+            background: linear-gradient(135deg, #6366f1, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .draw-header p {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 0.2rem 0 0 0;
+        }
+        .mode-status {
+            padding: 2px 12px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            display: inline-block;
+        }
+        .bond-indicator {
+            font-size: 10px;
+            color: #64748b;
+            padding: 2px 8px;
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        #canvas {
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 12px;
+            cursor: crosshair;
+            width: 100%;
+            height: auto;
+        }
+        #smiles-output {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            margin-top: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            background: #f8fafc;
+        }
+        .draw-container {
+            position: relative;
+            overflow: auto;
+            max-height: 600px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            padding: 10px;
+        }
+        .zoom-controls {
+            position: sticky;
+            bottom: 0;
+            background: rgba(255,255,255,0.95);
+            padding: 6px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .zoom-controls button {
+            padding: 3px 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: #f8fafc;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'Inter', sans-serif;
+        }
+        .zoom-controls button:hover { background: #eef2ff; border-color: #818cf8; }
+    </style>
+
     <div style="padding:10px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
 
-        <div class="draw-header" style="background:linear-gradient(135deg,#f8fafc,#eef2ff);border:2px solid #e2e8f0;border-radius:14px;padding:1rem 1.5rem;margin-bottom:0.8rem;text-align:center;">
-            <h2 style="font-family:'Inter',sans-serif;font-weight:700;font-size:1.3rem;color:#0f172a;margin:0;">🧪 Draw <span style="background:linear-gradient(135deg,#6366f1,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Chemical Structure</span></h2>
-            <p style="font-family:'Inter',sans-serif;font-size:0.8rem;color:#64748b;margin:0.2rem 0 0 0;">Build molecules with atoms, functional groups, leaving groups, and protecting groups</p>
+        <div class="draw-header">
+            <h2>🧪 Draw <span>Chemical Structure</span></h2>
+            <p>Build molecules with atoms, functional groups, leaving groups, and protecting groups</p>
         </div>
 
-        <!-- MODE SELECTION -->
-        <div style="display:flex;gap:6px;flex-wrap:wrap;padding:6px 0;align-items:center;background:#f8fafc;border-radius:8px;padding:6px 10px;border:1px solid #e2e8f0;">
-            <span style="font-size:9px;color:#94a3b8;font-weight:600;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Mode</span>
-            <button id="btn-draw" style="padding:4px 12px;border:2px solid #0f172a;border-radius:6px;background:#0f172a;color:white;cursor:pointer;font-size:11px;font-family:'Inter',sans-serif;font-weight:600;">✏️ Draw</button>
-            <button id="btn-line" style="padding:4px 12px;border:2px solid #e2e8f0;border-radius:6px;background:#f8fafc;color:#0f172a;cursor:pointer;font-size:11px;font-family:'Inter',sans-serif;font-weight:500;">🔗 Bond</button>
-            <button id="btn-eraser" style="padding:4px 12px;border:2px solid #e2e8f0;border-radius:6px;background:#f8fafc;color:#0f172a;cursor:pointer;font-size:11px;font-family:'Inter',sans-serif;font-weight:500;">🧹 Eraser</button>
-            <button id="btn-select" style="padding:4px 12px;border:2px solid #e2e8f0;border-radius:6px;background:#f8fafc;color:#0f172a;cursor:pointer;font-size:11px;font-family:'Inter',sans-serif;font-weight:500;">⬜ Select</button>
-            <button id="btn-replace" style="padding:4px 12px;border:2px solid #e2e8f0;border-radius:6px;background:#f8fafc;color:#0f172a;cursor:pointer;font-size:11px;font-family:'Inter',sans-serif;font-weight:500;">🔄 Replace</button>
-            <button id="btn-benzene" style="padding:4px 12px;border:2px solid #e2e8f0;border-radius:6px;background:#f8fafc;color:#0f172a;cursor:pointer;font-size:11px;font-family:'Inter',sans-serif;font-weight:500;">⬡ Benzene</button>
+        <!-- MODE ROW -->
+        <div class="draw-toolbar-row">
+            <span class="label">Mode</span>
+            <button id="btn-draw" class="draw-btn active">✏️ Draw</button>
+            <button id="btn-line" class="draw-btn">🔗 Bond</button>
+            <button id="btn-eraser" class="draw-btn danger">🧹 Eraser</button>
+            <button id="btn-select" class="draw-btn info">⬜ Select</button>
+            <button id="btn-replace" class="draw-btn warning">🔄 Replace</button>
+            <button id="btn-benzene" class="draw-btn purple">⬡ Benzene</button>
         </div>
 
-        <!-- ATOMS -->
-        <div style="display:flex;gap:4px;flex-wrap:wrap;padding:6px 0;align-items:center;background:#f8fafc;border-radius:8px;padding:6px 10px;border:1px solid #e2e8f0;margin-top:4px;">
-            <span style="font-size:9px;color:#94a3b8;font-weight:600;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Atoms</span>
-            <button class="atom-btn" data-atom="C" style="padding:3px 10px;border:2px solid #333;border-radius:6px;background:#0f172a;color:white;cursor:pointer;font-size:11px;font-weight:700;">C</button>
-            <button class="atom-btn" data-atom="O" style="padding:3px 10px;border:2px solid #FF0000;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#FF0000;">O</button>
-            <button class="atom-btn" data-atom="N" style="padding:3px 10px;border:2px solid #3050F8;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#3050F8;">N</button>
-            <button class="atom-btn" data-atom="H" style="padding:3px 10px;border:2px solid #888;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#888;">H</button>
-            <button class="atom-btn" data-atom="S" style="padding:3px 10px;border:2px solid #FFD700;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#B8860B;">S</button>
-            <button class="atom-btn" data-atom="P" style="padding:3px 10px;border:2px solid #FF8000;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#FF8000;">P</button>
-            <button class="atom-btn" data-atom="F" style="padding:3px 10px;border:2px solid #90E050;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#2E8B57;">F</button>
-            <button class="atom-btn" data-atom="Cl" style="padding:3px 10px;border:2px solid #1FF01F;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#1FF01F;">Cl</button>
-            <button class="atom-btn" data-atom="Br" style="padding:3px 10px;border:2px solid #A62929;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#A62929;">Br</button>
-            <button class="atom-btn" data-atom="I" style="padding:3px 10px;border:2px solid #940094;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#940094;">I</button>
+        <!-- ATOMS ROW -->
+        <div class="draw-toolbar-row">
+            <span class="label">Atoms</span>
+            <button class="atom-btn active" data-atom="C" style="border-color:#333;background:#0f172a;color:white;">C</button>
+            <button class="atom-btn" data-atom="O" style="border-color:#FF0000;color:#FF0000;">O</button>
+            <button class="atom-btn" data-atom="N" style="border-color:#3050F8;color:#3050F8;">N</button>
+            <button class="atom-btn" data-atom="H" style="border-color:#888;color:#888;">H</button>
+            <button class="atom-btn" data-atom="S" style="border-color:#FFD700;color:#B8860B;">S</button>
+            <button class="atom-btn" data-atom="P" style="border-color:#FF8000;color:#FF8000;">P</button>
+            <button class="atom-btn" data-atom="F" style="border-color:#90E050;color:#2E8B57;">F</button>
+            <button class="atom-btn" data-atom="Cl" style="border-color:#1FF01F;color:#1FF01F;">Cl</button>
+            <button class="atom-btn" data-atom="Br" style="border-color:#A62929;color:#A62929;">Br</button>
+            <button class="atom-btn" data-atom="I" style="border-color:#940094;color:#940094;">I</button>
         </div>
 
-        <!-- FUNCTIONAL GROUPS -->
-        <div style="display:flex;gap:4px;flex-wrap:wrap;padding:6px 0;align-items:center;background:#f8fafc;border-radius:8px;padding:6px 10px;border:1px solid #e2e8f0;margin-top:4px;">
-            <span style="font-size:9px;color:#94a3b8;font-weight:600;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Groups</span>
-            <button class="fg-btn" data-fg="OH" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OH</button>
-            <button class="fg-btn" data-fg="OMe" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OMe</button>
-            <button class="fg-btn" data-fg="OAc" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OAc</button>
-            <button class="fg-btn" data-fg="OBn" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OBn</button>
-            <button class="fg-btn" data-fg="OBz" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OBz</button>
-            <button class="fg-btn" data-fg="NH2" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">NH2</button>
-            <button class="fg-btn" data-fg="N3" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">N3</button>
-            <button class="fg-btn" data-fg="OTs" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OTs</button>
+        <!-- FUNCTIONAL GROUPS ROW -->
+        <div class="draw-toolbar-row">
+            <span class="label">Functional</span>
+            <button class="fg-btn" data-fg="OH" style="color:#FF0000;">OH</button>
+            <button class="fg-btn" data-fg="OMe">OMe</button>
+            <button class="fg-btn" data-fg="OAc">OAc</button>
+            <button class="fg-btn" data-fg="OBn">OBn</button>
+            <button class="fg-btn" data-fg="OBz">OBz</button>
+            <button class="fg-btn" data-fg="NH2">NH2</button>
+            <button class="fg-btn" data-fg="N3">N3</button>
+            <button class="fg-btn" data-fg="OTs">OTs</button>
+            <button class="fg-btn" data-fg="OTf" style="color:#6366f1;">OTf</button>
+            <button class="fg-btn" data-fg="STol" style="color:#8B008B;">STol</button>
         </div>
 
-        <!-- PROTECTING GROUPS -->
-        <div style="display:flex;gap:4px;flex-wrap:wrap;padding:6px 0;align-items:center;background:#f8fafc;border-radius:8px;padding:6px 10px;border:1px solid #e2e8f0;margin-top:4px;">
-            <span style="font-size:9px;color:#94a3b8;font-weight:600;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Protecting</span>
-            <button class="fg-btn" data-fg="Ac" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">Ac</button>
-            <button class="fg-btn" data-fg="Bn" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">Bn</button>
-            <button class="fg-btn" data-fg="Bz" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">Bz</button>
-            <button class="fg-btn" data-fg="TBDMS" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">TBDMS</button>
-            <button class="fg-btn" data-fg="TIPS" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">TIPS</button>
-            <button class="fg-btn" data-fg="Piv" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">Piv</button>
-            <button class="fg-btn" data-fg="DPPA" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">DPPA</button>
-            <button class="fg-btn" data-fg="OTf" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OTf</button>
-            <button class="fg-btn" data-fg="STol" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;color:#8B008B;">STol</button>
+        <!-- PROTECTING GROUPS ROW -->
+        <div class="draw-toolbar-row">
+            <span class="label">Protecting</span>
+            <button class="fg-btn" data-fg="Ac">Ac</button>
+            <button class="fg-btn" data-fg="Bn">Bn</button>
+            <button class="fg-btn" data-fg="Bz">Bz</button>
+            <button class="fg-btn" data-fg="TBDMS">TBDMS</button>
+            <button class="fg-btn" data-fg="TIPS">TIPS</button>
+            <button class="fg-btn" data-fg="Piv">Piv</button>
+            <button class="fg-btn" data-fg="DPPA">DPPA</button>
         </div>
 
-        <!-- BOND TYPE & CONTROLS -->
-        <div style="display:flex;gap:6px;flex-wrap:wrap;padding:6px 0;align-items:center;background:#f8fafc;border-radius:8px;padding:6px 10px;border:1px solid #e2e8f0;margin-top:4px;">
-            <span style="font-size:9px;color:#94a3b8;font-weight:600;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Bond</span>
-            <button id="btn-single-bond" style="padding:3px 10px;border:2px solid #0f172a;border-radius:6px;background:#0f172a;color:white;cursor:pointer;font-size:11px;font-weight:600;">─</button>
-            <button id="btn-double-bond" style="padding:3px 10px;border:2px solid #e2e8f0;border-radius:6px;background:#f8fafc;color:#0f172a;cursor:pointer;font-size:11px;font-weight:500;">═</button>
-            <button id="btn-triple-bond" style="padding:3px 10px;border:2px solid #e2e8f0;border-radius:6px;background:#f8fafc;color:#0f172a;cursor:pointer;font-size:11px;font-weight:500;">≡</button>
-            <span style="margin-left:8px;font-size:9px;color:#94a3b8;font-weight:600;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Actions</span>
-            <button id="btn-undo" style="padding:3px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;">↩️ Undo</button>
-            <button id="btn-clear" style="padding:3px 10px;border:1px solid #fee2e2;border-radius:6px;background:#fee2e2;color:#991b1b;cursor:pointer;font-size:11px;">🗑️ Clear</button>
-            <button id="btn-smiles" style="padding:3px 10px;border:1px solid #dcfce7;border-radius:6px;background:#dcfce7;color:#166534;cursor:pointer;font-size:11px;">📋 SMILES</button>
-            <button id="btn-query" style="padding:3px 10px;border:1px solid #f3e8ff;border-radius:6px;background:#f3e8ff;color:#6b21a8;cursor:pointer;font-size:11px;">🔍 Query</button>
+        <!-- BOND & CONTROLS ROW -->
+        <div class="draw-toolbar-row">
+            <span class="label">Bond</span>
+            <button id="btn-single-bond" class="draw-btn active" style="border-color:#0f172a;background:#0f172a;color:white;">─</button>
+            <button id="btn-double-bond" class="draw-btn">═</button>
+            <button id="btn-triple-bond" class="draw-btn">≡</button>
+            <span class="label" style="margin-left:10px;">Actions</span>
+            <button id="btn-undo" class="draw-btn">↩️ Undo</button>
+            <button id="btn-clear" class="draw-btn danger">🗑️ Clear</button>
+            <button id="btn-smiles" class="draw-btn success">📋 SMILES</button>
+            <button id="btn-query" class="draw-btn purple">🔍 Query</button>
         </div>
 
         <!-- STATUS -->
         <div style="display:flex;gap:10px;padding:6px 0;align-items:center;flex-wrap:wrap;">
-            <span id="mode-status" style="padding:2px 12px;border-radius:50px;font-size:11px;font-weight:600;background:#dcfce7;color:#166534;">✏️ Draw Mode</span>
-            <span id="bond-type-indicator" style="font-size:10px;color:#64748b;padding:2px 8px;background:#f1f5f9;border-radius:4px;">Bond: Single</span>
+            <span id="mode-status" class="mode-status" style="background:#dcfce7;color:#166534;">✏️ Draw Mode</span>
+            <span id="bond-indicator" class="bond-indicator">Bond: Single</span>
             <span id="selected-display" style="font-size:10px;color:#64748b;background:#f1f5f9;padding:2px 10px;border-radius:4px;">Selected: C</span>
             <span style="font-size:10px;color:#94a3b8;">💡 Click "Bond" then drag from atom to atom</span>
         </div>
 
         <!-- CANVAS -->
-        <div class="draw-container" id="draw-container" style="position:relative;overflow:auto;max-height:600px;border:2px solid #e2e8f0;border-radius:12px;background:white;padding:10px;">
-            <canvas id="canvas" width="750" height="450" style="border:1px solid #e2e8f0;border-radius:8px;background:white;cursor:crosshair;width:100%;height:auto;"></canvas>
-            <div class="zoom-controls" style="position:sticky;bottom:0;background:rgba(255,255,255,0.95);padding:6px;border-top:1px solid #e2e8f0;display:flex;gap:8px;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(10px);">
-                <button id="zoom-in" style="padding:3px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;">🔍+</button>
-                <button id="zoom-out" style="padding:3px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;">🔍−</button>
-                <button id="zoom-reset" style="padding:3px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;">⟲</button>
+        <div class="draw-container" id="draw-container">
+            <canvas id="canvas" width="750" height="450"></canvas>
+            <div class="zoom-controls">
+                <button id="zoom-in">🔍+</button>
+                <button id="zoom-out">🔍−</button>
+                <button id="zoom-reset">⟲</button>
                 <span style="font-size:11px;color:#94a3b8;" id="zoom-level">100%</span>
             </div>
         </div>
-        <input id="smiles-output" placeholder="SMILES will appear here..." style="width:100%;padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;margin-top:8px;font-family:monospace;font-size:12px;background:#f8fafc;">
+
+        <input id="smiles-output" placeholder="SMILES will appear here...">
         <div id="query-result" style="margin-top:8px;padding:10px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;display:none;"></div>
     </div>
 
@@ -805,28 +971,18 @@ def chemical_drawing_tool():
         // ─── SETUP ──────────────────────────────────────────
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        let isDrawing = false;
-        let lastX, lastY;
-        let atoms = [];
-        let bonds = [];
-        let history = [];
+        let isDrawing = false, lastX, lastY;
+        let atoms = [], bonds = [], history = [];
         let tool = 'draw';
         let selectedAtom = 'C';
         let selectedFG = null;
         let bondType = 1;
-        let deleteBondMode = false;
-        let replaceMode = false;
-        let selectMode = false;
-        let eraserMode = false;
-        let selectionStart = null;
-        let selectionEnd = null;
-        let selectedAtoms = [];
+        let eraserMode = false, selectMode = false, replaceMode = false;
+        let selectionStart = null, selectionEnd = null, selectedAtoms = [];
         const MAX_HISTORY = 30;
         let atomIdCounter = 0;
-        let zoomLevel = 1;
-        let offsetX = 0, offsetY = 0;
-        let isPanning = false;
-        let panStartX, panStartY;
+        let zoomLevel = 1, offsetX = 0, offsetY = 0;
+        let isPanning = false, panStartX, panStartY;
 
         // ─── BUTTON HANDLERS ──────────────────────────────
         document.querySelectorAll('.atom-btn').forEach(btn => {
@@ -834,13 +990,15 @@ def chemical_drawing_tool():
                 selectedAtom = this.dataset.atom;
                 selectedFG = null;
                 document.querySelectorAll('.atom-btn').forEach(b => {
+                    b.classList.remove('active');
                     b.style.background = '#f8fafc';
                     b.style.color = '#0f172a';
                 });
+                this.classList.add('active');
                 this.style.background = '#0f172a';
                 this.style.color = 'white';
-                document.getElementById('selected-display').textContent = 'Selected: ' + selectedAtom;
                 document.querySelectorAll('.fg-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById('selected-display').textContent = 'Selected: ' + selectedAtom;
             };
         });
 
@@ -849,25 +1007,27 @@ def chemical_drawing_tool():
                 selectedFG = this.dataset.fg;
                 document.querySelectorAll('.fg-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-                document.getElementById('selected-display').textContent = 'Selected: ' + selectedFG;
                 document.querySelectorAll('.atom-btn').forEach(b => {
+                    b.classList.remove('active');
                     b.style.background = '#f8fafc';
                     b.style.color = '#0f172a';
                 });
+                document.getElementById('selected-display').textContent = 'Selected: ' + selectedFG;
             };
         });
 
-        // ─── COLOR MAP ─────────────────────────────────────
         function getAtomColor(label) {
             const colors = {
-                'C':'#333333','O':'#FF0000','N':'#3050F8','H':'#888888','S':'#FFD700','P':'#FF8000','F':'#90E050','Cl':'#1FF01F','Br':'#A62929','I':'#940094',
-                'OH':'#FF0000','OMe':'#CD5C5C','OAc':'#CD853F','OBn':'#8B4513','OBz':'#8B6914','NH2':'#4169E1','N3':'#4169E1','OTs':'#DAA520',
-                'Ac':'#CD853F','Bn':'#8B4513','Bz':'#8B6914','TBDMS':'#2E8B57','TIPS':'#2E8B57','Piv':'#CD853F','DPPA':'#8B008B','OTf':'#6366f1','STol':'#8B008B'
+                'C':'#333','O':'#FF0000','N':'#3050F8','H':'#888','S':'#FFD700','P':'#FF8000',
+                'F':'#90E050','Cl':'#1FF01F','Br':'#A62929','I':'#940094',
+                'OH':'#FF0000','OMe':'#CD5C5C','OAc':'#CD853F','OBn':'#8B4513','OBz':'#8B6914',
+                'NH2':'#4169E1','N3':'#4169E1','OTs':'#DAA520','OTf':'#6366f1','STol':'#8B008B',
+                'Ac':'#CD853F','Bn':'#8B4513','Bz':'#8B6914','TBDMS':'#2E8B57','TIPS':'#2E8B57',
+                'Piv':'#CD853F','DPPA':'#8B008B'
             };
-            return colors[label] || '#333333';
+            return colors[label] || '#333';
         }
 
-        // ─── DRAWING FUNCTIONS ────────────────────────────
         function drawAtom(x, y, label, highlight, selected) {
             const radius = selected ? 24 : (highlight ? 22 : 18);
             const color = getAtomColor(label);
@@ -931,8 +1091,7 @@ def chemical_drawing_tool():
             const pts = angles.map(d => ({x: x + size * Math.cos(d * Math.PI / 180), y: y + size * Math.sin(d * Math.PI / 180)}));
             for (let i = 0; i < 6; i++) {
                 let j = (i + 1) % 6;
-                ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y);
-                ctx.strokeStyle = '#333'; ctx.lineWidth = 3; ctx.stroke();
+                drawBond(pts[i].x, pts[i].y, pts[j].x, pts[j].y, 1);
                 if (i % 2 === 0) {
                     const midX = (pts[i].x + pts[j].x) / 2, midY = (pts[i].y + pts[j].y) / 2;
                     const angle = Math.atan2(pts[j].y - pts[i].y, pts[j].x - pts[i].x);
@@ -942,20 +1101,11 @@ def chemical_drawing_tool():
                         const dx = d * offset * Math.cos(perpAngle), dy = d * offset * Math.sin(perpAngle);
                         const sx = midX + dx - 22 * Math.cos(angle), sy = midY + dy - 22 * Math.sin(angle);
                         const ex = midX + dx + 22 * Math.cos(angle), ey = midY + dy + 22 * Math.sin(angle);
-                        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey);
-                        ctx.strokeStyle = '#333'; ctx.lineWidth = 3; ctx.stroke();
+                        drawBond(sx, sy, ex, ey, 1);
                     }
                 }
             }
             for (let i = 0; i < 6; i++) {
-                const color = getAtomColor('C');
-                ctx.beginPath(); ctx.arc(pts[i].x, pts[i].y, 18, 0, Math.PI*2);
-                ctx.fillStyle = color; ctx.fill();
-                ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.stroke();
-                ctx.fillStyle = 'white';
-                ctx.font = 'bold 12px Inter, Arial, sans-serif';
-                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.fillText('C', pts[i].x, pts[i].y);
                 atoms.push({x: pts[i].x, y: pts[i].y, label: 'C', id: atomIdCounter++});
             }
         }
@@ -1053,17 +1203,17 @@ def chemical_drawing_tool():
                 status.style.color = '#1e40af';
                 canvas.style.cursor = 'default';
             } else if (replaceMode) {
-                status.textContent = '🔄 Replace Mode';
+                status.textContent = '🔄 Replace Mode (click atom)';
                 status.style.background = '#fef3c7';
                 status.style.color = '#92400e';
                 canvas.style.cursor = 'pointer';
-            } else if (deleteBondMode) {
-                status.textContent = '✖️ Delete Bond Mode';
-                status.style.background = '#fee2e2';
-                status.style.color = '#991b1b';
+            } else if (tool === 'line') {
+                status.textContent = '🔗 Bond Mode (drag atom to atom)';
+                status.style.background = '#dbeafe';
+                status.style.color = '#1e40af';
                 canvas.style.cursor = 'crosshair';
             } else {
-                status.textContent = '✏️ Draw Mode';
+                status.textContent = '✏️ Draw Mode (click canvas)';
                 status.style.background = '#dcfce7';
                 status.style.color = '#166534';
                 canvas.style.cursor = 'crosshair';
@@ -1099,17 +1249,14 @@ def chemical_drawing_tool():
             if (replaceMode) {
                 const atom = findNearestAtom(pos.x, pos.y);
                 if (atom) {
+                    let label = selectedAtom;
+                    if (selectedFG) { label = selectedFG; }
                     saveState();
-                    atom.label = selectedAtom || selectedFG || 'C';
+                    atom.label = label;
                     drawAll();
                     drawAtom(atom.x, atom.y, atom.label, true);
                     setTimeout(drawAll, 300);
                 }
-                return;
-            }
-            if (deleteBondMode) {
-                const bond = findNearestBond(pos.x, pos.y);
-                if (bond) { saveState(); bonds = bonds.filter(b => b !== bond); drawAll(); }
                 return;
             }
             if (e.button === 2) {
@@ -1162,9 +1309,6 @@ def chemical_drawing_tool():
             if (isDrawing && tool === 'line') {
                 drawAll();
                 drawBond(lastX, lastY, pos.x, pos.y, bondType, false);
-            }
-            if (replaceMode) {
-                canvas.style.cursor = findNearestAtom(pos.x, pos.y) ? 'pointer' : 'default';
             }
         };
 
@@ -1263,143 +1407,43 @@ def chemical_drawing_tool():
         };
 
         // ─── TOOLBAR BUTTONS ──────────────────────────────
-        document.getElementById('btn-draw').onclick = function() {
-            tool = 'draw'; deleteBondMode = false; replaceMode = false; selectMode = false; eraserMode = false;
-            selectionStart = null; selectionEnd = null; selectedAtoms = [];
-            this.style.background = '#0f172a';
-            this.style.color = 'white';
-            this.style.borderColor = '#0f172a';
-            document.querySelectorAll('#btn-line, #btn-eraser, #btn-select, #btn-replace, #btn-benzene').forEach(b => {
-                b.style.background = '#f8fafc';
-                b.style.color = '#0f172a';
-                b.style.borderColor = '#e2e8f0';
-            });
+        function setMode(mode, btn) {
+            tool = mode;
+            eraserMode = false;
+            selectMode = false;
+            replaceMode = false;
+            selectionStart = null;
+            selectionEnd = null;
+            selectedAtoms = [];
+            document.querySelectorAll('.draw-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
             updateModeStatus();
-        };
+        }
 
-        document.getElementById('btn-line').onclick = function() {
-            tool = 'line'; deleteBondMode = false; replaceMode = false; selectMode = false; eraserMode = false;
-            selectionStart = null; selectionEnd = null; selectedAtoms = [];
-            this.style.background = '#0f172a';
-            this.style.color = 'white';
-            this.style.borderColor = '#0f172a';
-            document.querySelectorAll('#btn-draw, #btn-eraser, #btn-select, #btn-replace, #btn-benzene').forEach(b => {
-                b.style.background = '#f8fafc';
-                b.style.color = '#0f172a';
-                b.style.borderColor = '#e2e8f0';
-            });
-            updateModeStatus();
-        };
-
-        document.getElementById('btn-eraser').onclick = function() {
-            eraserMode = !eraserMode;
-            if (eraserMode) {
-                deleteBondMode = false; replaceMode = false; selectMode = false;
-                this.style.background = '#fce4ec';
-                this.style.color = '#880e4f';
-                this.style.borderColor = '#fce4ec';
-                document.querySelectorAll('#btn-draw, #btn-line, #btn-select, #btn-replace, #btn-benzene').forEach(b => {
-                    b.style.background = '#f8fafc';
-                    b.style.color = '#0f172a';
-                    b.style.borderColor = '#e2e8f0';
-                });
-            } else {
-                this.style.background = '#f8fafc';
-                this.style.color = '#0f172a';
-                this.style.borderColor = '#e2e8f0';
-            }
-            updateModeStatus();
-        };
-
-        document.getElementById('btn-select').onclick = function() {
-            selectMode = !selectMode;
-            if (selectMode) {
-                deleteBondMode = false; replaceMode = false; eraserMode = false;
-                this.style.background = '#dbeafe';
-                this.style.color = '#1e40af';
-                this.style.borderColor = '#dbeafe';
-                document.querySelectorAll('#btn-draw, #btn-line, #btn-eraser, #btn-replace, #btn-benzene').forEach(b => {
-                    b.style.background = '#f8fafc';
-                    b.style.color = '#0f172a';
-                    b.style.borderColor = '#e2e8f0';
-                });
-            } else {
-                this.style.background = '#f8fafc';
-                this.style.color = '#0f172a';
-                this.style.borderColor = '#e2e8f0';
-            }
-            updateModeStatus();
-        };
-
-        document.getElementById('btn-replace').onclick = function() {
-            replaceMode = !replaceMode;
-            if (replaceMode) {
-                deleteBondMode = false; selectMode = false; eraserMode = false;
-                this.style.background = '#fef3c7';
-                this.style.color = '#92400e';
-                this.style.borderColor = '#fef3c7';
-                document.querySelectorAll('#btn-draw, #btn-line, #btn-eraser, #btn-select, #btn-benzene').forEach(b => {
-                    b.style.background = '#f8fafc';
-                    b.style.color = '#0f172a';
-                    b.style.borderColor = '#e2e8f0';
-                });
-            } else {
-                this.style.background = '#f8fafc';
-                this.style.color = '#0f172a';
-                this.style.borderColor = '#e2e8f0';
-            }
-            updateModeStatus();
-        };
-
-        document.getElementById('btn-benzene').onclick = function() {
-            tool = 'benzene'; deleteBondMode = false; replaceMode = false; selectMode = false; eraserMode = false;
-            selectionStart = null; selectionEnd = null; selectedAtoms = [];
-            this.style.background = '#0f172a';
-            this.style.color = 'white';
-            this.style.borderColor = '#0f172a';
-            document.querySelectorAll('#btn-draw, #btn-line, #btn-eraser, #btn-select, #btn-replace').forEach(b => {
-                b.style.background = '#f8fafc';
-                b.style.color = '#0f172a';
-                b.style.borderColor = '#e2e8f0';
-            });
-            updateModeStatus();
-        };
+        document.getElementById('btn-draw').onclick = function() { setMode('draw', this); };
+        document.getElementById('btn-line').onclick = function() { setMode('line', this); };
+        document.getElementById('btn-eraser').onclick = function() { eraserMode = !eraserMode; selectMode = false; replaceMode = false; updateModeStatus(); };
+        document.getElementById('btn-select').onclick = function() { selectMode = !selectMode; eraserMode = false; replaceMode = false; updateModeStatus(); };
+        document.getElementById('btn-replace').onclick = function() { replaceMode = !replaceMode; eraserMode = false; selectMode = false; updateModeStatus(); };
+        document.getElementById('btn-benzene').onclick = function() { setMode('benzene', this); };
 
         document.getElementById('btn-single-bond').onclick = function() {
             bondType = 1;
-            this.style.background = '#0f172a';
-            this.style.color = 'white';
-            this.style.borderColor = '#0f172a';
-            document.querySelectorAll('#btn-double-bond, #btn-triple-bond').forEach(b => {
-                b.style.background = '#f8fafc';
-                b.style.color = '#0f172a';
-                b.style.borderColor = '#e2e8f0';
-            });
-            document.getElementById('bond-type-indicator').textContent = 'Bond: Single';
+            this.classList.add('active');
+            document.querySelectorAll('#btn-double-bond, #btn-triple-bond').forEach(b => b.classList.remove('active'));
+            document.getElementById('bond-indicator').textContent = 'Bond: Single';
         };
         document.getElementById('btn-double-bond').onclick = function() {
             bondType = 2;
-            this.style.background = '#0f172a';
-            this.style.color = 'white';
-            this.style.borderColor = '#0f172a';
-            document.querySelectorAll('#btn-single-bond, #btn-triple-bond').forEach(b => {
-                b.style.background = '#f8fafc';
-                b.style.color = '#0f172a';
-                b.style.borderColor = '#e2e8f0';
-            });
-            document.getElementById('bond-type-indicator').textContent = 'Bond: Double';
+            this.classList.add('active');
+            document.querySelectorAll('#btn-single-bond, #btn-triple-bond').forEach(b => b.classList.remove('active'));
+            document.getElementById('bond-indicator').textContent = 'Bond: Double';
         };
         document.getElementById('btn-triple-bond').onclick = function() {
             bondType = 3;
-            this.style.background = '#0f172a';
-            this.style.color = 'white';
-            this.style.borderColor = '#0f172a';
-            document.querySelectorAll('#btn-single-bond, #btn-double-bond').forEach(b => {
-                b.style.background = '#f8fafc';
-                b.style.color = '#0f172a';
-                b.style.borderColor = '#e2e8f0';
-            });
-            document.getElementById('bond-type-indicator').textContent = 'Bond: Triple';
+            this.classList.add('active');
+            document.querySelectorAll('#btn-single-bond, #btn-double-bond').forEach(b => b.classList.remove('active'));
+            document.getElementById('bond-indicator').textContent = 'Bond: Triple';
         };
 
         document.getElementById('btn-undo').onclick = function() {
@@ -1453,7 +1497,7 @@ def chemical_drawing_tool():
         saveState();
         updateModeStatus();
     </script>
-    """, height=700)
+    """, height=720)
 
 # ─── HEADER ─────────────────────────────────────────────
 def render_header():
