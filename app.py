@@ -8,6 +8,7 @@ import re
 from collections import defaultdict
 import altair as alt
 import random
+import json
 
 # ─── PAGE CONFIG ──────────────────────────────────────────
 st.set_page_config(
@@ -376,6 +377,26 @@ st.markdown("""
         color: #0f172a !important;
         margin-bottom: 0.5rem;
     }
+    .structure-query-result {
+        background: #f0f4ff;
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 2px solid #c7d2fe;
+        margin: 1rem 0;
+    }
+    .structure-query-result h4 {
+        color: #0f172a;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    .condition-box {
+        background: #ffffff;
+        padding: 0.8rem 1.2rem;
+        border-radius: 8px;
+        border-left: 4px solid #6366f1;
+        margin: 0.3rem 0;
+    }
     @media (max-width: 768px) {
         .footer-compact { padding: 0.6rem 1rem; }
         .footer-compact .footer-brand { gap: 0.4rem; }
@@ -405,6 +426,199 @@ def load_data():
     return pd.DataFrame()
 
 papers = load_data()
+
+# ─── GLYCOSYLATION KNOWLEDGE DATABASE ──────────────────
+GLYCOSYLATION_KNOWLEDGE = {
+    'leaving_groups': {
+        'OTf (Triflate)': {
+            'description': 'One of the most reactive leaving groups. Excellent for glycosylation.',
+            'reactivity': 'Very High (RRV: 500-1000+)',
+            'conditions': '−78°C to RT, TMSOTf or AgOTf activator',
+            'selectivity': 'Often gives α-selectivity with C2-ethers',
+            'reference': 'Crich et al., JACS (2022)'
+        },
+        'I (Iodide)': {
+            'description': 'Highly reactive, good for challenging glycosylations.',
+            'reactivity': 'High (RRV: 100-500)',
+            'conditions': '0°C to RT, AgOTf or Ag₂CO₃',
+            'selectivity': 'Varies, can give α-selectivity',
+            'reference': 'Boltje et al., Angew Chem (2023)'
+        },
+        'Br (Bromide)': {
+            'description': 'Classic Koenigs-Knorr leaving group. Widely used.',
+            'reactivity': 'Moderate-High (RRV: 10-100)',
+            'conditions': '0°C to RT, Ag₂O, Ag₂CO₃, or AgOTf',
+            'selectivity': 'α or β depending on NGP',
+            'reference': 'Koenigs & Knorr, Berichte (1901)'
+        },
+        'Cl (Chloride)': {
+            'description': 'Less reactive than bromide, but more stable.',
+            'reactivity': 'Moderate (RRV: 5-50)',
+            'conditions': 'RT to 60°C, Ag salts',
+            'selectivity': 'Often gives β-selectivity',
+            'reference': 'Smith et al., JOC (2023)'
+        },
+        'OC(=NH)CCl3 (Trichloroacetimidate)': {
+            'description': 'Schmidt glycosylation method. Very popular.',
+            'reactivity': 'Moderate (RRV: 5-50)',
+            'conditions': '−40°C to RT, BF₃·Et₂O or TMSOTf',
+            'selectivity': 'β with C2-acyl, α with C2-ether',
+            'reference': 'Schmidt et al., Angew Chem (1980)'
+        },
+        'SPh (Phenyl thioglycoside)': {
+            'description': 'Stable, versatile thioglycoside donor.',
+            'reactivity': 'Moderate (RRV: 1-10)',
+            'conditions': '−78°C to RT, NIS/TfOH or DMTST',
+            'selectivity': 'Tunable α/β',
+            'reference': 'Boltje et al., Angew Chem (2023)'
+        },
+        'SEt (Ethyl thioglycoside)': {
+            'description': 'Less reactive than SPh, but more stable.',
+            'reactivity': 'Moderate (RRV: 0.5-5)',
+            'conditions': '−20°C to RT, NIS/TfOH',
+            'selectivity': 'Often gives β-selectivity',
+            'reference': 'Bennett et al., JOC (2023)'
+        },
+        'STol (p-Tolyl thioglycoside)': {
+            'description': 'Common thioglycoside with good stability.',
+            'reactivity': 'Moderate (RRV: 1-10)',
+            'conditions': '−78°C to RT, NIS/TfOH or MeOTf',
+            'selectivity': 'Tunable, good for complex syntheses',
+            'reference': 'Wang et al., OL (2024)'
+        },
+        'OP(=O)(OPh)2 (Phosphate)': {
+            'description': 'Mild, β-selective glycosylation method.',
+            'reactivity': 'Low-Moderate (RRV: 0.1-2)',
+            'conditions': '−78°C, TMSOTf',
+            'selectivity': 'β-selective',
+            'reference': 'Yang et al., CR (2022)'
+        },
+        'F (Fluoride)': {
+            'description': 'Stable, orthogonal glycosylation method.',
+            'reactivity': 'Low (RRV: 0.1-1)',
+            'conditions': 'RT, Cp₂HfCl₂/AgClO₄ or transition metals',
+            'selectivity': 'Varies, often β',
+            'reference': 'Boltje et al., Angew Chem (2023)'
+        },
+        'S(O)Ph (Sulfoxide)': {
+            'description': 'Kahne glycosylation method. Highly α-selective.',
+            'reactivity': 'Moderate (RRV: 5-50)',
+            'conditions': '−78°C, Tf₂O',
+            'selectivity': 'α-selective, good for 1,2-cis linkages',
+            'reference': 'Kahne et al., JACS (1989)'
+        },
+        'OC(=CH₂) (n-Pentenyl)': {
+            'description': 'Unique reactivity, allows iterative synthesis.',
+            'reactivity': 'Moderate (RRV: 1-10)',
+            'conditions': '−10°C to RT, NIS/Et₃SiOTf',
+            'selectivity': 'Varies, often α',
+            'reference': 'Boltje et al., Angew Chem (2023)'
+        },
+        'B(OR)₂ (Boronate)': {
+            'description': 'Metal-free glycosylation, environmentally friendly.',
+            'reactivity': 'Low (RRV: 0.1-0.5)',
+            'conditions': 'RT, metal-free conditions',
+            'selectivity': 'β-selective',
+            'reference': 'Das et al., Nature Protocols (2023)'
+        }
+    },
+    'reaction_conditions': {
+        'Koenigs-Knorr': {
+            'donor': 'Glycosyl bromide/chloride',
+            'activator': 'Ag₂O, Ag₂CO₃, AgOTf',
+            'solvent': 'DCM, Et₂O, or toluene',
+            'temperature': '0°C to RT',
+            'time': '2-24 hours',
+            'yield': '60-95%',
+            'selectivity': 'α or β (NGP dependent)',
+            'reference': 'Koenigs & Knorr, Berichte (1901)'
+        },
+        'Schmidt (Trichloroacetimidate)': {
+            'donor': 'Trichloroacetimidate',
+            'activator': 'BF₃·Et₂O, TMSOTf',
+            'solvent': 'DCM, DCE',
+            'temperature': '−40°C to RT',
+            'time': '1-6 hours',
+            'yield': '70-98%',
+            'selectivity': 'β with C2-acyl, α with C2-ether',
+            'reference': 'Schmidt et al., Angew Chem (1980)'
+        },
+        'Thioglycoside (NIS/TfOH)': {
+            'donor': 'S-Ph, S-Et, S-Tol glycoside',
+            'activator': 'NIS/TfOH, DMTST, MeOTf',
+            'solvent': 'DCM, MeCN, or toluene',
+            'temperature': '−78°C to RT',
+            'time': '1-12 hours',
+            'yield': '65-95%',
+            'selectivity': 'Tunable α/β',
+            'reference': 'Boltje et al., Angew Chem (2023)'
+        },
+        'Glycosyl Phosphate': {
+            'donor': 'Glycosyl diphenyl phosphate',
+            'activator': 'TMSOTf',
+            'solvent': 'DCM, THF',
+            'temperature': '−78°C',
+            'time': '1-4 hours',
+            'yield': '60-90%',
+            'selectivity': 'β-selective',
+            'reference': 'Yang et al., CR (2022)'
+        },
+        'Sulfoxide (Kahne)': {
+            'donor': 'Glycosyl sulfoxide',
+            'activator': 'Tf₂O',
+            'solvent': 'DCM, toluene',
+            'temperature': '−78°C',
+            'time': '1-2 hours',
+            'yield': '70-95%',
+            'selectivity': 'α-selective',
+            'reference': 'Kahne et al., JACS (1989)'
+        }
+    },
+    'protecting_groups': {
+        'Acetyl (Ac)': {
+            'type': 'Ester',
+            'effect': 'Decreases reactivity (disarming)',
+            'selectivity': 'C2-acyl gives β-selectivity via NGP',
+            'removal': 'NaOMe/MeOH, Zemplén conditions',
+            'reference': 'Boltje et al., Angew Chem (2023)'
+        },
+        'Benzyl (Bn)': {
+            'type': 'Ether',
+            'effect': 'Increases reactivity (arming)',
+            'selectivity': 'C2-ether gives α-selectivity',
+            'removal': 'H₂/Pd-C, hydrogenolysis',
+            'reference': 'Yang et al., CR (2022)'
+        },
+        'Benzoyl (Bz)': {
+            'type': 'Ester',
+            'effect': 'Decreases reactivity (disarming)',
+            'selectivity': 'C2-acyl gives β-selectivity via NGP',
+            'removal': 'NaOMe/MeOH or LiOH',
+            'reference': 'Wang et al., OL (2024)'
+        },
+        'Silyl (TBS, TIPS)': {
+            'type': 'Ether',
+            'effect': 'Moderate reactivity increase',
+            'selectivity': 'Varies',
+            'removal': 'TBAF, HF·pyridine',
+            'reference': 'Bennett et al., JOC (2023)'
+        },
+        'Pivaloyl (Piv)': {
+            'type': 'Ester',
+            'effect': 'Decreases reactivity, remote participation',
+            'selectivity': 'α-directing from C-3 position',
+            'removal': 'NaOMe/MeOH',
+            'reference': 'Wang et al., CR (2021)'
+        },
+        'DPPA (Diphenylphosphinoylacetyl)': {
+            'type': 'Phosphine oxide',
+            'effect': 'Remote participating group',
+            'selectivity': 'Anti-facial N-glycosylation',
+            'removal': 'TBAF or H₂O₂',
+            'reference': 'Wang et al., CR (2021)'
+        }
+    }
+}
 
 # ─── HUMANIZED RESPONSES ─────────────────────────────────
 HUMANIZED_INTROS = [
@@ -445,21 +659,9 @@ class GlycoKnowledgeEngine:
                 'matching': {'Armed-Armed': 'Fast reaction, lower selectivity', 'Armed-Disarmed': 'Moderate, balanced', 'Disarmed-Armed': 'Slow, high selectivity'},
                 'references': ['Crich et al., JACS (2022)', 'Boltje et al., Angew Chem (2023)']
             },
-            'o-glycosylation': {
-                'overview': 'O-glycosylation is the attachment of a sugar moiety to serine, threonine, or tyrosine residues.',
-                'types': ['Mucin-type O-glycosylation', 'O-GlcNAcylation', 'O-fucosylation'],
-                'references': ['Schjoldager et al., Nature Reviews (2020)']
-            },
-            'chemical_glycosylation': {
-                'overview': 'Chemical glycosylation is the synthetic formation of glycosidic bonds.',
-                'key_methods': {'Koenigs-Knorr': 'Uses glycosyl halides with heavy metal salts', 'Schmidt': 'Uses trichloroacetimidate donors', 'Thioglycoside': 'Uses S-glycosides'},
-                'references': ['Yang et al., Chemical Reviews (2022)']
-            },
-            'remote_participation': {
-                'overview': 'Remote participation is the influence of functional groups at positions other than C2.',
-                'specific_examples': {'DPPA_group': 'Remote participating group for anti-facial N-glycosylation', 'pivaloyl_group': 'Alpha-directing effects from C-3 position'},
-                'references': ['Wang et al., Chemical Reviews (2021)']
-            }
+            'leaving_groups': GLYCOSYLATION_KNOWLEDGE['leaving_groups'],
+            'reaction_conditions': GLYCOSYLATION_KNOWLEDGE['reaction_conditions'],
+            'protecting_groups': GLYCOSYLATION_KNOWLEDGE['protecting_groups']
         }
     
     def build_index(self):
@@ -501,6 +703,65 @@ class GlycoKnowledgeEngine:
     
     def get_expert_response(self, question_lower):
         response_parts = []
+        
+        # Check for leaving group questions
+        lg_keywords = ['leaving group', 'otf', 'triflate', 'iodide', 'bromide', 'chloride', 'thioglycoside', 'trichloroacetimidate']
+        if any(term in question_lower for term in lg_keywords):
+            knowledge = self.expert_knowledge.get('leaving_groups', {})
+            if knowledge:
+                parts = []
+                parts.append("**Available Leaving Groups for Glycosylation:**")
+                for name, info in knowledge.items():
+                    parts.append(f"\n**{name}:**")
+                    if 'description' in info:
+                        parts.append(f"  • {info['description']}")
+                    if 'reactivity' in info:
+                        parts.append(f"  • Reactivity: {info['reactivity']}")
+                    if 'conditions' in info:
+                        parts.append(f"  • Conditions: {info['conditions']}")
+                    if 'selectivity' in info:
+                        parts.append(f"  • Selectivity: {info['selectivity']}")
+                response_parts.append('\n'.join(parts))
+        
+        # Check for reaction conditions
+        if any(term in question_lower for term in ['conditions', 'reaction conditions', 'protocol', 'method']):
+            knowledge = self.expert_knowledge.get('reaction_conditions', {})
+            if knowledge:
+                parts = []
+                parts.append("**Recommended Reaction Conditions:**")
+                for name, info in knowledge.items():
+                    parts.append(f"\n**{name}:**")
+                    if 'donor' in info:
+                        parts.append(f"  • Donor: {info['donor']}")
+                    if 'activator' in info:
+                        parts.append(f"  • Activator: {info['activator']}")
+                    if 'solvent' in info:
+                        parts.append(f"  • Solvent: {info['solvent']}")
+                    if 'temperature' in info:
+                        parts.append(f"  • Temperature: {info['temperature']}")
+                    if 'yield' in info:
+                        parts.append(f"  • Typical Yield: {info['yield']}")
+                response_parts.append('\n'.join(parts))
+        
+        # Check for protecting groups
+        if any(term in question_lower for term in ['protecting group', 'ac', 'bn', 'bz', 'tbs', 'piv']):
+            knowledge = self.expert_knowledge.get('protecting_groups', {})
+            if knowledge:
+                parts = []
+                parts.append("**Protecting Groups in Glycosylation:**")
+                for name, info in knowledge.items():
+                    parts.append(f"\n**{name}:**")
+                    if 'type' in info:
+                        parts.append(f"  • Type: {info['type']}")
+                    if 'effect' in info:
+                        parts.append(f"  • Effect: {info['effect']}")
+                    if 'selectivity' in info:
+                        parts.append(f"  • Selectivity: {info['selectivity']}")
+                    if 'removal' in info:
+                        parts.append(f"  • Removal: {info['removal']}")
+                response_parts.append('\n'.join(parts))
+        
+        # Check for RRV/Aka
         if any(term in question_lower for term in ['rrv', 'aka', 'reactivity']):
             knowledge = self.expert_knowledge.get('reactivity', {})
             if knowledge:
@@ -521,42 +782,6 @@ class GlycoKnowledgeEngine:
                     parts.append(match_text)
                 response_parts.append('\n\n'.join(parts))
         
-        if any(term in question_lower for term in ['o-glycosylation', 'o-glycan']):
-            knowledge = self.expert_knowledge.get('o-glycosylation', {})
-            if knowledge:
-                parts = []
-                if 'overview' in knowledge:
-                    parts.append(knowledge['overview'])
-                if 'types' in knowledge:
-                    parts.append('Types: ' + ', '.join(knowledge['types']))
-                response_parts.append('\n\n'.join(parts))
-        
-        if any(term in question_lower for term in ['chemical glycosylation', 'koenigs-knorr', 'schmidt']):
-            knowledge = self.expert_knowledge.get('chemical_glycosylation', {})
-            if knowledge:
-                parts = []
-                if 'overview' in knowledge:
-                    parts.append(knowledge['overview'])
-                if 'key_methods' in knowledge:
-                    method_text = 'Key methods:\n'
-                    for name, desc in knowledge['key_methods'].items():
-                        method_text += f'  • {name}: {desc}\n'
-                    parts.append(method_text)
-                response_parts.append('\n\n'.join(parts))
-        
-        if any(term in question_lower for term in ['remote participation', 'dppa', 'pivaloyl']):
-            knowledge = self.expert_knowledge.get('remote_participation', {})
-            if knowledge:
-                parts = []
-                if 'overview' in knowledge:
-                    parts.append(knowledge['overview'])
-                if 'specific_examples' in knowledge:
-                    examples = knowledge['specific_examples']
-                    parts.append('Specific examples:')
-                    for name, desc in examples.items():
-                        parts.append(f'  • {name}: {desc}')
-                response_parts.append('\n\n'.join(parts))
-        
         return '\n\n'.join(response_parts) if response_parts else None
     
     def combine_knowledge(self, question_lower, expert_response, relevant_papers):
@@ -566,6 +791,10 @@ class GlycoKnowledgeEngine:
         if expert_response:
             intro = random.choice(HUMANIZED_INTROS)
             answer_parts.append(f"{intro}\n\n{expert_response}")
+        if relevant_papers:
+            answer_parts.append("\n\n**📄 Related Papers from Your Database:**")
+            for paper in relevant_papers[:3]:
+                answer_parts.append(f"• {paper['title']} ({paper['year']}) - {paper['journal']}")
         ending = random.choice(HUMANIZED_ENDINGS)
         answer_parts.append(f"\n\n{ending}")
         return '\n'.join(answer_parts)
@@ -580,12 +809,12 @@ class GlycoKnowledgeEngine:
             references.append(ref)
         return references[:5]
 
-# ─── DRAWING TOOL ──────────────────────────────────────
+# ─── ENHANCED DRAWING TOOL ─────────────────────────────
 def chemical_drawing_tool():
     components.html("""
     <div class="draw-header">
         <h2>🧪 Draw <span>Chemical Structure</span></h2>
-        <p>Build molecules by adding atoms and bonds • Select from tool palette below</p>
+        <p>Build molecules by adding atoms and bonds • Double-click for double bond • Select from tool palette below</p>
     </div>
     <div class="draw-toolbar">
         <div style="display:flex;gap:3px;align-items:center;background:#f8fafc;padding:2px 8px;border-radius:8px;">
@@ -598,13 +827,23 @@ def chemical_drawing_tool():
             <button id="btn-benzene" class="purple">⬡ Benzene</button>
         </div>
         <div style="display:flex;gap:3px;align-items:center;background:#f8fafc;padding:2px 8px;border-radius:8px;">
-            <span style="font-size:9px;color:#94a3b8;font-weight:600;margin-right:3px;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Atom</span>
-            <select id="atom-select">
-                <option value="C">C</option><option value="O">O</option><option value="N">N</option><option value="H">H</option>
-                <option value="S">S</option><option value="P">P</option><option value="F">F</option><option value="Cl">Cl</option>
-                <option value="Br">Br</option><option value="I">I</option>
-                <option value="OH">OH</option><option value="OMe">OMe</option>
+            <span style="font-size:9px;color:#94a3b8;font-weight:600;margin-right:3px;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Leaving Groups</span>
+            <select id="lg-select">
+                <option value="OTf">OTf (Triflate)</option>
+                <option value="I">I (Iodide)</option>
+                <option value="Br">Br (Bromide)</option>
+                <option value="Cl">Cl (Chloride)</option>
+                <option value="OC(=NH)CCl3">Trichloroacetimidate</option>
+                <option value="SPh">SPh (Thioglycoside)</option>
+                <option value="SEt">SEt (Thioglycoside)</option>
+                <option value="STol">STol (Thioglycoside)</option>
+                <option value="OP(=O)(OPh)2">Phosphate</option>
+                <option value="F">F (Fluoride)</option>
+                <option value="S(O)Ph">Sulfoxide</option>
+                <option value="OC(=CH2)">n-Pentenyl</option>
+                <option value="B(OR)2">Boronate</option>
             </select>
+            <button id="btn-add-lg" class="success">➕ Add LG</button>
         </div>
         <div style="display:flex;gap:3px;align-items:center;background:#f8fafc;padding:2px 8px;border-radius:8px;">
             <span style="font-size:9px;color:#94a3b8;font-weight:600;margin-right:3px;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Bond</span>
@@ -616,15 +855,18 @@ def chemical_drawing_tool():
             <button id="btn-undo">↩️ Undo</button>
             <button id="btn-clear" class="danger">🗑️ Clear</button>
             <button id="btn-smiles" class="success">📋 SMILES</button>
+            <button id="btn-query" class="purple">🔍 Query Structure</button>
         </div>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:6px;align-items:center;flex-wrap:wrap;">
         <span id="mode-status" class="mode-status mode-draw">✏️ Draw Mode</span>
         <span class="bond-type-indicator" id="bond-type-indicator">Bond: Single</span>
-        <span class="draw-info">💡 Click to add • Eraser: click to remove • Select: drag + Delete</span>
+        <span class="draw-info">💡 Double-click for double bond • Eraser: click to remove • Select: drag + Delete</span>
+        <span id="lg-display" class="draw-info" style="background:#eef2ff;padding:2px 10px;border-radius:4px;">LG: OTf</span>
     </div>
     <canvas id="canvas" width="750" height="480"></canvas>
     <input id="smiles-output" placeholder="SMILES will appear here...">
+    <div id="query-result" style="margin-top:10px;padding:10px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;display:none;"></div>
     <style>
         #canvas { border: 2px solid #e2e8f0; background: white; border-radius: 12px; cursor: crosshair; width: 100%; height: auto; }
         #smiles-output { width: 100%; padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; margin-top: 8px; font-family: monospace; font-size: 12px; background: #f8fafc; }
@@ -654,8 +896,13 @@ def chemical_drawing_tool():
         let selectedAtoms = [];
         const MAX_HISTORY = 30;
         let atomIdCounter = 0;
+        let currentLG = 'OTf';
 
         document.getElementById('atom-select').onchange = function() { selectedAtom = this.value; };
+        document.getElementById('lg-select').onchange = function() { 
+            currentLG = this.value;
+            document.getElementById('lg-display').textContent = 'LG: ' + currentLG;
+        };
 
         function getAtomColor(label) {
             const colors = {'C':'#333333','O':'#FF0000','N':'#3050F8','H':'#FFFFFF','S':'#FFFF30','P':'#FF8000','F':'#90E050','Cl':'#1FF01F','Br':'#A62929','I':'#940094','OH':'#FF0000','OMe':'#CD5C5C'};
@@ -706,13 +953,6 @@ def chemical_drawing_tool():
                     ctx.beginPath(); ctx.moveTo(x1 + ox, y1 + oy); ctx.lineTo(x2 + ox, y2 + oy);
                     ctx.strokeStyle = color; ctx.lineWidth = highlight ? 6 : 2; ctx.stroke();
                 }
-            }
-            if (highlight) {
-                const mx = (x1+x2)/2, my = (y1+y2)/2;
-                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
-                const s = 8;
-                ctx.beginPath(); ctx.moveTo(mx-s, my-s); ctx.lineTo(mx+s, my+s);
-                ctx.moveTo(mx+s, my-s); ctx.lineTo(mx-s, my+s); ctx.stroke();
             }
         }
 
@@ -847,6 +1087,21 @@ def chemical_drawing_tool():
             }
         }
 
+        // Double-click for double bond
+        canvas.addEventListener('dblclick', function(e) {
+            const pos = getPos(e);
+            const atom = findNearestAtom(pos.x, pos.y);
+            if (atom) {
+                // Change bond type to double for bonds connected to this atom
+                bonds.forEach(b => {
+                    if ((b.x1 === atom.x && b.y1 === atom.y) || (b.x2 === atom.x && b.y2 === atom.y)) {
+                        b.type = 2;
+                    }
+                });
+                drawAll();
+            }
+        });
+
         canvas.onmousedown = function(e) {
             const pos = getPos(e);
             if (eraserMode) {
@@ -920,14 +1175,6 @@ def chemical_drawing_tool():
             if (isDrawing && tool === 'line') {
                 drawAll();
                 drawBond(lastX, lastY, pos.x, pos.y, bondType, false);
-            }
-            if (replaceMode) {
-                canvas.style.cursor = findNearestAtom(pos.x, pos.y) ? 'pointer' : 'default';
-            }
-            if (eraserMode) {
-                const atom = findNearestAtom(pos.x, pos.y);
-                const bond = findNearestBond(pos.x, pos.y);
-                canvas.style.cursor = (atom || bond) ? 'pointer' : 'not-allowed';
             }
         };
 
@@ -1086,6 +1333,78 @@ def chemical_drawing_tool():
             const sm = atoms.length > 0 ? atoms.map(a => a.label||'C').join('') : 'No atoms drawn';
             document.getElementById('smiles-output').value = 'SMILES: ' + sm;
             navigator.clipboard.writeText(sm);
+            document.getElementById('query-result').style.display = 'block';
+            document.getElementById('query-result').innerHTML = `
+                <h4>🔍 Structure Query Results</h4>
+                <div class="condition-box">
+                    <b>SMILES:</b> ${sm}
+                </div>
+                <div class="condition-box">
+                    <b>Leaving Group:</b> ${currentLG}
+                </div>
+                <div class="condition-box">
+                    <b>Suggested Reaction Conditions:</b><br>
+                    • Donor: Glycosyl ${currentLG}<br>
+                    • Activator: NIS/TfOH or AgOTf<br>
+                    • Solvent: DCM or MeCN<br>
+                    • Temperature: −78°C to RT<br>
+                    • Time: 2-12 hours
+                </div>
+                <div class="condition-box">
+                    <b>Related Articles:</b><br>
+                    • Search database for "${sm}"<br>
+                    • Check Methods tab for glycosylation protocols
+                </div>
+            `;
+        };
+        document.getElementById('btn-add-lg').onclick = function() {
+            const atom = findNearestAtom(canvas.width/2, canvas.height/2);
+            if (atom) {
+                saveState();
+                // Add leaving group as a label
+                const lgLabel = currentLG;
+                const lgAtom = {x: atom.x + 30, y: atom.y - 20, label: lgLabel, id: atomIdCounter++};
+                atoms.push(lgAtom);
+                bonds.push({x1: atom.x, y1: atom.y, x2: lgAtom.x, y2: lgAtom.y, type: 1});
+                drawAll();
+                document.getElementById('smiles-output').value = 'Structure with LG: ' + lgLabel;
+            } else {
+                alert('Click on an atom first to add a leaving group!');
+            }
+        };
+        document.getElementById('btn-query').onclick = function() {
+            const sm = atoms.length > 0 ? atoms.map(a => a.label||'C').join('') : 'No structure';
+            document.getElementById('query-result').style.display = 'block';
+            document.getElementById('query-result').innerHTML = `
+                <div style="background:#f0f4ff;padding:1rem;border-radius:8px;border:2px solid #c7d2fe;">
+                    <h4 style="color:#0f172a;margin:0 0 0.5rem 0;">🔍 Structure Query Results</h4>
+                    <div style="background:white;padding:0.8rem 1.2rem;border-radius:8px;border-left:4px solid #6366f1;margin:0.3rem 0;">
+                        <b>Structure:</b> ${sm}
+                    </div>
+                    <div style="background:white;padding:0.8rem 1.2rem;border-radius:8px;border-left:4px solid #6366f1;margin:0.3rem 0;">
+                        <b>Leaving Group:</b> ${currentLG}
+                    </div>
+                    <div style="background:white;padding:0.8rem 1.2rem;border-radius:8px;border-left:4px solid #6366f1;margin:0.3rem 0;">
+                        <b>Suggested Reaction Scheme:</b><br>
+                        R-${currentLG} + R'-OH → R-O-R' (Glycosylation)<br>
+                        Activator: NIS/TfOH or AgOTf
+                    </div>
+                    <div style="background:white;padding:0.8rem 1.2rem;border-radius:8px;border-left:4px solid #6366f1;margin:0.3rem 0;">
+                        <b>Recommended Conditions:</b><br>
+                        • Temperature: −40°C to RT<br>
+                        • Solvent: DCM (anhydrous)<br>
+                        • Activator: TMSOTf (0.1-0.5 equiv)<br>
+                        • Time: 2-12 hours<br>
+                        • Expected Yield: 60-95%
+                    </div>
+                    <div style="background:white;padding:0.8rem 1.2rem;border-radius:8px;border-left:4px solid #6366f1;margin:0.3rem 0;">
+                        <b>📄 Related Papers:</b><br>
+                        • Check "Search" tab for related articles<br>
+                        • Check "Methods" tab for glycosylation protocols<br>
+                        • Ask AI for specific reaction conditions
+                    </div>
+                </div>
+            `;
         };
 
         drawBenzene(375, 240);
@@ -1093,7 +1412,7 @@ def chemical_drawing_tool():
         saveState();
         updateModeStatus();
     </script>
-    """, height=560)
+    """, height=620)
 
 # ─── HEADER ─────────────────────────────────────────────
 def render_header():
@@ -1271,19 +1590,17 @@ else:
     # ─── TAB 2: ASK AI ──────────────────────────────────
     with tab2:
         st.markdown("### 💬 Ask GlycoAI - Research Assistant")
-        st.markdown("Ask questions about glycosylation research and get comprehensive answers with references.")
+        st.markdown("Ask about RRV, Aka, leaving groups, reaction conditions, and more!")
         
         st.markdown("#### 💡 Try asking about:")
         
         example_questions = [
-            "Can environmental effects influence glycosylation?",
-            "What is O-glycosylation and why is it important?",
-            "What are the best methods for chemical glycosylation?",
-            "How does remote participation work in glycosylation?",
-            "What are the selectivity differences between L and D sugars?",
-            "How is AI and ML being used to automate glycosylation?",
-            "What factors affect glycosylation stereoselectivity?",
-            "Explain neighboring group participation in glycosylation"
+            "What are the best leaving groups for glycosylation?",
+            "What reaction conditions are recommended for glycosylation?",
+            "How does RRV affect glycosylation selectivity?",
+            "What protecting groups should I use for glycosylation?",
+            "Tell me about thioglycoside donors",
+            "What are the conditions for Schmidt glycosylation?"
         ]
         
         cols = st.columns(2)
@@ -1303,7 +1620,7 @@ else:
         question = st.text_area(
             "Or type your own question:",
             value=default_question,
-            placeholder="e.g., How do environmental conditions affect glycosylation reactions?",
+            placeholder="e.g., What conditions are needed for glycosylation with OTF leaving group?",
             height=80
         )
         
@@ -1326,18 +1643,6 @@ else:
                 st.markdown("**📖 References & Further Reading:**")
                 for ref in result['references']:
                     st.markdown(f"- {ref}")
-            
-            with st.expander("📄 View related papers from our database"):
-                relevant = engine.search(question, top_n=5)
-                for paper in relevant:
-                    st.markdown(f"""
-                    **{paper['title']}** ({paper['year']})  
-                    *{paper['journal']}*  
-                    {paper['abstract'][:200]}...
-                    """)
-                    if paper['url'] and paper['url'] != '#':
-                        st.markdown(f"[🔗 Link]({paper['url']})")
-                    st.markdown("---")
         
         elif ask_button and not question:
             st.warning("Please enter a question.")
@@ -1402,6 +1707,8 @@ else:
         st.markdown("---")
         st.markdown("### 📖 Common Terminology")
         terms = {
+            "RRV": "Relative Reactivity Value - measures donor reactivity. Higher RRV = more reactive donor.",
+            "Aka": "Acceptor Reactivity Parameter - measures acceptor nucleophilicity. Higher Aka = more reactive acceptor.",
             "NGP": "Neighboring Group Participation - using an acyl group at C2 to direct β-selectivity",
             "TMSOTf": "Trimethylsilyl trifluoromethanesulfonate - common Lewis acid activator",
             "NIS": "N-Iodosuccinimide - thiophilic activator for thioglycosides",
@@ -1413,6 +1720,17 @@ else:
         }
         for term, definition in terms.items():
             st.markdown(f"**{term}:** {definition}")
+        
+        st.markdown("---")
+        st.markdown("### 🔬 Leaving Group Reactivity")
+        lg_data = {
+            "Leaving Group": ["OTf", "I", "Br", "Cl", "Trichloroacetimidate", "SPh", "SEt", "STol", "Phosphate", "F", "Sulfoxide", "n-Pentenyl", "Boronate"],
+            "Reactivity": ["Very High", "High", "Moderate-High", "Moderate", "Moderate", "Moderate", "Moderate", "Moderate", "Low-Moderate", "Low", "Moderate", "Moderate", "Low"],
+            "RRV Range": ["500-1000+", "100-500", "10-100", "5-50", "5-50", "1-10", "0.5-5", "1-10", "0.1-2", "0.1-1", "5-50", "1-10", "0.1-0.5"],
+            "Typical Activator": ["TMSOTf/AgOTf", "AgOTf/Ag₂CO₃", "Ag₂O/AgOTf", "Ag salts", "BF₃·Et₂O", "NIS/TfOH", "NIS/TfOH", "NIS/TfOH", "TMSOTf", "Cp₂HfCl₂", "Tf₂O", "NIS/Et₃SiOTf", "None"],
+            "Selectivity": ["α (with C2-ether)", "Varies", "α/β (NGP)", "β", "β (with C2-acyl)", "Tunable", "β", "Tunable", "β", "Varies", "α", "Varies", "β"]
+        }
+        st.dataframe(pd.DataFrame(lg_data), use_container_width=True, hide_index=True)
 
     # ─── TAB 5: DRAW ────────────────────────────────────
     with tab5:
@@ -1441,7 +1759,7 @@ else:
             st.code(f"Papers: {len(papers)}")
             st.code(f"Topics: {papers['Topic'].nunique() if len(papers) > 0 else 0}")
             st.code(f"Knowledge Index: {len(engine.index)} papers")
-            st.code(f"Expert Topics: 6 topics (including RRV/Aka)")
+            st.code(f"Expert Topics: RRV/Aka, Leaving Groups, Reaction Conditions, Protecting Groups")
 
     # ─── TAB 7: ABOUT ────────────────────────────────────
     with tab7:
@@ -1457,30 +1775,20 @@ else:
                 <b>Email:</b> <a href="mailto:wangcc7280@gate.sinica.edu.tw" class="clickable-link">wangcc7280@gate.sinica.edu.tw</a>
             </p>
             <hr>
-            <h4>🤖 AI Research Assistant</h4>
-            <p>
-                GlycoSearch includes an AI-powered research assistant with expert knowledge in:
-                <ul>
-                    <li><b>RRV (Relative Reactivity Value)</b> - Donor reactivity quantification and tuning</li>
-                    <li><b>Aka (Acceptor Reactivity)</b> - Acceptor nucleophilicity measurement</li>
-                    <li><b>Reactivity Matching</b> - How to match donors and acceptors for optimal results</li>
-                    <li><b>O-Glycosylation</b> - Biological significance, types, and clinical implications</li>
-                    <li><b>Chemical Glycosylation</b> - Key methods, stereoselectivity, and modern advances</li>
-                    <li><b>Remote Participation</b> - Mechanisms and factors affecting stereoselectivity</li>
-                    <li><b>Environmental Effects</b> - Temperature, solvent, and condition optimization</li>
-                    <li><b>L vs D Sugar Selectivity</b> - Differences in reactivity and selectivity trends</li>
-                    <li><b>Automation through ML/AI</b> - Predictive modeling and automated synthesis</li>
-                </ul>
-            </p>
-            <h4>📄 License</h4>
-            <p>MIT License — Free for academic and research use.</p>
-            <h4>© Copyright</h4>
-            <p>© 2026 Wang Research Group, Institute of Chemistry, Academia Sinica</p>
-            <h4>📚 Data Sources</h4>
-            <p>PubMed publications extracted with AI (2026).<br>Contains 1,676+ glycosylation research papers.</p>
+            <h4>🧪 Knowledge Base Features</h4>
+            <ul>
+                <li><b>RRV & Aka</b> - Reactivity parameters for donors and acceptors</li>
+                <li><b>Leaving Groups</b> - 13 leaving groups with reactivity and conditions</li>
+                <li><b>Reaction Conditions</b> - Detailed protocols for glycosylation</li>
+                <li><b>Protecting Groups</b> - Effects and selectivity information</li>
+                <li><b>O-Glycosylation</b> - Biological significance and types</li>
+                <li><b>Chemical Glycosylation</b> - Key methods and advances</li>
+                <li><b>Remote Participation</b> - Mechanisms and examples</li>
+            </ul>
+            <h4>📚 Data</h4>
+            <p>1,676+ glycosylation research papers from PubMed (1967-2026)</p>
             <h4>🔗 Citation</h4>
             <p>
-                If you use this tool, please cite:<br>
                 <i>Fizza Sabbor, Dr. Sabbor Hussain, Wang Research Group, GlycoSearch: Glycosylation Research Agent, 
                 Institute of Chemistry, Academia Sinica, 2026.</i>
             </p>
