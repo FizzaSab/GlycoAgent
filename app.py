@@ -16,9 +16,6 @@ from PIL import Image
 import base64
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report, precision_score, recall_score, f1_score
 
 # ─── PAGE CONFIG ──────────────────────────────────────────
 st.set_page_config(
@@ -33,7 +30,6 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
     .stApp { background: #f5f7fb; }
-    
     .header-wrapper {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         padding: 1rem 0 0.8rem 0;
@@ -189,65 +185,95 @@ st.markdown("""
         padding-top: 0.5rem;
         border-top: 1px solid #f1f5f9;
     }
-    .draw-header { 
-        background: linear-gradient(135deg, #f8fafc, #eef2ff); 
-        border: 2px solid #e2e8f0; 
-        border-radius: 14px; 
-        padding: 1rem 1.5rem; 
-        margin-bottom: 0.8rem; 
-        text-align: center; 
+    .decision-card {
+        background: white;
+        padding: 1.2rem;
+        border-radius: 12px;
+        border: 2px solid #e2e8f0;
+        margin: 0.5rem 0;
+        transition: all 0.3s;
     }
-    .draw-header h2 { 
-        font-family: 'Inter', sans-serif; 
-        font-weight: 700; 
-        font-size: 1.3rem; 
-        color: #0f172a; 
-        margin: 0; 
+    .decision-card:hover {
+        border-color: #818cf8;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
     }
-    .draw-header h2 span { 
-        background: linear-gradient(135deg, #6366f1, #a78bfa); 
-        -webkit-background-clip: text; 
-        -webkit-text-fill-color: transparent; 
+    .priority-high {
+        background: #fee2e2 !important;
+        color: #991b1b !important;
+        padding: 2px 10px !important;
+        border-radius: 50px !important;
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        display: inline-block !important;
     }
-    .draw-header p { 
-        font-family: 'Inter', sans-serif; 
-        font-size: 0.8rem; 
-        color: #64748b; 
-        margin: 0.2rem 0 0 0; 
+    .priority-medium {
+        background: #fef3c7 !important;
+        color: #92400e !important;
+        padding: 2px 10px !important;
+        border-radius: 50px !important;
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        display: inline-block !important;
     }
-    .draw-toolbar { 
-        display: flex; 
-        gap: 4px; 
-        padding: 6px 0; 
-        flex-wrap: wrap; 
-        align-items: center; 
+    .priority-low {
+        background: #dbeafe !important;
+        color: #1e40af !important;
+        padding: 2px 10px !important;
+        border-radius: 50px !important;
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        display: inline-block !important;
     }
-    .draw-toolbar button { 
-        padding: 4px 10px; 
-        border: none; 
-        border-radius: 6px; 
-        background: #f1f5f9; 
-        color: #0f172a; 
-        cursor: pointer; 
-        font-size: 11px; 
-        font-family: 'Inter', sans-serif; 
-        font-weight: 500; 
-        transition: all 0.2s; 
+    .draw-container {
+        overflow: auto;
+        max-height: 680px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 15px;
+        background: white;
+        position: relative;
     }
-    .draw-toolbar button:hover { background: #e2e8f0; }
-    .draw-toolbar button.active { background: #0f172a; color: white; }
-    .draw-toolbar button.danger { background: #fee2e2; color: #991b1b; }
-    .draw-toolbar button.success { background: #dcfce7; color: #166534; }
-    .draw-toolbar button.warning { background: #fef3c7; color: #92400e; }
-    .draw-toolbar button.info { background: #dbeafe; color: #1e40af; }
-    .draw-toolbar button.purple { background: #f3e8ff; color: #6b21a8; }
-    .draw-toolbar select { 
-        padding: 4px 8px; 
-        border-radius: 6px; 
-        border: 1px solid #e2e8f0; 
-        font-size: 11px; 
-        font-family: 'Inter', sans-serif; 
-        background: white; 
+    .draw-container::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    .draw-container::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 5px;
+    }
+    .draw-container::-webkit-scrollbar-thumb {
+        background: #c7d2fe;
+        border-radius: 5px;
+    }
+    .draw-container::-webkit-scrollbar-thumb:hover {
+        background: #818cf8;
+    }
+    .zoom-controls {
+        position: sticky;
+        bottom: 0;
+        background: rgba(255,255,255,0.95);
+        padding: 8px;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        backdrop-filter: blur(10px);
+    }
+    .zoom-controls button {
+        padding: 4px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        background: #f8fafc;
+        cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        transition: all 0.2s;
+    }
+    .zoom-controls button:hover {
+        background: #eef2ff;
+        border-color: #818cf8;
     }
     .footer-compact {
         background: linear-gradient(135deg, #0f172a, #1e293b);
@@ -325,52 +351,13 @@ st.markdown("""
         color: #0f172a !important;
         margin-bottom: 0.5rem;
     }
-    .decision-card {
-        background: white;
-        padding: 1.2rem;
-        border-radius: 12px;
-        border: 2px solid #e2e8f0;
-        margin: 0.5rem 0;
-        transition: all 0.3s;
-    }
-    .decision-card:hover {
-        border-color: #818cf8;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
-    }
-    .priority-high {
-        background: #fee2e2 !important;
-        color: #991b1b !important;
-        padding: 2px 10px !important;
-        border-radius: 50px !important;
-        font-size: 0.7rem !important;
-        font-weight: 600 !important;
-        display: inline-block !important;
-    }
-    .priority-medium {
-        background: #fef3c7 !important;
-        color: #92400e !important;
-        padding: 2px 10px !important;
-        border-radius: 50px !important;
-        font-size: 0.7rem !important;
-        font-weight: 600 !important;
-        display: inline-block !important;
-    }
-    .priority-low {
-        background: #dbeafe !important;
-        color: #1e40af !important;
-        padding: 2px 10px !important;
-        border-radius: 50px !important;
-        font-size: 0.7rem !important;
-        font-weight: 600 !important;
-        display: inline-block !important;
-    }
     .qr-card {
         background: white;
         padding: 2rem;
         border-radius: 16px;
         border: 2px solid #e2e8f0;
         text-align: center;
-        max-width: 400px;
+        max-width: 450px;
         margin: 0 auto;
     }
     .qr-card img {
@@ -378,94 +365,65 @@ st.markdown("""
         border: 2px solid #e2e8f0;
         max-width: 100%;
     }
-    .draw-container {
-        overflow: auto;
-        max-height: 680px;
-        border: 2px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 15px;
-        background: white;
-        position: relative;
+    .draw-header { 
+        background: linear-gradient(135deg, #f8fafc, #eef2ff); 
+        border: 2px solid #e2e8f0; 
+        border-radius: 14px; 
+        padding: 1rem 1.5rem; 
+        margin-bottom: 0.8rem; 
+        text-align: center; 
     }
-    .draw-container::-webkit-scrollbar {
-        width: 10px;
-        height: 10px;
+    .draw-header h2 { 
+        font-family: 'Inter', sans-serif; 
+        font-weight: 700; 
+        font-size: 1.3rem; 
+        color: #0f172a; 
+        margin: 0; 
     }
-    .draw-container::-webkit-scrollbar-track {
-        background: #f1f5f9;
-        border-radius: 5px;
+    .draw-header h2 span { 
+        background: linear-gradient(135deg, #6366f1, #a78bfa); 
+        -webkit-background-clip: text; 
+        -webkit-text-fill-color: transparent; 
     }
-    .draw-container::-webkit-scrollbar-thumb {
-        background: #c7d2fe;
-        border-radius: 5px;
+    .draw-header p { 
+        font-family: 'Inter', sans-serif; 
+        font-size: 0.8rem; 
+        color: #64748b; 
+        margin: 0.2rem 0 0 0; 
     }
-    .draw-container::-webkit-scrollbar-thumb:hover {
-        background: #818cf8;
+    .draw-toolbar { 
+        display: flex; 
+        gap: 4px; 
+        padding: 6px 0; 
+        flex-wrap: wrap; 
+        align-items: center; 
     }
-    .zoom-controls {
-        position: sticky;
-        bottom: 0;
-        background: rgba(255,255,255,0.95);
-        padding: 8px;
-        border-top: 1px solid #e2e8f0;
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        justify-content: center;
-        z-index: 100;
-        backdrop-filter: blur(10px);
+    .draw-toolbar button { 
+        padding: 4px 10px; 
+        border: none; 
+        border-radius: 6px; 
+        background: #f1f5f9; 
+        color: #0f172a; 
+        cursor: pointer; 
+        font-size: 11px; 
+        font-family: 'Inter', sans-serif; 
+        font-weight: 500; 
+        transition: all 0.2s; 
     }
-    .zoom-controls button {
-        padding: 4px 12px;
-        border: 1px solid #e2e8f0;
-        border-radius: 6px;
-        background: #f8fafc;
-        cursor: pointer;
-        font-family: 'Inter', sans-serif;
-        font-size: 12px;
-        transition: all 0.2s;
-    }
-    .zoom-controls button:hover {
-        background: #eef2ff;
-        border-color: #818cf8;
-    }
-    .model-card {
-        background: white;
-        padding: 1.2rem;
-        border-radius: 12px;
-        border: 2px solid #e2e8f0;
-        margin: 0.5rem 0;
-        transition: all 0.3s;
-    }
-    .model-card:hover {
-        border-color: #818cf8;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
-    }
-    .model-card .metric {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: #0f172a;
-        font-family: 'Inter', sans-serif;
-    }
-    .model-card .label {
-        font-size: 0.8rem;
-        color: #94a3b8;
-        font-family: 'Inter', sans-serif;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    .model-card .bar {
-        height: 8px;
-        background: #e2e8f0;
-        border-radius: 4px;
-        margin-top: 8px;
-        overflow: hidden;
-    }
-    .model-card .bar-fill {
-        height: 100%;
-        border-radius: 4px;
-        background: linear-gradient(90deg, #818cf8, #a78bfa);
-        transition: width 1s ease;
+    .draw-toolbar button:hover { background: #e2e8f0; }
+    .draw-toolbar button.active { background: #0f172a; color: white; }
+    .draw-toolbar button.danger { background: #fee2e2; color: #991b1b; }
+    .draw-toolbar button.success { background: #dcfce7; color: #166534; }
+    .draw-toolbar button.warning { background: #fef3c7; color: #92400e; }
+    .draw-toolbar button.info { background: #dbeafe; color: #1e40af; }
+    .draw-toolbar button.purple { background: #f3e8ff; color: #6b21a8; }
+    .draw-toolbar select { 
+        padding: 4px 8px; 
+        border-radius: 6px; 
+        border: 1px solid #e2e8f0; 
+        font-size: 11px; 
+        font-family: 'Inter', sans-serif; 
+        background: white; 
     }
     @media (max-width: 768px) {
         .footer-compact { padding: 0.6rem 1rem; }
@@ -497,64 +455,25 @@ def load_data():
 
 papers = load_data()
 
-# ─── SUGAR CHEMISTRY ATOMS & FUNCTIONAL GROUPS ─────────
-SUGAR_ATOMS = {
-    'C': {'color': '#333333', 'type': 'Carbon', 'description': 'Sugar backbone carbon'},
-    'O': {'color': '#FF0000', 'type': 'Oxygen', 'description': 'Hydroxyl, ether, carbonyl oxygen'},
-    'N': {'color': '#3050F8', 'type': 'Nitrogen', 'description': 'Amino sugar nitrogen'},
-    'H': {'color': '#FFFFFF', 'type': 'Hydrogen', 'description': 'Hydrogen atom'},
-    'S': {'color': '#FFFF30', 'type': 'Sulfur', 'description': 'Thio sugar sulfur'},
-    'P': {'color': '#FF8000', 'type': 'Phosphorus', 'description': 'Phosphate group phosphorus'},
-    'F': {'color': '#90E050', 'type': 'Fluorine', 'description': 'Fluorinated sugar'},
-    'Cl': {'color': '#1FF01F', 'type': 'Chlorine', 'description': 'Chlorinated sugar'},
-    'Br': {'color': '#A62929', 'type': 'Bromine', 'description': 'Brominated sugar'},
-    'I': {'color': '#940094', 'type': 'Iodine', 'description': 'Iodinated sugar'}
-}
+# ─── HUMANIZED RESPONSES ─────────────────────────────────
+HUMANIZED_INTROS = [
+    "That's a really interesting question! Let me share what I've learned:",
+    "Great question! Here's what I've gathered from the literature:",
+    "I've been looking into this recently. Here's what I found:",
+    "Excellent question! Let me break it down based on the research:"
+]
 
-SUGAR_FUNCTIONAL_GROUPS = {
-    # Donor functional groups
-    'Donor Groups': {
-        'OTf': {'type': 'Leaving Group', 'description': 'Triflate - very reactive leaving group', 'rrv': '500-1000+'},
-        'I': {'type': 'Leaving Group', 'description': 'Iodide - highly reactive', 'rrv': '100-500'},
-        'Br': {'type': 'Leaving Group', 'description': 'Bromide - classic Koenigs-Knorr', 'rrv': '10-100'},
-        'Cl': {'type': 'Leaving Group', 'description': 'Chloride - less reactive halide', 'rrv': '5-50'},
-        'OC(=NH)CCl3': {'type': 'Leaving Group', 'description': 'Trichloroacetimidate - Schmidt method', 'rrv': '5-50'},
-        'SPh': {'type': 'Leaving Group', 'description': 'Phenyl thioglycoside - stable donor', 'rrv': '1-10'},
-        'SEt': {'type': 'Leaving Group', 'description': 'Ethyl thioglycoside - less reactive', 'rrv': '0.5-5'},
-        'STol': {'type': 'Leaving Group', 'description': 'p-Tolyl thioglycoside - versatile', 'rrv': '1-10'},
-        'OP(=O)(OPh)2': {'type': 'Leaving Group', 'description': 'Phosphate - mild donor', 'rrv': '0.1-2'},
-        'F': {'type': 'Leaving Group', 'description': 'Fluoride - orthogonal method', 'rrv': '0.1-1'},
-        'S(O)Ph': {'type': 'Leaving Group', 'description': 'Sulfoxide - Kahne method', 'rrv': '5-50'},
-        'OC(=CH2)': {'type': 'Leaving Group', 'description': 'n-Pentenyl - iterative synthesis', 'rrv': '1-10'},
-        'B(OR)2': {'type': 'Leaving Group', 'description': 'Boronate - metal-free', 'rrv': '0.1-0.5'}
-    },
-    # Acceptor functional groups
-    'Acceptor Groups': {
-        'OH': {'type': 'Acceptor', 'description': 'Hydroxyl - primary acceptor', 'aka': '+5 to +10'},
-        'OH-6': {'type': 'Acceptor', 'description': 'Primary OH (C6) - most reactive', 'aka': '+5 to +10'},
-        'OH-4': {'type': 'Acceptor', 'description': 'Secondary OH (C4) - moderately reactive', 'aka': '0 to +5'},
-        'OH-3': {'type': 'Acceptor', 'description': 'Secondary OH (C3) - moderately reactive', 'aka': '0 to +5'},
-        'OH-2': {'type': 'Acceptor', 'description': 'Secondary OH (C2) - less reactive', 'aka': '-5 to 0'},
-        'OH-1': {'type': 'Acceptor', 'description': 'Anomeric OH - hemiacetal', 'aka': '+2 to +8'}
-    },
-    # Protecting groups
-    'Protecting Groups': {
-        'Ac': {'type': 'Protecting', 'description': 'Acetyl - ester protecting group', 'effect': 'Disarming'},
-        'Bn': {'type': 'Protecting', 'description': 'Benzyl - ether protecting group', 'effect': 'Arming'},
-        'Bz': {'type': 'Protecting', 'description': 'Benzoyl - ester protecting group', 'effect': 'Disarming'},
-        'TBDMS': {'type': 'Protecting', 'description': 'tert-Butyldimethylsilyl - silyl ether', 'effect': 'Moderate arming'},
-        'TIPS': {'type': 'Protecting', 'description': 'Triisopropylsilyl - bulky silyl ether', 'effect': 'Moderate arming'},
-        'Piv': {'type': 'Protecting', 'description': 'Pivaloyl - remote participating', 'effect': 'α-directing'},
-        'DPPA': {'type': 'Protecting', 'description': 'Diphenylphosphinoylacetyl - remote participating', 'effect': 'Anti-facial N-glycosylation'},
-        'OMe': {'type': 'Protecting', 'description': 'Methyl ether - stable protecting group', 'effect': 'Arming'},
-        'OAc': {'type': 'Protecting', 'description': 'Acetate - ester protecting group', 'effect': 'Disarming'},
-        'OBn': {'type': 'Protecting', 'description': 'Benzyl ether - arming group', 'effect': 'Arming'},
-        'OBz': {'type': 'Protecting', 'description': 'Benzoyl ester - disarming group', 'effect': 'Disarming'},
-        'N3': {'type': 'Protecting', 'description': 'Azide - orthogonal functional group', 'effect': 'Neutral'},
-        'NH2': {'type': 'Protecting', 'description': 'Amine - amino sugar group', 'effect': 'Varies'},
-        'OTs': {'type': 'Protecting', 'description': 'Tosylate - good leaving group', 'effect': 'Activates'}
-    }
-}
+HUMANIZED_ENDINGS = [
+    "Hope that helps with your research! 😊",
+    "Let me know if you'd like me to find specific papers!",
+    "There's so much more to explore here - happy to chat more!",
+    "That's the beauty of glycoscience - always more to discover! 🧬"
+]
+
+FALLBACK_RESPONSES = [
+    "Hmm, that's a tricky one! Could you ask it differently? 😊",
+    "I'm not quite sure about that. Maybe we can explore a related topic?"
+]
 
 # ─── REACTION SCREENING KNOWLEDGE ──────────────────────
 REACTION_SCREENING_KNOWLEDGE = {
@@ -600,7 +519,6 @@ REACTION_SCREENING_KNOWLEDGE = {
 
 # ─── QR CODE GENERATOR ──────────────────────────────────
 def generate_qr_code(data, app_name="GlycoSearch", institute="Academia Sinica"):
-    """Generate QR code with branding"""
     qr = qrcode.QRCode(
         version=2,
         error_correction=qrcode.constants.ERROR_CORRECT_H,
@@ -609,66 +527,143 @@ def generate_qr_code(data, app_name="GlycoSearch", institute="Academia Sinica"):
     )
     qr.add_data(data)
     qr.make(fit=True)
-    
     qr_img = qr.make_image(fill_color="#0f172a", back_color="white").convert('RGB')
-    
-    # Resize for better display
     qr_img = qr_img.resize((400, 400), Image.Resampling.LANCZOS)
-    
     buffered = BytesIO()
     qr_img.save(buffered, format="PNG")
     img_str = base64.b64encode(buffered.getvalue()).decode()
-    
     return img_str
 
-def create_branded_qr_card(app_url="https://glycosearch.streamlit.app", app_name="GlycoSearch", institute="Academia Sinica"):
-    """Create complete branded QR card HTML"""
+# ─── GLYCOKNOWLEDGE ENGINE ──────────────────────────────
+class GlycoKnowledgeEngine:
+    def __init__(self, papers_df):
+        self.papers = papers_df
+        self.index = []
+        self.topic_index = defaultdict(list)
+        self.keyword_index = defaultdict(list)
+        self.build_index()
+        self.build_expert_knowledge()
     
-    qr_img = generate_qr_code(app_url, app_name, institute)
+    def build_expert_knowledge(self):
+        self.expert_knowledge = {
+            'reactivity': {
+                'overview': 'RRV (Relative Reactivity Value) measures donor reactivity. Aka measures acceptor reactivity.',
+                'rrv_trends': ['Low RRV (1-10): High stereoselectivity', 'Medium RRV (10-50): Balanced', 'High RRV (50-500): Fast reactions'],
+                'tuning': {'Temperature': 'Lower temperature increases selectivity', 'Solvent': 'DCM favors selectivity, THF favors reactivity'},
+                'matching': {'Armed-Armed': 'Fast reaction, lower selectivity', 'Armed-Disarmed': 'Moderate, balanced', 'Disarmed-Armed': 'Slow, high selectivity'},
+                'references': ['Crich et al., JACS (2022)', 'Boltje et al., Angew Chem (2023)']
+            },
+            'screening': REACTION_SCREENING_KNOWLEDGE
+        }
     
-    html = f'''
-    <div style="background: white; padding: 2rem; border-radius: 16px; border: 2px solid #e2e8f0; text-align: center; max-width: 450px; margin: 0 auto;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            <svg width="40" height="40" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <polygon points="28,4 44,12 44,30 28,38 12,30 12,12" stroke="#6366f1" stroke-width="2" fill="rgba(99,102,241,0.06)"/>
-                <line x1="12" y1="12" x2="28" y2="20" stroke="#818cf8" stroke-width="1.5"/>
-                <line x1="28" y1="20" x2="44" y2="12" stroke="#818cf8" stroke-width="1.5"/>
-                <line x1="28" y1="38" x2="44" y2="30" stroke="#818cf8" stroke-width="1.5"/>
-                <line x1="28" y1="38" x2="12" y2="30" stroke="#818cf8" stroke-width="1.5"/>
-                <circle cx="28" cy="4" r="4" fill="#ef4444" stroke="#dc2626" stroke-width="1.2"/>
-                <text x="28" y="7" font-size="6.5" fill="white" text-anchor="middle" font-weight="bold">O</text>
-                <circle cx="44" cy="12" r="3.5" fill="#333" stroke="#333"/>
-                <circle cx="44" cy="30" r="3.5" fill="#333" stroke="#333"/>
-                <circle cx="28" cy="38" r="3.5" fill="#333" stroke="#333"/>
-                <circle cx="12" cy="30" r="3.5" fill="#333" stroke="#333"/>
-                <circle cx="12" cy="12" r="3.5" fill="#333" stroke="#333"/>
-                <rect x="21" y="14" width="14" height="14" rx="3" fill="#0f172a" stroke="#a78bfa" stroke-width="1.8"/>
-                <circle cx="28" cy="21" r="5" fill="rgba(167,139,250,0.12)" stroke="#c084fc" stroke-width="1.2"/>
-                <text x="28" y="16" font-size="4" fill="#c084fc" text-anchor="middle" font-weight="700">AI</text>
-            </svg>
-            <span style="font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.4rem; color: #0f172a;">{app_name}</span>
-        </div>
-        <div style="font-family: 'Inter', sans-serif; font-size: 0.8rem; color: #94a3b8; margin-bottom: 1rem;">{institute}</div>
-        <img src="data:image/png;base64,{qr_img}" style="border-radius: 12px; border: 2px solid #e2e8f0; max-width: 100%;">
-        <div style="margin-top: 1rem; font-family: 'Inter', sans-serif; font-size: 0.7rem; color: #94a3b8;">
-            Scan to access GlycoSearch
-        </div>
-        <div style="margin-top: 0.3rem; font-family: 'Inter', sans-serif; font-size: 0.6rem; color: #cbd5e1;">
-            {app_url}
-        </div>
-        <div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid #e2e8f0;">
-            <span style="font-family: 'Inter', sans-serif; font-size: 0.6rem; color: #94a3b8;">
-                Fizza Sabbor & Dr. Sabbor Hussain · Institute of Chemistry, Academia Sinica
-            </span>
-        </div>
-    </div>
-    '''
-    return html
+    def build_index(self):
+        if len(self.papers) == 0:
+            return
+        for idx, row in self.papers.iterrows():
+            title = str(row.get('Title', ''))
+            abstract = str(row.get('Abstract', ''))
+            year = str(row.get('Year', ''))
+            journal = str(row.get('Journal', ''))
+            topic = str(row.get('Topic', ''))
+            url = str(row.get('URL', ''))
+            terms = re.findall(r'\b[a-z]{3,}\b', f"{title.lower()} {abstract.lower()}")
+            paper_data = {'title': title, 'abstract': abstract, 'year': year, 'journal': journal, 'topic': topic, 'url': url, 'terms': terms}
+            self.index.append(paper_data)
+            if topic:
+                self.topic_index[topic.lower()].append(paper_data)
+    
+    def search(self, query, top_n=5):
+        if len(self.index) == 0:
+            return []
+        query_terms = set(re.findall(r'\b[a-z]{3,}\b', query.lower()))
+        scores = []
+        for paper in self.index:
+            matches = sum(1 for t in query_terms if t in paper['terms'])
+            title_boost = sum(1 for t in query_terms if t in paper['title'].lower()) * 2
+            score = matches + title_boost
+            if score > 0:
+                scores.append((score, paper))
+        scores.sort(key=lambda x: x[0], reverse=True)
+        return [p for _, p in scores[:top_n]]
+    
+    def answer_question(self, question):
+        question_lower = question.lower()
+        expert_response = self.get_expert_response(question_lower)
+        relevant = self.search(question, top_n=5)
+        combined_answer = self.combine_knowledge(question_lower, expert_response, relevant)
+        return {'answer': combined_answer, 'references': self.get_references(question_lower, relevant), 'source_count': len(relevant)}
+    
+    def get_expert_response(self, question_lower):
+        response_parts = []
+        
+        if any(term in question_lower for term in ['screening', 'which reaction first', 'decision', 'prioritize', 'organize']):
+            knowledge = self.expert_knowledge.get('screening', {})
+            if knowledge and 'screening_rules' in knowledge:
+                parts = ["**🎯 Reaction Screening Strategy - Prioritization Rules:**"]
+                for rule in knowledge['screening_rules']:
+                    parts.append(f"• {rule}")
+                response_parts.append('\n'.join(parts))
+        
+        if any(term in question_lower for term in ['donor', 'acceptor', 'match', 'rrv', 'aka']):
+            knowledge = self.expert_knowledge.get('screening', {})
+            if knowledge:
+                parts = []
+                if 'donors' in knowledge:
+                    parts.append("**Available Donors with RRV:**")
+                    for donor, info in knowledge['donors'].items():
+                        parts.append(f"  • {donor}: RRV={info['rrv']}, Cost={info['cost']}, Selectivity={info['selectivity']}")
+                if 'acceptors' in knowledge:
+                    parts.append("\n**Acceptor Reactivity (Aka):**")
+                    for acceptor, info in knowledge['acceptors'].items():
+                        parts.append(f"  • {acceptor}: Aka={info['aka']}, Hindrance={info['hindrance']}")
+                response_parts.append('\n'.join(parts))
+        
+        if any(term in question_lower for term in ['rrv', 'aka', 'reactivity']):
+            knowledge = self.expert_knowledge.get('reactivity', {})
+            if knowledge:
+                parts = []
+                if 'overview' in knowledge:
+                    parts.append(knowledge['overview'])
+                if 'rrv_trends' in knowledge:
+                    parts.append('RRV trends: ' + '; '.join(knowledge['rrv_trends']))
+                if 'tuning' in knowledge:
+                    tuning_text = 'How to tune RRV:\n'
+                    for method, desc in knowledge['tuning'].items():
+                        tuning_text += f'  • {method}: {desc}\n'
+                    parts.append(tuning_text)
+                if 'matching' in knowledge:
+                    match_text = 'RRV-Aka matching:\n'
+                    for condition, outcome in knowledge['matching'].items():
+                        match_text += f'  • {condition}: {outcome}\n'
+                    parts.append(match_text)
+                response_parts.append('\n\n'.join(parts))
+        
+        return '\n\n'.join(response_parts) if response_parts else None
+    
+    def combine_knowledge(self, question_lower, expert_response, relevant_papers):
+        if not expert_response and not relevant_papers:
+            return random.choice(FALLBACK_RESPONSES)
+        answer_parts = []
+        if expert_response:
+            intro = random.choice(HUMANIZED_INTROS)
+            answer_parts.append(f"{intro}\n\n{expert_response}")
+        if relevant_papers:
+            answer_parts.append("\n\n**📄 Related Papers from Your Database:**")
+            for paper in relevant_papers[:3]:
+                answer_parts.append(f"• {paper['title']} ({paper['year']}) - {paper['journal']}")
+        ending = random.choice(HUMANIZED_ENDINGS)
+        answer_parts.append(f"\n\n{ending}")
+        return '\n'.join(answer_parts)
+    
+    def get_references(self, question_lower, relevant_papers):
+        references = []
+        for paper in relevant_papers[:2]:
+            ref = f"{paper['title']} ({paper['year']}) - {paper['journal']}"
+            references.append(ref)
+        return references[:5]
 
 # ─── REACTION SCREENING DECISION ENGINE ────────────────
 def screen_reactions(donor_type, acceptor_type, target_selectivity=None):
-    """Screen reactions and recommend priority order"""
-    
     donors = REACTION_SCREENING_KNOWLEDGE['donors']
     acceptors = REACTION_SCREENING_KNOWLEDGE['acceptors']
     conditions = REACTION_SCREENING_KNOWLEDGE['conditions']
@@ -740,15 +735,13 @@ def screen_reactions(donor_type, acceptor_type, target_selectivity=None):
     
     return recommendations[:10]
 
-# ─── ENHANCED DRAWING TOOL WITH SUGAR ATOMS & GROUPS ──
+# ─── ENHANCED DRAWING TOOL ─────────────────────────────
 def chemical_drawing_tool():
     components.html("""
     <div class="draw-header">
         <h2>🧪 Draw <span>Chemical Structure</span></h2>
-        <p>Build molecules with sugar chemistry atoms, functional groups, and leaving groups</p>
+        <p>Build molecules with atoms, functional groups, and leaving groups</p>
     </div>
-    
-    <!-- Atoms Row -->
     <div class="draw-toolbar">
         <div style="display:flex;gap:3px;align-items:center;background:#f8fafc;padding:2px 8px;border-radius:8px;flex-wrap:wrap;">
             <span style="font-size:9px;color:#94a3b8;font-weight:600;margin-right:3px;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Atoms</span>
@@ -764,44 +757,17 @@ def chemical_drawing_tool():
             <button class="atom-btn" data-atom="I" style="padding:4px 10px;border:2px solid #940094;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#940094;">I</button>
         </div>
     </div>
-    
-    <!-- Functional Groups Row -->
     <div class="draw-toolbar">
         <div style="display:flex;gap:3px;align-items:center;background:#f8fafc;padding:2px 8px;border-radius:8px;flex-wrap:wrap;">
-            <span style="font-size:9px;color:#94a3b8;font-weight:600;margin-right:3px;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Donor Groups</span>
-            <button class="fg-btn" data-fg="OTf" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OTf</button>
-            <button class="fg-btn" data-fg="I" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">I</button>
-            <button class="fg-btn" data-fg="Br" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">Br</button>
-            <button class="fg-btn" data-fg="Cl" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">Cl</button>
-            <button class="fg-btn" data-fg="OC(=NH)CCl3" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">TCA</button>
-            <button class="fg-btn" data-fg="SPh" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">SPh</button>
-            <button class="fg-btn" data-fg="SEt" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">SEt</button>
-            <button class="fg-btn" data-fg="STol" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">STol</button>
-            <button class="fg-btn" data-fg="OP(=O)(OPh)2" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">Phosphate</button>
-            <button class="fg-btn" data-fg="F" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">F</button>
-            <button class="fg-btn" data-fg="S(O)Ph" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">S(O)Ph</button>
-            <button class="fg-btn" data-fg="OC(=CH2)" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">n-Pentenyl</button>
-            <button class="fg-btn" data-fg="B(OR)2" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">Boronate</button>
-        </div>
-    </div>
-    
-    <!-- Acceptor Groups Row -->
-    <div class="draw-toolbar">
-        <div style="display:flex;gap:3px;align-items:center;background:#f8fafc;padding:2px 8px;border-radius:8px;flex-wrap:wrap;">
-            <span style="font-size:9px;color:#94a3b8;font-weight:600;margin-right:3px;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Acceptor Groups</span>
-            <button class="fg-btn" data-fg="OH" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;color:#FF0000;">OH</button>
-            <button class="fg-btn" data-fg="OH-6" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;color:#FF0000;">OH-6</button>
-            <button class="fg-btn" data-fg="OH-4" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;color:#FF0000;">OH-4</button>
-            <button class="fg-btn" data-fg="OH-3" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;color:#FF0000;">OH-3</button>
-            <button class="fg-btn" data-fg="OH-2" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;color:#FF0000;">OH-2</button>
-            <button class="fg-btn" data-fg="OH-1" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;color:#FF0000;">OH-1</button>
-        </div>
-    </div>
-    
-    <!-- Protecting Groups Row -->
-    <div class="draw-toolbar">
-        <div style="display:flex;gap:3px;align-items:center;background:#f8fafc;padding:2px 8px;border-radius:8px;flex-wrap:wrap;">
-            <span style="font-size:9px;color:#94a3b8;font-weight:600;margin-right:3px;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Protecting Groups</span>
+            <span style="font-size:9px;color:#94a3b8;font-weight:600;margin-right:3px;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Groups</span>
+            <button class="fg-btn" data-fg="OH" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OH</button>
+            <button class="fg-btn" data-fg="OMe" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OMe</button>
+            <button class="fg-btn" data-fg="OAc" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OAc</button>
+            <button class="fg-btn" data-fg="OBn" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OBn</button>
+            <button class="fg-btn" data-fg="OBz" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OBz</button>
+            <button class="fg-btn" data-fg="NH2" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">NH2</button>
+            <button class="fg-btn" data-fg="N3" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">N3</button>
+            <button class="fg-btn" data-fg="OTs" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OTs</button>
             <button class="fg-btn" data-fg="Ac" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">Ac</button>
             <button class="fg-btn" data-fg="Bn" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">Bn</button>
             <button class="fg-btn" data-fg="Bz" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">Bz</button>
@@ -809,17 +775,10 @@ def chemical_drawing_tool():
             <button class="fg-btn" data-fg="TIPS" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">TIPS</button>
             <button class="fg-btn" data-fg="Piv" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">Piv</button>
             <button class="fg-btn" data-fg="DPPA" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">DPPA</button>
-            <button class="fg-btn" data-fg="OMe" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OMe</button>
-            <button class="fg-btn" data-fg="OAc" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OAc</button>
-            <button class="fg-btn" data-fg="OBn" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OBn</button>
-            <button class="fg-btn" data-fg="OBz" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OBz</button>
-            <button class="fg-btn" data-fg="N3" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">N3</button>
-            <button class="fg-btn" data-fg="NH2" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">NH2</button>
-            <button class="fg-btn" data-fg="OTs" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OTs</button>
+            <button class="fg-btn" data-fg="OTf" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OTf</button>
+            <button class="fg-btn" data-fg="STol" style="padding:3px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">STol</button>
         </div>
     </div>
-    
-    <!-- Controls Row -->
     <div class="draw-toolbar">
         <div style="display:flex;gap:3px;align-items:center;background:#f8fafc;padding:2px 8px;border-radius:8px;flex-wrap:wrap;">
             <span style="font-size:9px;color:#94a3b8;font-weight:600;margin-right:3px;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Bond</span>
@@ -832,30 +791,26 @@ def chemical_drawing_tool():
             <button id="btn-clear" class="danger" style="padding:4px 10px;border:1px solid #fee2e2;border-radius:6px;background:#fee2e2;color:#991b1b;cursor:pointer;font-size:11px;">🗑️ Clear</button>
             <button id="btn-benzene" class="purple" style="padding:4px 10px;border:1px solid #f3e8ff;border-radius:6px;background:#f3e8ff;color:#6b21a8;cursor:pointer;font-size:11px;">⬡ Benzene</button>
             <button id="btn-smiles" class="success" style="padding:4px 10px;border:1px solid #dcfce7;border-radius:6px;background:#dcfce7;color:#166534;cursor:pointer;font-size:11px;">📋 SMILES</button>
-            <button id="btn-query" class="purple" style="padding:4px 10px;border:1px solid #f3e8ff;border-radius:6px;background:#f3e8ff;color:#6b21a8;cursor:pointer;font-size:11px;">🔍 Query Structure</button>
+            <button id="btn-query" class="purple" style="padding:4px 10px;border:1px solid #f3e8ff;border-radius:6px;background:#f3e8ff;color:#6b21a8;cursor:pointer;font-size:11px;">🔍 Query</button>
         </div>
     </div>
-    
     <div style="display:flex;gap:8px;margin-bottom:6px;align-items:center;flex-wrap:wrap;">
         <span id="mode-status" class="mode-status mode-draw">✏️ Draw Mode</span>
         <span class="bond-type-indicator" id="bond-type-indicator">Bond: Single</span>
         <span id="selected-display" style="font-size:10px;color:#64748b;background:#f1f5f9;padding:2px 10px;border-radius:4px;">Selected: C</span>
-        <span class="draw-info">💡 Double-click for double bond • Click atom then functional group</span>
+        <span class="draw-info">💡 Double-click for double bond</span>
     </div>
-    
     <div class="draw-container" id="draw-container">
         <canvas id="canvas" width="750" height="480"></canvas>
         <div class="zoom-controls">
-            <button id="zoom-in">🔍+ Zoom In</button>
-            <button id="zoom-out">🔍− Zoom Out</button>
+            <button id="zoom-in">🔍+ Zoom</button>
+            <button id="zoom-out">🔍− Zoom</button>
             <button id="zoom-reset">⟲ Reset</button>
             <span style="font-size:11px;color:#94a3b8;" id="zoom-level">100%</span>
         </div>
     </div>
-    
     <input id="smiles-output" placeholder="SMILES will appear here...">
     <div id="query-result" style="margin-top:10px;padding:10px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;display:none;"></div>
-    
     <style>
         #canvas { border: 2px solid #e2e8f0; background: white; border-radius: 12px; cursor: crosshair; width: 100%; height: auto; transform-origin: top left; transition: transform 0.2s; }
         #smiles-output { width: 100%; padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; margin-top: 8px; font-family: monospace; font-size: 12px; background: #f8fafc; }
@@ -871,7 +826,6 @@ def chemical_drawing_tool():
         .zoom-controls { position: sticky; bottom: 0; background: rgba(255,255,255,0.95); padding: 8px; border-top: 1px solid #e2e8f0; display: flex; gap: 8px; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(10px); }
         .fg-btn.active { background: #eef2ff !important; border-color: #818cf8 !important; color: #4f46e5 !important; }
     </style>
-    
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -895,31 +849,27 @@ def chemical_drawing_tool():
         let isPanning = false;
         let panStartX, panStartY;
 
-        // Atom buttons
         document.querySelectorAll('.atom-btn').forEach(btn => {
             btn.onclick = function() {
                 selectedAtom = this.dataset.atom;
                 selectedFG = null;
                 document.querySelectorAll('.atom-btn').forEach(b => {
                     b.style.background = '#f8fafc';
-                    b.style.color = b.dataset.atom === 'C' ? '#333' : b.dataset.atom === 'O' ? '#FF0000' : '#0f172a';
+                    b.style.color = '#0f172a';
                 });
                 this.style.background = '#0f172a';
                 this.style.color = 'white';
                 document.getElementById('selected-display').textContent = 'Selected: ' + selectedAtom;
-                // Deselect functional groups
                 document.querySelectorAll('.fg-btn').forEach(b => b.classList.remove('active'));
             };
         });
         
-        // Functional group buttons
         document.querySelectorAll('.fg-btn').forEach(btn => {
             btn.onclick = function() {
                 selectedFG = this.dataset.fg;
                 document.querySelectorAll('.fg-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 document.getElementById('selected-display').textContent = 'Selected: ' + selectedFG;
-                // Deselect atoms
                 document.querySelectorAll('.atom-btn').forEach(b => {
                     b.style.background = '#f8fafc';
                     b.style.color = '#0f172a';
@@ -928,18 +878,7 @@ def chemical_drawing_tool():
         });
 
         function getAtomColor(label) {
-            const colors = {
-                'C':'#333333','O':'#FF0000','N':'#3050F8','H':'#888888','S':'#FFD700',
-                'P':'#FF8000','F':'#90E050','Cl':'#1FF01F','Br':'#A62929','I':'#940094',
-                'OTf':'#6366f1','I':'#940094','Br':'#A62929','Cl':'#1FF01F',
-                'OC(=NH)CCl3':'#8B008B','SPh':'#B8860B','SEt':'#B8860B','STol':'#B8860B',
-                'OP(=O)(OPh)2':'#FF8000','F':'#90E050','S(O)Ph':'#FF8000',
-                'OC(=CH2)':'#2E8B57','B(OR)2':'#4682B4',
-                'OH':'#FF0000','OH-6':'#FF0000','OH-4':'#FF0000','OH-3':'#FF0000','OH-2':'#FF0000','OH-1':'#FF0000',
-                'Ac':'#CD853F','Bn':'#8B4513','Bz':'#8B6914','TBDMS':'#2E8B57','TIPS':'#2E8B57',
-                'Piv':'#CD853F','DPPA':'#8B008B','OMe':'#CD5C5C','OAc':'#CD853F','OBn':'#8B4513',
-                'OBz':'#8B6914','N3':'#4169E1','NH2':'#4169E1','OTs':'#DAA520'
-            };
+            const colors = {'C':'#333333','O':'#FF0000','N':'#3050F8','H':'#888888','S':'#FFD700','P':'#FF8000','F':'#90E050','Cl':'#1FF01F','Br':'#A62929','I':'#940094'};
             return colors[label] || '#333333';
         }
 
@@ -1075,7 +1014,6 @@ def chemical_drawing_tool():
                 ctx.fillRect(x, y, w, h);
             }
             ctx.restore();
-            
             document.getElementById('zoom-level').textContent = Math.round(zoomLevel * 100) + '%';
         }
 
@@ -1097,24 +1035,23 @@ def chemical_drawing_tool():
             const status = document.getElementById('mode-status');
             if (eraserMode) {
                 status.className = 'mode-status mode-eraser';
-                status.textContent = '🧹 Eraser Mode (click to remove)';
+                status.textContent = '🧹 Eraser Mode';
                 canvas.style.cursor = 'not-allowed';
             } else if (selectMode) {
                 status.className = 'mode-status mode-select';
-                status.textContent = '⬜ Select Mode (drag to select, Delete to remove)';
+                status.textContent = '⬜ Select Mode';
                 canvas.style.cursor = 'default';
             } else if (replaceMode) {
                 status.className = 'mode-status mode-replace';
-                status.textContent = '🔄 Replace Mode (click atom)';
+                status.textContent = '🔄 Replace Mode';
                 canvas.style.cursor = 'pointer';
             } else {
                 status.className = 'mode-status mode-draw';
-                status.textContent = '✏️ Draw Mode (click canvas)';
+                status.textContent = '✏️ Draw Mode';
                 canvas.style.cursor = 'crosshair';
             }
         }
 
-        // Double-click for double bond
         canvas.addEventListener('dblclick', function(e) {
             const pos = getPos(e);
             const atom = findNearestAtom(pos.x, pos.y);
@@ -1130,7 +1067,6 @@ def chemical_drawing_tool():
 
         canvas.onmousedown = function(e) {
             const pos = getPos(e);
-            
             if (e.button === 1 || (e.ctrlKey && e.button === 0)) {
                 isPanning = true;
                 panStartX = e.clientX - offsetX;
@@ -1138,7 +1074,6 @@ def chemical_drawing_tool():
                 canvas.style.cursor = 'grab';
                 return;
             }
-            
             if (eraserMode) {
                 const atom = findNearestAtom(pos.x, pos.y);
                 if (atom) {
@@ -1196,14 +1131,12 @@ def chemical_drawing_tool():
 
         canvas.onmousemove = function(e) {
             const pos = getPos(e);
-            
             if (isPanning) {
                 offsetX = e.clientX - panStartX;
                 offsetY = e.clientY - panStartY;
                 drawAll();
                 return;
             }
-            
             if (selectMode && selectionStart) {
                 selectionEnd = pos;
                 drawAll();
@@ -1224,16 +1157,12 @@ def chemical_drawing_tool():
                 canvas.style.cursor = 'default';
                 return;
             }
-            
             if (selectMode && selectionStart) {
                 const pos = getPos(e);
                 const selected = getAtomsInRect(selectionStart.x, selectionStart.y, pos.x, pos.y);
                 selectedAtoms = selected;
                 drawAll();
                 selected.forEach(a => drawAtom(a.x, a.y, a.label, false, true));
-                if (selected.length > 0) {
-                    document.getElementById('mode-status').textContent = `✅ ${selected.length} atoms selected. Press Delete to remove.`;
-                }
                 selectionStart = null; selectionEnd = null; return;
             }
             if (isDrawing && tool === 'line') {
@@ -1268,7 +1197,6 @@ def chemical_drawing_tool():
 
         canvas.oncontextmenu = e => e.preventDefault();
 
-        // Mouse wheel zoom
         canvas.addEventListener('wheel', function(e) {
             e.preventDefault();
             const delta = e.deltaY > 0 ? -0.1 : 0.1;
@@ -1298,11 +1226,9 @@ def chemical_drawing_tool():
                 });
                 selectedAtoms = [];
                 drawAll();
-                document.getElementById('mode-status').textContent = '🗑️ Deleted selected atoms';
             }
         });
 
-        // Zoom controls
         document.getElementById('zoom-in').onclick = function() {
             zoomLevel = Math.min(3, zoomLevel + 0.2);
             drawAll();
@@ -1318,16 +1244,8 @@ def chemical_drawing_tool():
             drawAll();
         };
 
-        // Mode buttons
         document.getElementById('btn-draw').onclick = function() {
             tool = 'draw'; replaceMode = false; eraserMode = false; selectMode = false;
-            selectionStart = null; selectionEnd = null; selectedAtoms = [];
-            document.querySelectorAll('.draw-toolbar button').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            updateModeStatus();
-        };
-        document.getElementById('btn-line').onclick = function() {
-            tool = 'line'; replaceMode = false; eraserMode = false; selectMode = false;
             selectionStart = null; selectionEnd = null; selectedAtoms = [];
             document.querySelectorAll('.draw-toolbar button').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
@@ -1382,8 +1300,14 @@ def chemical_drawing_tool():
             this.classList.add('active');
             updateModeStatus();
         };
+        document.getElementById('btn-line').onclick = function() {
+            tool = 'line'; replaceMode = false; eraserMode = false; selectMode = false;
+            selectionStart = null; selectionEnd = null; selectedAtoms = [];
+            document.querySelectorAll('.draw-toolbar button').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            updateModeStatus();
+        };
 
-        // Bond type buttons
         document.getElementById('btn-single-bond').onclick = function() {
             bondType = 1;
             document.querySelectorAll('#btn-single-bond, #btn-double-bond, #btn-triple-bond').forEach(b => b.classList.remove('active'));
@@ -1449,12 +1373,6 @@ def chemical_drawing_tool():
                         • Activator: TMSOTf (0.1-0.5 equiv)<br>
                         • Time: 2-12 hours<br>
                         • Expected Yield: 60-95%
-                    </div>
-                    <div style="background:white;padding:0.8rem 1.2rem;border-radius:8px;border-left:4px solid #6366f1;margin:0.3rem 0;">
-                        <b>📄 Related Papers:</b><br>
-                        • Check "Search" tab for related articles<br>
-                        • Check "Methods" tab for glycosylation protocols<br>
-                        • Ask AI for specific reaction conditions
                     </div>
                 </div>
             `;
@@ -1831,13 +1749,11 @@ else:
                 </div>
                 """, unsafe_allow_html=True)
             
-            # Show screening rules
             with st.expander("📖 Screening Rules & Guidelines"):
                 st.markdown("**Rules for Prioritizing Reactions:**")
                 for rule in REACTION_SCREENING_KNOWLEDGE['screening_rules']:
                     st.markdown(f"• {rule}")
         
-        # Donor/Acceptor quick reference
         with st.expander("📊 Donor & Acceptor Quick Reference"):
             st.markdown("**Donors with RRV Values:**")
             donor_df = pd.DataFrame([
@@ -1859,7 +1775,6 @@ else:
     with tab7:
         st.markdown("### 📱 QR Code - Share GlycoSearch")
         
-        # App URL - change this to your actual deployed URL
         app_url = st.text_input(
             "App URL",
             value="https://glycosearch.streamlit.app",
@@ -1873,7 +1788,6 @@ else:
             qr_html = create_branded_qr_card(app_url, app_name, institute)
             st.markdown(qr_html, unsafe_allow_html=True)
             
-            # Download option
             qr_img = generate_qr_code(app_url, app_name, institute)
             st.download_button(
                 label="📥 Download QR Code",
@@ -1882,7 +1796,6 @@ else:
                 mime="image/png"
             )
         
-        # Show example
         with st.expander("📖 How to use QR Code"):
             st.markdown("""
             1. **Deploy your app** to a cloud platform (Streamlit Cloud, Heroku, etc.)
@@ -1965,131 +1878,3 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
-
-# ─── GLYCOKNOWLEDGE ENGINE ──────────────────────────────
-class GlycoKnowledgeEngine:
-    def __init__(self, papers_df):
-        self.papers = papers_df
-        self.index = []
-        self.topic_index = defaultdict(list)
-        self.keyword_index = defaultdict(list)
-        self.build_index()
-        self.build_expert_knowledge()
-    
-    def build_expert_knowledge(self):
-        self.expert_knowledge = {
-            'reactivity': {
-                'overview': 'RRV (Relative Reactivity Value) measures donor reactivity. Aka measures acceptor reactivity.',
-                'rrv_trends': ['Low RRV (1-10): High stereoselectivity', 'Medium RRV (10-50): Balanced', 'High RRV (50-500): Fast reactions'],
-                'tuning': {'Temperature': 'Lower temperature increases selectivity', 'Solvent': 'DCM favors selectivity, THF favors reactivity'},
-                'matching': {'Armed-Armed': 'Fast reaction, lower selectivity', 'Armed-Disarmed': 'Moderate, balanced', 'Disarmed-Armed': 'Slow, high selectivity'},
-                'references': ['Crich et al., JACS (2022)', 'Boltje et al., Angew Chem (2023)']
-            },
-            'screening': REACTION_SCREENING_KNOWLEDGE
-        }
-    
-    def build_index(self):
-        if len(self.papers) == 0:
-            return
-        for idx, row in self.papers.iterrows():
-            title = str(row.get('Title', ''))
-            abstract = str(row.get('Abstract', ''))
-            year = str(row.get('Year', ''))
-            journal = str(row.get('Journal', ''))
-            topic = str(row.get('Topic', ''))
-            url = str(row.get('URL', ''))
-            terms = re.findall(r'\b[a-z]{3,}\b', f"{title.lower()} {abstract.lower()}")
-            paper_data = {'title': title, 'abstract': abstract, 'year': year, 'journal': journal, 'topic': topic, 'url': url, 'terms': terms}
-            self.index.append(paper_data)
-            if topic:
-                self.topic_index[topic.lower()].append(paper_data)
-    
-    def search(self, query, top_n=5):
-        if len(self.index) == 0:
-            return []
-        query_terms = set(re.findall(r'\b[a-z]{3,}\b', query.lower()))
-        scores = []
-        for paper in self.index:
-            matches = sum(1 for t in query_terms if t in paper['terms'])
-            title_boost = sum(1 for t in query_terms if t in paper['title'].lower()) * 2
-            score = matches + title_boost
-            if score > 0:
-                scores.append((score, paper))
-        scores.sort(key=lambda x: x[0], reverse=True)
-        return [p for _, p in scores[:top_n]]
-    
-    def answer_question(self, question):
-        question_lower = question.lower()
-        expert_response = self.get_expert_response(question_lower)
-        relevant = self.search(question, top_n=5)
-        combined_answer = self.combine_knowledge(question_lower, expert_response, relevant)
-        return {'answer': combined_answer, 'references': self.get_references(question_lower, relevant), 'source_count': len(relevant)}
-    
-    def get_expert_response(self, question_lower):
-        response_parts = []
-        
-        if any(term in question_lower for term in ['screening', 'which reaction first', 'decision', 'prioritize', 'organize']):
-            knowledge = self.expert_knowledge.get('screening', {})
-            if knowledge and 'screening_rules' in knowledge:
-                parts = ["**🎯 Reaction Screening Strategy - Prioritization Rules:**"]
-                for rule in knowledge['screening_rules']:
-                    parts.append(f"• {rule}")
-                response_parts.append('\n'.join(parts))
-        
-        if any(term in question_lower for term in ['donor', 'acceptor', 'match', 'rrv', 'aka']):
-            knowledge = self.expert_knowledge.get('screening', {})
-            if knowledge:
-                parts = []
-                if 'donors' in knowledge:
-                    parts.append("**Available Donors with RRV:**")
-                    for donor, info in knowledge['donors'].items():
-                        parts.append(f"  • {donor}: RRV={info['rrv']}, Cost={info['cost']}, Selectivity={info['selectivity']}")
-                if 'acceptors' in knowledge:
-                    parts.append("\n**Acceptor Reactivity (Aka):**")
-                    for acceptor, info in knowledge['acceptors'].items():
-                        parts.append(f"  • {acceptor}: Aka={info['aka']}, Hindrance={info['hindrance']}")
-                response_parts.append('\n'.join(parts))
-        
-        if any(term in question_lower for term in ['rrv', 'aka', 'reactivity']):
-            knowledge = self.expert_knowledge.get('reactivity', {})
-            if knowledge:
-                parts = []
-                if 'overview' in knowledge:
-                    parts.append(knowledge['overview'])
-                if 'rrv_trends' in knowledge:
-                    parts.append('RRV trends: ' + '; '.join(knowledge['rrv_trends']))
-                if 'tuning' in knowledge:
-                    tuning_text = 'How to tune RRV:\n'
-                    for method, desc in knowledge['tuning'].items():
-                        tuning_text += f'  • {method}: {desc}\n'
-                    parts.append(tuning_text)
-                if 'matching' in knowledge:
-                    match_text = 'RRV-Aka matching:\n'
-                    for condition, outcome in knowledge['matching'].items():
-                        match_text += f'  • {condition}: {outcome}\n'
-                    parts.append(match_text)
-                response_parts.append('\n\n'.join(parts))
-        
-        return '\n\n'.join(response_parts) if response_parts else None
-    
-    def combine_knowledge(self, question_lower, expert_response, relevant_papers):
-        if not expert_response and not relevant_papers:
-            return random.choice(FALLBACK_RESPONSES)
-        answer_parts = []
-        if expert_response:
-            intro = random.choice(HUMANIZED_INTROS)
-            answer_parts.append(f"{intro}\n\n{expert_response}")
-        if relevant_papers:
-            answer_parts.append("\n\n**📄 Related Papers from Your Database:**")
-            for paper in relevant_papers[:3]:
-                answer_parts.append(f"• {paper['title']} ({paper['year']}) - {paper['journal']}")
-        ending = random.choice(HUMANIZED_ENDINGS)
-        answer_parts.append(f"\n\n{ending}")
-        return '\n'.join(answer_parts)
-    
-    def get_references(self, question_lower, relevant_papers):
-        references = []
-        for paper in relevant_papers[:2]:
-            ref = f"{paper['title']} ({paper['year']}) - {paper['journal']}"
-            references.append(ref)
-        return references[:5]
