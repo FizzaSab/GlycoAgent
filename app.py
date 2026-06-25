@@ -1605,48 +1605,66 @@ else:
         elif ask_button and not question:
             st.warning("Please enter a question.")
 
-    # ─── TAB 3: ANALYTICS ──────────────────────────────
-    with tab3:
-        st.markdown('<p class="analytics-title">📊 Research Analytics</p>', unsafe_allow_html=True)
+# ─── TAB 3: ANALYTICS ──────────────────────────────
+with tab3:
+    st.markdown('<p class="analytics-title">📊 Research Analytics</p>', unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Clean the Year column - remove non-numeric values
+        years_clean = papers['Year'].dropna()
+        years_clean = years_clean[pd.to_numeric(years_clean, errors='coerce').notna()]
         
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            year_counts = papers['Year'].value_counts().sort_index()
-            if len(year_counts) > 0:
-                chart = alt.Chart(year_counts.reset_index().rename(columns={'index': 'Year', 'Year': 'Count'})).mark_bar(
+        if len(years_clean) > 0:
+            year_counts = years_clean.value_counts().sort_index()
+            
+            # Convert to DataFrame with proper numeric types
+            year_df = year_counts.reset_index()
+            year_df.columns = ['Year', 'Count']
+            year_df['Year'] = pd.to_numeric(year_df['Year'], errors='coerce')
+            year_df = year_df.dropna()
+            
+            if len(year_df) > 0:
+                chart = alt.Chart(year_df).mark_bar(
                     cornerRadiusTopLeft=4, cornerRadiusTopRight=4
                 ).encode(
-                    x=alt.X('Year:N', sort='-y', title=None),
+                    x=alt.X('Year:O', sort='-y', title=None),  # 'O' for ordinal
                     y=alt.Y('Count:Q', title=None),
                     color=alt.Color('Count:Q', scale=alt.Scale(scheme='viridis'), legend=None),
                     tooltip=['Year', 'Count']
                 ).properties(height=300, title="📅 Publications by Year")
                 st.altair_chart(chart, use_container_width=True)
-        
-        with col2:
-            topic_counts = papers['Topic'].value_counts()
-            if len(topic_counts) > 0:
-                chart = alt.Chart(topic_counts.head(10).reset_index().rename(columns={'index': 'Topic', 'Topic': 'Count'})).mark_bar(
-                    cornerRadiusTopLeft=4, cornerRadiusTopRight=4
-                ).encode(
-                    x=alt.X('Topic:N', sort='-y', title=None),
-                    y=alt.Y('Count:Q', title=None),
-                    color=alt.Color('Count:Q', scale=alt.Scale(scheme='plasma'), legend=None),
-                    tooltip=['Topic', 'Count']
-                ).properties(height=300, title="📂 Papers by Topic")
-                st.altair_chart(chart, use_container_width=True)
-        
-        st.markdown("---")
-        st.markdown('<p class="analytics-title">🏆 Top Journals</p>', unsafe_allow_html=True)
-        journal_counts = papers['Journal'].value_counts().head(10)
-        if len(journal_counts) > 0:
-            st.dataframe(
-                journal_counts.reset_index().rename(columns={'index': 'Journal', 'Journal': 'Count'}),
-                use_container_width=True,
-                hide_index=True
-            )
-
+            else:
+                st.info("No valid year data available")
+        else:
+            st.info("No year data available")
+    
+    with col2:
+        topic_counts = papers['Topic'].value_counts()
+        if len(topic_counts) > 0:
+            topic_df = topic_counts.head(10).reset_index()
+            topic_df.columns = ['Topic', 'Count']
+            
+            chart = alt.Chart(topic_df).mark_bar(
+                cornerRadiusTopLeft=4, cornerRadiusTopRight=4
+            ).encode(
+                x=alt.X('Topic:N', sort='-y', title=None),
+                y=alt.Y('Count:Q', title=None),
+                color=alt.Color('Count:Q', scale=alt.Scale(scheme='plasma'), legend=None),
+                tooltip=['Topic', 'Count']
+            ).properties(height=300, title="📂 Papers by Topic")
+            st.altair_chart(chart, use_container_width=True)
+    
+    st.markdown("---")
+    st.markdown('<p class="analytics-title">🏆 Top Journals</p>', unsafe_allow_html=True)
+    journal_counts = papers['Journal'].value_counts().head(10)
+    if len(journal_counts) > 0:
+        st.dataframe(
+            journal_counts.reset_index().rename(columns={'index': 'Journal', 'Journal': 'Count'}),
+            use_container_width=True,
+            hide_index=True
+        )
     # ─── TAB 4: METHODS ─────────────────────────────────
     with tab4:
         st.markdown("### 📚 Glycosylation Methods Reference")
