@@ -1965,3 +1965,131 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+# ─── GLYCOKNOWLEDGE ENGINE ──────────────────────────────
+class GlycoKnowledgeEngine:
+    def __init__(self, papers_df):
+        self.papers = papers_df
+        self.index = []
+        self.topic_index = defaultdict(list)
+        self.keyword_index = defaultdict(list)
+        self.build_index()
+        self.build_expert_knowledge()
+    
+    def build_expert_knowledge(self):
+        self.expert_knowledge = {
+            'reactivity': {
+                'overview': 'RRV (Relative Reactivity Value) measures donor reactivity. Aka measures acceptor reactivity.',
+                'rrv_trends': ['Low RRV (1-10): High stereoselectivity', 'Medium RRV (10-50): Balanced', 'High RRV (50-500): Fast reactions'],
+                'tuning': {'Temperature': 'Lower temperature increases selectivity', 'Solvent': 'DCM favors selectivity, THF favors reactivity'},
+                'matching': {'Armed-Armed': 'Fast reaction, lower selectivity', 'Armed-Disarmed': 'Moderate, balanced', 'Disarmed-Armed': 'Slow, high selectivity'},
+                'references': ['Crich et al., JACS (2022)', 'Boltje et al., Angew Chem (2023)']
+            },
+            'screening': REACTION_SCREENING_KNOWLEDGE
+        }
+    
+    def build_index(self):
+        if len(self.papers) == 0:
+            return
+        for idx, row in self.papers.iterrows():
+            title = str(row.get('Title', ''))
+            abstract = str(row.get('Abstract', ''))
+            year = str(row.get('Year', ''))
+            journal = str(row.get('Journal', ''))
+            topic = str(row.get('Topic', ''))
+            url = str(row.get('URL', ''))
+            terms = re.findall(r'\b[a-z]{3,}\b', f"{title.lower()} {abstract.lower()}")
+            paper_data = {'title': title, 'abstract': abstract, 'year': year, 'journal': journal, 'topic': topic, 'url': url, 'terms': terms}
+            self.index.append(paper_data)
+            if topic:
+                self.topic_index[topic.lower()].append(paper_data)
+    
+    def search(self, query, top_n=5):
+        if len(self.index) == 0:
+            return []
+        query_terms = set(re.findall(r'\b[a-z]{3,}\b', query.lower()))
+        scores = []
+        for paper in self.index:
+            matches = sum(1 for t in query_terms if t in paper['terms'])
+            title_boost = sum(1 for t in query_terms if t in paper['title'].lower()) * 2
+            score = matches + title_boost
+            if score > 0:
+                scores.append((score, paper))
+        scores.sort(key=lambda x: x[0], reverse=True)
+        return [p for _, p in scores[:top_n]]
+    
+    def answer_question(self, question):
+        question_lower = question.lower()
+        expert_response = self.get_expert_response(question_lower)
+        relevant = self.search(question, top_n=5)
+        combined_answer = self.combine_knowledge(question_lower, expert_response, relevant)
+        return {'answer': combined_answer, 'references': self.get_references(question_lower, relevant), 'source_count': len(relevant)}
+    
+    def get_expert_response(self, question_lower):
+        response_parts = []
+        
+        if any(term in question_lower for term in ['screening', 'which reaction first', 'decision', 'prioritize', 'organize']):
+            knowledge = self.expert_knowledge.get('screening', {})
+            if knowledge and 'screening_rules' in knowledge:
+                parts = ["**🎯 Reaction Screening Strategy - Prioritization Rules:**"]
+                for rule in knowledge['screening_rules']:
+                    parts.append(f"• {rule}")
+                response_parts.append('\n'.join(parts))
+        
+        if any(term in question_lower for term in ['donor', 'acceptor', 'match', 'rrv', 'aka']):
+            knowledge = self.expert_knowledge.get('screening', {})
+            if knowledge:
+                parts = []
+                if 'donors' in knowledge:
+                    parts.append("**Available Donors with RRV:**")
+                    for donor, info in knowledge['donors'].items():
+                        parts.append(f"  • {donor}: RRV={info['rrv']}, Cost={info['cost']}, Selectivity={info['selectivity']}")
+                if 'acceptors' in knowledge:
+                    parts.append("\n**Acceptor Reactivity (Aka):**")
+                    for acceptor, info in knowledge['acceptors'].items():
+                        parts.append(f"  • {acceptor}: Aka={info['aka']}, Hindrance={info['hindrance']}")
+                response_parts.append('\n'.join(parts))
+        
+        if any(term in question_lower for term in ['rrv', 'aka', 'reactivity']):
+            knowledge = self.expert_knowledge.get('reactivity', {})
+            if knowledge:
+                parts = []
+                if 'overview' in knowledge:
+                    parts.append(knowledge['overview'])
+                if 'rrv_trends' in knowledge:
+                    parts.append('RRV trends: ' + '; '.join(knowledge['rrv_trends']))
+                if 'tuning' in knowledge:
+                    tuning_text = 'How to tune RRV:\n'
+                    for method, desc in knowledge['tuning'].items():
+                        tuning_text += f'  • {method}: {desc}\n'
+                    parts.append(tuning_text)
+                if 'matching' in knowledge:
+                    match_text = 'RRV-Aka matching:\n'
+                    for condition, outcome in knowledge['matching'].items():
+                        match_text += f'  • {condition}: {outcome}\n'
+                    parts.append(match_text)
+                response_parts.append('\n\n'.join(parts))
+        
+        return '\n\n'.join(response_parts) if response_parts else None
+    
+    def combine_knowledge(self, question_lower, expert_response, relevant_papers):
+        if not expert_response and not relevant_papers:
+            return random.choice(FALLBACK_RESPONSES)
+        answer_parts = []
+        if expert_response:
+            intro = random.choice(HUMANIZED_INTROS)
+            answer_parts.append(f"{intro}\n\n{expert_response}")
+        if relevant_papers:
+            answer_parts.append("\n\n**📄 Related Papers from Your Database:**")
+            for paper in relevant_papers[:3]:
+                answer_parts.append(f"• {paper['title']} ({paper['year']}) - {paper['journal']}")
+        ending = random.choice(HUMANIZED_ENDINGS)
+        answer_parts.append(f"\n\n{ending}")
+        return '\n'.join(answer_parts)
+    
+    def get_references(self, question_lower, relevant_papers):
+        references = []
+        for paper in relevant_papers[:2]:
+            ref = f"{paper['title']} ({paper['year']}) - {paper['journal']}"
+            references.append(ref)
+        return references[:5]
