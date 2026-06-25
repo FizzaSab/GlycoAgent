@@ -10,7 +10,6 @@ import altair as alt
 import random
 import json
 import numpy as np
-# import qrcode
 from io import BytesIO
 from PIL import Image
 import base64
@@ -518,27 +517,19 @@ REACTION_SCREENING_KNOWLEDGE = {
 }
 
 # ─── QR CODE GENERATOR ──────────────────────────────────
-def generate_qr_code(data, app_name="GlycoSearch", institute="Academia Sinica"):
-    qr = qrcode.QRCode(
         version=2,
-        error_correction=qrcode.constants.ERROR_CORRECT_H,
         box_size=8,
         border=3,
     )
     qr.add_data(data)
     qr.make(fit=True)
-    qr_img = qr.make_image(fill_color="#0f172a", back_color="white").convert('RGB')
-    qr_img = qr_img.resize((400, 400), Image.Resampling.LANCZOS)
     buffered = BytesIO()
-    qr_img.save(buffered, format="PNG")
     img_str = base64.b64encode(buffered.getvalue()).decode()
     return img_str
 
 # ─── BRANDED QR CARD ────────────────────────────────────
-def create_branded_qr_card(app_url="https://glycosearch.streamlit.app", app_name="GlycoSearch", institute="Academia Sinica"):
     """Create complete branded QR card HTML"""
     
-    qr_img = generate_qr_code(app_url, app_name, institute)
     
     html = f'''
     <div style="background: white; padding: 2rem; border-radius: 16px; border: 2px solid #e2e8f0; text-align: center; max-width: 450px; margin: 0 auto;">
@@ -563,7 +554,6 @@ def create_branded_qr_card(app_url="https://glycosearch.streamlit.app", app_name
             <span style="font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.4rem; color: #0f172a;">{app_name}</span>
         </div>
         <div style="font-family: 'Inter', sans-serif; font-size: 0.8rem; color: #94a3b8; margin-bottom: 1rem;">{institute}</div>
-        <img src="data:image/png;base64,{qr_img}" style="border-radius: 12px; border: 2px solid #e2e8f0; max-width: 100%;">
         <div style="margin-top: 1rem; font-family: 'Inter', sans-serif; font-size: 0.7rem; color: #94a3b8;">
             Scan to access GlycoSearch
         </div>
@@ -1526,7 +1516,6 @@ else:
     
     tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
         "🔍 Search", "💬 Ask AI", "📊 Analytics", "📚 Methods", 
-        "🧪 Draw", "🎯 Screening", "📱 QR Code", "⚙️ Settings", "📋 About"
     ])
 
     # ─── TAB 1: SEARCH ────────────────────────────────
@@ -1836,7 +1825,6 @@ with tab3:
 
     # ─── TAB 7: QR CODE ──────────────────────────────────
     with tab7:
-        st.markdown("### 📱 QR Code - Share GlycoSearch")
         
         app_url = st.text_input(
             "App URL",
@@ -1847,19 +1835,12 @@ with tab3:
         app_name = st.text_input("App Name", value="GlycoSearch")
         institute = st.text_input("Institute", value="Academia Sinica")
         
-        if st.button("🔄 Generate QR Code", type="primary"):
-            qr_html = create_branded_qr_card(app_url, app_name, institute)
-            st.markdown(qr_html, unsafe_allow_html=True)
             
-            qr_img = generate_qr_code(app_url, app_name, institute)
             st.download_button(
-                label="📥 Download QR Code",
-                data=base64.b64decode(qr_img),
                 file_name="glycosearch_qr.png",
                 mime="image/png"
             )
         
-        with st.expander("📖 How to use QR Code"):
             st.markdown("""
             1. **Deploy your app** to a cloud platform (Streamlit Cloud, Heroku, etc.)
             2. **Copy your app URL** and paste it above
@@ -1914,7 +1895,6 @@ with tab3:
                 <li><b>Reaction Conditions</b> - Detailed protocols for glycosylation</li>
                 <li><b>Protecting Groups</b> - Effects and selectivity information</li>
                 <li><b>Reaction Screening</b> - Decision support for prioritizing reactions</li>
-                <li><b>QR Code Generation</b> - Share your app with QR codes</li>
                 <li><b>Chemical Drawing</b> - Draw structures with sugar chemistry groups</li>
             </ul>
             <h4>📚 Data</h4>
