@@ -10,7 +10,7 @@ import altair as alt
 import random
 import json
 import numpy as np
-import qrcode
+# import qrcode
 from io import BytesIO
 from PIL import Image
 import base64
