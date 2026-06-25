@@ -53,6 +53,22 @@ st.markdown("""
         gap: 0.5rem;
     }
     .header-left { display: flex; align-items: center; gap: 0.8rem; }
+    .logo-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.05rem;
+        padding: 0.1rem 0.8rem 0.1rem 0.4rem;
+    }
+    .logo-label {
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        font-size: 0.5rem;
+        color: rgba(255,255,255,0.35);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-top: 0.05rem;
+    }
     .header-title-block { display: flex; flex-direction: column; }
     .header-title {
         font-family: 'Inter', sans-serif;
@@ -224,6 +240,66 @@ st.markdown("""
         padding-top: 0.5rem;
         border-top: 1px solid #f1f5f9;
     }
+    .draw-header { 
+        background: linear-gradient(135deg, #f8fafc, #eef2ff); 
+        border: 2px solid #e2e8f0; 
+        border-radius: 14px; 
+        padding: 1rem 1.5rem; 
+        margin-bottom: 0.8rem; 
+        text-align: center; 
+    }
+    .draw-header h2 { 
+        font-family: 'Inter', sans-serif; 
+        font-weight: 700; 
+        font-size: 1.3rem; 
+        color: #0f172a; 
+        margin: 0; 
+    }
+    .draw-header h2 span { 
+        background: linear-gradient(135deg, #6366f1, #a78bfa); 
+        -webkit-background-clip: text; 
+        -webkit-text-fill-color: transparent; 
+    }
+    .draw-header p { 
+        font-family: 'Inter', sans-serif; 
+        font-size: 0.8rem; 
+        color: #64748b; 
+        margin: 0.2rem 0 0 0; 
+    }
+    .draw-toolbar { 
+        display: flex; 
+        gap: 4px; 
+        padding: 6px 0; 
+        flex-wrap: wrap; 
+        align-items: center; 
+    }
+    .draw-toolbar button { 
+        padding: 4px 10px; 
+        border: none; 
+        border-radius: 6px; 
+        background: #f1f5f9; 
+        color: #0f172a; 
+        cursor: pointer; 
+        font-size: 11px; 
+        font-family: 'Inter', sans-serif; 
+        font-weight: 500; 
+        transition: all 0.2s; 
+    }
+    .draw-toolbar button:hover { background: #e2e8f0; }
+    .draw-toolbar button.active { background: #0f172a; color: white; }
+    .draw-toolbar button.danger { background: #fee2e2; color: #991b1b; }
+    .draw-toolbar button.success { background: #dcfce7; color: #166534; }
+    .draw-toolbar button.warning { background: #fef3c7; color: #92400e; }
+    .draw-toolbar button.info { background: #dbeafe; color: #1e40af; }
+    .draw-toolbar button.purple { background: #f3e8ff; color: #6b21a8; }
+    .draw-toolbar select { 
+        padding: 4px 8px; 
+        border-radius: 6px; 
+        border: 1px solid #e2e8f0; 
+        font-size: 11px; 
+        font-family: 'Inter', sans-serif; 
+        background: white; 
+    }
     .footer-compact {
         background: linear-gradient(135deg, #0f172a, #1e293b);
         padding: 0.6rem 2rem;
@@ -277,14 +353,6 @@ st.markdown("""
         color: #a78bfa;
         text-decoration: underline;
     }
-    @media (max-width: 768px) {
-        .footer-compact { padding: 0.6rem 1rem; }
-        .footer-compact .footer-brand { gap: 0.4rem; }
-        .header-content { flex-direction: column; align-items: flex-start; padding: 0 1rem; }
-        .header-stats { flex-wrap: wrap; gap: 0.5rem; padding: 0.25rem 0.8rem; }
-        .header-title { font-size: 1.2rem; }
-        .stTabs [data-baseweb="tab"] { font-size: 0.75rem !important; padding: 0.4rem 0.8rem !important; }
-    }
     .about-box {
         background: #ffffff;
         padding: 1.5rem 2rem;
@@ -308,6 +376,14 @@ st.markdown("""
         color: #0f172a !important;
         margin-bottom: 0.5rem;
     }
+    @media (max-width: 768px) {
+        .footer-compact { padding: 0.6rem 1rem; }
+        .footer-compact .footer-brand { gap: 0.4rem; }
+        .header-content { flex-direction: column; align-items: flex-start; padding: 0 1rem; }
+        .header-stats { flex-wrap: wrap; gap: 0.5rem; padding: 0.25rem 0.8rem; }
+        .header-title { font-size: 1.2rem; }
+        .stTabs [data-baseweb="tab"] { font-size: 0.75rem !important; padding: 0.4rem 0.8rem !important; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -316,13 +392,12 @@ st.markdown("""
 def load_data():
     excel_files = [f for f in os.listdir('.') if f.endswith('.xlsx')]
     if excel_files:
-        # Prefer the enhanced file with all papers
-        enhanced = [f for f in excel_files if 'enhanced' in f]
-        if enhanced:
-            try:
-                return pd.read_excel(enhanced[0], sheet_name='All Papers')
-            except:
-                pass
+        for f in excel_files:
+            if 'enhanced' in f:
+                try:
+                    return pd.read_excel(f, sheet_name='All Papers')
+                except:
+                    pass
         try:
             return pd.read_excel(excel_files[0], sheet_name='All Papers')
         except:
@@ -336,8 +411,7 @@ HUMANIZED_INTROS = [
     "That's a really interesting question! Let me share what I've learned:",
     "Great question! Here's what I've gathered from the literature:",
     "I've been looking into this recently. Here's what I found:",
-    "Excellent question! Let me break it down based on the research:",
-    "This is such a fascinating topic! Let me explain:"
+    "Excellent question! Let me break it down based on the research:"
 ]
 
 HUMANIZED_ENDINGS = [
@@ -509,56 +583,573 @@ class GlycoKnowledgeEngine:
 # ─── DRAWING TOOL ──────────────────────────────────────
 def chemical_drawing_tool():
     components.html("""
-    <div style="padding:20px;border:2px solid #e2e8f0;border-radius:12px;background:white;">
-        <h3 style="font-family:'Inter',sans-serif;">🧪 Draw Chemical Structure</h3>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;">
-            <button onclick="addAtom('C')" style="padding:6px 14px;border:1px solid #e2e8f0;border-radius:6px;background:#0f172a;color:white;cursor:pointer;">C</button>
-            <button onclick="addAtom('O')" style="padding:6px 14px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;">O</button>
-            <button onclick="addAtom('N')" style="padding:6px 14px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;">N</button>
-            <button onclick="clearCanvas()" style="padding:6px 14px;border:1px solid #fee2e2;border-radius:6px;background:#fee2e2;color:#991b1b;cursor:pointer;">🗑️ Clear</button>
-        </div>
-        <canvas id="molCanvas" width="700" height="400" style="border:2px solid #e2e8f0;border-radius:8px;width:100%;height:auto;cursor:crosshair;"></canvas>
+    <div class="draw-header">
+        <h2>🧪 Draw <span>Chemical Structure</span></h2>
+        <p>Build molecules by adding atoms and bonds • Select from tool palette below</p>
     </div>
+    <div class="draw-toolbar">
+        <div style="display:flex;gap:3px;align-items:center;background:#f8fafc;padding:2px 8px;border-radius:8px;">
+            <span style="font-size:9px;color:#94a3b8;font-weight:600;margin-right:3px;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Mode</span>
+            <button id="btn-draw" class="active">✏️ Atom</button>
+            <button id="btn-replace" class="warning">🔄 Replace</button>
+            <button id="btn-line">🔗 Bond</button>
+            <button id="btn-eraser" class="danger">🧹 Eraser</button>
+            <button id="btn-select" class="info">⬜ Select</button>
+            <button id="btn-benzene" class="purple">⬡ Benzene</button>
+        </div>
+        <div style="display:flex;gap:3px;align-items:center;background:#f8fafc;padding:2px 8px;border-radius:8px;">
+            <span style="font-size:9px;color:#94a3b8;font-weight:600;margin-right:3px;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Atom</span>
+            <select id="atom-select">
+                <option value="C">C</option><option value="O">O</option><option value="N">N</option><option value="H">H</option>
+                <option value="S">S</option><option value="P">P</option><option value="F">F</option><option value="Cl">Cl</option>
+                <option value="Br">Br</option><option value="I">I</option>
+                <option value="OH">OH</option><option value="OMe">OMe</option>
+            </select>
+        </div>
+        <div style="display:flex;gap:3px;align-items:center;background:#f8fafc;padding:2px 8px;border-radius:8px;">
+            <span style="font-size:9px;color:#94a3b8;font-weight:600;margin-right:3px;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Bond</span>
+            <button id="btn-single-bond" class="active">─</button>
+            <button id="btn-double-bond">═</button>
+            <button id="btn-triple-bond">≡</button>
+        </div>
+        <div style="display:flex;gap:3px;align-items:center;background:#f8fafc;padding:2px 8px;border-radius:8px;">
+            <button id="btn-undo">↩️ Undo</button>
+            <button id="btn-clear" class="danger">🗑️ Clear</button>
+            <button id="btn-smiles" class="success">📋 SMILES</button>
+        </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:6px;align-items:center;flex-wrap:wrap;">
+        <span id="mode-status" class="mode-status mode-draw">✏️ Draw Mode</span>
+        <span class="bond-type-indicator" id="bond-type-indicator">Bond: Single</span>
+        <span class="draw-info">💡 Click to add • Eraser: click to remove • Select: drag + Delete</span>
+    </div>
+    <canvas id="canvas" width="750" height="480"></canvas>
+    <input id="smiles-output" placeholder="SMILES will appear here...">
+    <style>
+        #canvas { border: 2px solid #e2e8f0; background: white; border-radius: 12px; cursor: crosshair; width: 100%; height: auto; }
+        #smiles-output { width: 100%; padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; margin-top: 8px; font-family: monospace; font-size: 12px; background: #f8fafc; }
+        .mode-status { padding: 2px 10px; border-radius: 50px; font-size: 10px; font-weight: 500; font-family: 'Inter', sans-serif; display: inline-block; }
+        .mode-draw { background: #dcfce7; color: #166534; }
+        .mode-replace { background: #fef3c7; color: #92400e; }
+        .mode-delete { background: #fee2e2; color: #991b1b; }
+        .mode-select { background: #dbeafe; color: #1e40af; }
+        .mode-eraser { background: #fce4ec; color: #880e4f; }
+        .draw-info { color: #94a3b8; font-size: 10px; font-family: 'Inter', sans-serif; }
+        .bond-type-indicator { font-size: 10px; color: #64748b; padding: 1px 8px; background: #f1f5f9; border-radius: 4px; }
+    </style>
     <script>
-        const canvas = document.getElementById('molCanvas');
+        const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        let atoms = [];
-        let currentAtom = 'C';
-        canvas.addEventListener('click', function(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX - rect.left) * (canvas.width / rect.width);
-            const y = (e.clientY - rect.top) * (canvas.height / rect.height);
-            atoms.push({x, y, label: currentAtom});
-            draw();
-        });
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            atoms.forEach(a => {
-                ctx.beginPath(); ctx.arc(a.x, a.y, 18, 0, Math.PI*2);
-                ctx.fillStyle = '#f1f5f9'; ctx.fill();
-                ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2; ctx.stroke();
-                ctx.fillStyle = '#0f172a';
-                ctx.font = 'bold 14px Inter, Arial, sans-serif';
-                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.fillText(a.label, a.x, a.y);
-            });
+        let isDrawing = false, lastX, lastY;
+        let atoms = [], bonds = [], history = [];
+        let tool = 'draw';
+        let selectedAtom = 'C';
+        let bondType = 1;
+        let deleteBondMode = false;
+        let replaceMode = false;
+        let selectMode = false;
+        let eraserMode = false;
+        let selectionStart = null;
+        let selectionEnd = null;
+        let selectedAtoms = [];
+        const MAX_HISTORY = 30;
+        let atomIdCounter = 0;
+
+        document.getElementById('atom-select').onchange = function() { selectedAtom = this.value; };
+
+        function getAtomColor(label) {
+            const colors = {'C':'#333333','O':'#FF0000','N':'#3050F8','H':'#FFFFFF','S':'#FFFF30','P':'#FF8000','F':'#90E050','Cl':'#1FF01F','Br':'#A62929','I':'#940094','OH':'#FF0000','OMe':'#CD5C5C'};
+            return colors[label] || '#333333';
         }
-        function addAtom(label) { currentAtom = label; }
-        function clearCanvas() { atoms = []; draw(); }
-        draw();
+
+        function drawAtom(x, y, label, highlight, selected) {
+            const radius = selected ? 24 : (highlight ? 22 : 18);
+            const color = getAtomColor(label);
+            if (highlight) { ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 15; }
+            if (selected) { ctx.shadowColor = '#3b82f6'; ctx.shadowBlur = 20; }
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI*2);
+            ctx.fillStyle = selected ? '#93c5fd' : color;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = selected ? '#2563eb' : (highlight ? '#f59e0b' : '#333');
+            ctx.lineWidth = selected ? 4 : (highlight ? 3 : 2);
+            ctx.stroke();
+            if (label) {
+                ctx.fillStyle = selected ? '#1e3a5f' : 'white';
+                ctx.font = 'bold 11px Inter, Arial, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(label.length > 4 ? label.substring(0,4) : label, x, y);
+            }
+        }
+
+        function drawBond(x1, y1, x2, y2, type, highlight) {
+            const color = highlight ? '#ef4444' : '#333';
+            const offset = 6;
+            const dx = x2 - x1, dy = y2 - y1;
+            const len = Math.hypot(dx, dy);
+            if (len === 0) return;
+            const nx = -dy / len, ny = dx / len;
+            if (type === 1 || type === undefined) {
+                ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+                ctx.strokeStyle = color; ctx.lineWidth = highlight ? 6 : 3; ctx.stroke();
+            } else if (type === 2) {
+                for (let d = -1; d <= 1; d += 2) {
+                    const ox = d * offset * nx, oy = d * offset * ny;
+                    ctx.beginPath(); ctx.moveTo(x1 + ox, y1 + oy); ctx.lineTo(x2 + ox, y2 + oy);
+                    ctx.strokeStyle = color; ctx.lineWidth = highlight ? 6 : 3; ctx.stroke();
+                }
+            } else if (type === 3) {
+                for (let d = -1; d <= 1; d++) {
+                    const ox = d * offset * nx, oy = d * offset * ny;
+                    ctx.beginPath(); ctx.moveTo(x1 + ox, y1 + oy); ctx.lineTo(x2 + ox, y2 + oy);
+                    ctx.strokeStyle = color; ctx.lineWidth = highlight ? 6 : 2; ctx.stroke();
+                }
+            }
+            if (highlight) {
+                const mx = (x1+x2)/2, my = (y1+y2)/2;
+                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
+                const s = 8;
+                ctx.beginPath(); ctx.moveTo(mx-s, my-s); ctx.lineTo(mx+s, my+s);
+                ctx.moveTo(mx+s, my-s); ctx.lineTo(mx-s, my+s); ctx.stroke();
+            }
+        }
+
+        function drawBenzene(x, y) {
+            const size = 50;
+            const angles = [0, 60, 120, 180, 240, 300];
+            const pts = angles.map(d => ({x: x + size * Math.cos(d * Math.PI / 180), y: y + size * Math.sin(d * Math.PI / 180)}));
+            for (let i = 0; i < 6; i++) {
+                let j = (i + 1) % 6;
+                ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y);
+                ctx.strokeStyle = '#333'; ctx.lineWidth = 3; ctx.stroke();
+                if (i % 2 === 0) {
+                    const midX = (pts[i].x + pts[j].x) / 2, midY = (pts[i].y + pts[j].y) / 2;
+                    const angle = Math.atan2(pts[j].y - pts[i].y, pts[j].x - pts[i].x);
+                    const perpAngle = angle + Math.PI / 2;
+                    const offset = 8;
+                    for (let d = -1; d <= 1; d += 2) {
+                        const dx = d * offset * Math.cos(perpAngle), dy = d * offset * Math.sin(perpAngle);
+                        const sx = midX + dx - 22 * Math.cos(angle), sy = midY + dy - 22 * Math.sin(angle);
+                        const ex = midX + dx + 22 * Math.cos(angle), ey = midY + dy + 22 * Math.sin(angle);
+                        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey);
+                        ctx.strokeStyle = '#333'; ctx.lineWidth = 3; ctx.stroke();
+                    }
+                }
+            }
+            for (let i = 0; i < 6; i++) {
+                const color = getAtomColor('C');
+                ctx.beginPath(); ctx.arc(pts[i].x, pts[i].y, 18, 0, Math.PI*2);
+                ctx.fillStyle = color; ctx.fill();
+                ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 12px Inter, Arial, sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText('C', pts[i].x, pts[i].y);
+                atoms.push({x: pts[i].x, y: pts[i].y, label: 'C', id: atomIdCounter++});
+            }
+        }
+
+        function findNearestAtom(x, y, threshold) {
+            threshold = threshold || 25;
+            let nearest = null, minDist = threshold;
+            for (const a of atoms) {
+                const dist = Math.hypot(x - a.x, y - a.y);
+                if (dist < minDist) { minDist = dist; nearest = a; }
+            }
+            return nearest;
+        }
+
+        function findNearestBond(x, y, threshold) {
+            threshold = threshold || 15;
+            let nearest = null, minDist = threshold;
+            for (const b of bonds) {
+                const dx = b.x2 - b.x1, dy = b.y2 - b.y1;
+                const len = Math.hypot(dx, dy);
+                if (len === 0) continue;
+                const t = Math.max(0, Math.min(1, ((x - b.x1)*dx + (y - b.y1)*dy) / (len*len)));
+                const px = b.x1 + t*dx, py = b.y1 + t*dy;
+                const dist = Math.hypot(x - px, y - py);
+                if (dist < minDist) { minDist = dist; nearest = b; }
+            }
+            return nearest;
+        }
+
+        function getAtomsInRect(x1, y1, x2, y2) {
+            const minX = Math.min(x1, x2), maxX = Math.max(x1, x2);
+            const minY = Math.min(y1, y2), maxY = Math.max(y1, y2);
+            return atoms.filter(a => a.x >= minX && a.x <= maxX && a.y >= minY && a.y <= maxY);
+        }
+
+        function drawAll() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#f1f5f9';
+            ctx.lineWidth = 0.5;
+            for (let x=0; x<=canvas.width; x+=30) {
+                ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke();
+            }
+            for (let y=0; y<=canvas.height; y+=30) {
+                ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke();
+            }
+            bonds.forEach(b => drawBond(b.x1,b.y1,b.x2,b.y2,b.type||1,false));
+            atoms.forEach(a => {
+                const sel = selectedAtoms.some(s => s.id === a.id);
+                drawAtom(a.x,a.y,a.label,false,sel);
+            });
+            if (selectMode && selectionStart && selectionEnd) {
+                const x = Math.min(selectionStart.x, selectionEnd.x);
+                const y = Math.min(selectionStart.y, selectionEnd.y);
+                const w = Math.abs(selectionStart.x - selectionEnd.x);
+                const h = Math.abs(selectionStart.y - selectionEnd.y);
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.strokeRect(x, y, w, h);
+                ctx.setLineDash([]);
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+                ctx.fillRect(x, y, w, h);
+            }
+        }
+
+        function saveState() {
+            history.push(JSON.parse(JSON.stringify({atoms, bonds})));
+            if (history.length > MAX_HISTORY) history.shift();
+        }
+
+        function getPos(e) {
+            const r = canvas.getBoundingClientRect();
+            return { x: (e.clientX - r.x) * (canvas.width / r.width), y: (e.clientY - r.y) * (canvas.height / r.height) };
+        }
+
+        function updateModeStatus() {
+            const status = document.getElementById('mode-status');
+            if (eraserMode) {
+                status.className = 'mode-status mode-eraser';
+                status.textContent = '🧹 Eraser Mode (click to remove)';
+                canvas.style.cursor = 'not-allowed';
+            } else if (selectMode) {
+                status.className = 'mode-status mode-select';
+                status.textContent = '⬜ Select Mode (drag to select, Delete to remove)';
+                canvas.style.cursor = 'default';
+            } else if (replaceMode) {
+                status.className = 'mode-status mode-replace';
+                status.textContent = '🔄 Replace Mode (click atom)';
+                canvas.style.cursor = 'pointer';
+            } else if (deleteBondMode) {
+                status.className = 'mode-status mode-delete';
+                status.textContent = '✖️ Delete Bond Mode (click bond)';
+                canvas.style.cursor = 'crosshair';
+            } else {
+                status.className = 'mode-status mode-draw';
+                status.textContent = '✏️ Draw Mode (click canvas)';
+                canvas.style.cursor = 'crosshair';
+            }
+        }
+
+        canvas.onmousedown = function(e) {
+            const pos = getPos(e);
+            if (eraserMode) {
+                const atom = findNearestAtom(pos.x, pos.y);
+                if (atom) {
+                    saveState();
+                    atoms = atoms.filter(a => a !== atom);
+                    bonds = bonds.filter(b => b.x1 !== atom.x || b.y1 !== atom.y);
+                    bonds = bonds.filter(b => b.x2 !== atom.x || b.y2 !== atom.y);
+                    drawAll(); return;
+                }
+                const bond = findNearestBond(pos.x, pos.y);
+                if (bond) { saveState(); bonds = bonds.filter(b => b !== bond); drawAll(); }
+                return;
+            }
+            if (selectMode) {
+                selectionStart = pos; selectionEnd = pos; selectedAtoms = []; drawAll(); return;
+            }
+            if (replaceMode) {
+                const atom = findNearestAtom(pos.x, pos.y);
+                if (atom) {
+                    saveState();
+                    atom.label = selectedAtom;
+                    drawAll();
+                    drawAtom(atom.x, atom.y, atom.label, true);
+                    setTimeout(drawAll, 300);
+                }
+                return;
+            }
+            if (deleteBondMode) {
+                const bond = findNearestBond(pos.x, pos.y);
+                if (bond) { saveState(); bonds = bonds.filter(b => b !== bond); drawAll(); }
+                return;
+            }
+            if (e.button === 2) {
+                const atom = findNearestAtom(pos.x, pos.y);
+                if (atom) {
+                    saveState();
+                    atoms = atoms.filter(a => a !== atom);
+                    bonds = bonds.filter(b => b.x1 !== atom.x || b.y1 !== atom.y);
+                    bonds = bonds.filter(b => b.x2 !== atom.x || b.y2 !== atom.y);
+                    drawAll();
+                }
+                return;
+            }
+            if (tool === 'draw') {
+                saveState();
+                atoms.push({x: pos.x, y: pos.y, label: selectedAtom, id: atomIdCounter++});
+                drawAll();
+            } else if (tool === 'line') {
+                isDrawing = true;
+                lastX = pos.x;
+                lastY = pos.y;
+            } else if (tool === 'benzene') {
+                saveState();
+                drawBenzene(pos.x, pos.y);
+                drawAll();
+            }
+        };
+
+        canvas.onmousemove = function(e) {
+            const pos = getPos(e);
+            if (selectMode && selectionStart) {
+                selectionEnd = pos;
+                drawAll();
+                const selected = getAtomsInRect(selectionStart.x, selectionStart.y, pos.x, pos.y);
+                selectedAtoms = selected;
+                selected.forEach(a => drawAtom(a.x, a.y, a.label, false, true));
+                return;
+            }
+            if (isDrawing && tool === 'line') {
+                drawAll();
+                drawBond(lastX, lastY, pos.x, pos.y, bondType, false);
+            }
+            if (replaceMode) {
+                canvas.style.cursor = findNearestAtom(pos.x, pos.y) ? 'pointer' : 'default';
+            }
+            if (eraserMode) {
+                const atom = findNearestAtom(pos.x, pos.y);
+                const bond = findNearestBond(pos.x, pos.y);
+                canvas.style.cursor = (atom || bond) ? 'pointer' : 'not-allowed';
+            }
+        };
+
+        canvas.onmouseup = function(e) {
+            if (selectMode && selectionStart) {
+                const pos = getPos(e);
+                const selected = getAtomsInRect(selectionStart.x, selectionStart.y, pos.x, pos.y);
+                selectedAtoms = selected;
+                drawAll();
+                selected.forEach(a => drawAtom(a.x, a.y, a.label, false, true));
+                if (selected.length > 0) {
+                    document.getElementById('mode-status').textContent = `✅ ${selected.length} atoms selected. Press Delete to remove.`;
+                }
+                selectionStart = null; selectionEnd = null; return;
+            }
+            if (isDrawing && tool === 'line') {
+                const pos = getPos(e);
+                saveState();
+                let endAtom = findNearestAtom(pos.x, pos.y);
+                let startAtom = findNearestAtom(lastX, lastY);
+                if (startAtom && endAtom && startAtom !== endAtom) {
+                    bonds.push({x1: startAtom.x, y1: startAtom.y, x2: endAtom.x, y2: endAtom.y, type: bondType});
+                } else if (startAtom) {
+                    const na = {x: pos.x, y: pos.y, label: selectedAtom, id: atomIdCounter++};
+                    atoms.push(na);
+                    bonds.push({x1: startAtom.x, y1: startAtom.y, x2: na.x, y2: na.y, type: bondType});
+                } else {
+                    const a1 = {x: lastX, y: lastY, label: selectedAtom, id: atomIdCounter++};
+                    const a2 = {x: pos.x, y: pos.y, label: selectedAtom, id: atomIdCounter++};
+                    atoms.push(a1); atoms.push(a2);
+                    bonds.push({x1: a1.x, y1: a1.y, x2: a2.x, y2: a2.y, type: bondType});
+                }
+                drawAll();
+                isDrawing = false;
+            }
+        };
+
+        canvas.oncontextmenu = e => e.preventDefault();
+
+        document.addEventListener('keydown', function(e) {
+            if ((e.key === 'Delete' || e.key === 'Backspace') && selectedAtoms.length > 0) {
+                saveState();
+                const ids = selectedAtoms.map(a => a.id);
+                atoms = atoms.filter(a => !ids.includes(a.id));
+                bonds = bonds.filter(b => {
+                    const a1 = atoms.find(a => a.x === b.x1 && a.y === b.y1);
+                    const a2 = atoms.find(a => a.x === b.x2 && a.y === b.y2);
+                    return a1 && a2;
+                });
+                selectedAtoms = [];
+                drawAll();
+                document.getElementById('mode-status').textContent = '🗑️ Deleted selected atoms';
+            }
+        });
+
+        document.getElementById('btn-draw').onclick = function() {
+            tool = 'draw'; replaceMode = false; deleteBondMode = false; selectMode = false; eraserMode = false;
+            selectionStart = null; selectionEnd = null; selectedAtoms = [];
+            document.querySelectorAll('.draw-toolbar button').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            updateModeStatus();
+        };
+        document.getElementById('btn-replace').onclick = function() {
+            replaceMode = !replaceMode;
+            if (replaceMode) {
+                deleteBondMode = false; selectMode = false; eraserMode = false;
+                document.querySelectorAll('.draw-toolbar button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                tool = 'replace';
+            } else {
+                this.classList.remove('active');
+                tool = 'draw';
+                document.getElementById('btn-draw').classList.add('active');
+            }
+            updateModeStatus();
+        };
+        document.getElementById('btn-line').onclick = function() {
+            tool = 'line'; replaceMode = false; deleteBondMode = false; selectMode = false; eraserMode = false;
+            selectionStart = null; selectionEnd = null; selectedAtoms = [];
+            document.querySelectorAll('.draw-toolbar button').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            updateModeStatus();
+        };
+        document.getElementById('btn-eraser').onclick = function() {
+            eraserMode = !eraserMode;
+            if (eraserMode) {
+                replaceMode = false; deleteBondMode = false; selectMode = false;
+                document.querySelectorAll('.draw-toolbar button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                tool = 'eraser';
+            } else {
+                this.classList.remove('active');
+                tool = 'draw';
+                document.getElementById('btn-draw').classList.add('active');
+            }
+            updateModeStatus();
+        };
+        document.getElementById('btn-select').onclick = function() {
+            selectMode = !selectMode;
+            if (selectMode) {
+                replaceMode = false; deleteBondMode = false; eraserMode = false;
+                document.querySelectorAll('.draw-toolbar button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                tool = 'select';
+            } else {
+                this.classList.remove('active');
+                tool = 'draw';
+                document.getElementById('btn-draw').classList.add('active');
+            }
+            updateModeStatus();
+        };
+        document.getElementById('btn-benzene').onclick = function() {
+            tool = 'benzene'; replaceMode = false; deleteBondMode = false; selectMode = false; eraserMode = false;
+            selectionStart = null; selectionEnd = null; selectedAtoms = [];
+            document.querySelectorAll('.draw-toolbar button').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            updateModeStatus();
+        };
+        document.getElementById('btn-single-bond').onclick = function() {
+            bondType = 1;
+            document.querySelectorAll('#btn-single-bond, #btn-double-bond, #btn-triple-bond').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('bond-type-indicator').textContent = 'Bond: Single';
+        };
+        document.getElementById('btn-double-bond').onclick = function() {
+            bondType = 2;
+            document.querySelectorAll('#btn-single-bond, #btn-double-bond, #btn-triple-bond').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('bond-type-indicator').textContent = 'Bond: Double';
+        };
+        document.getElementById('btn-triple-bond').onclick = function() {
+            bondType = 3;
+            document.querySelectorAll('#btn-single-bond, #btn-double-bond, #btn-triple-bond').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('bond-type-indicator').textContent = 'Bond: Triple';
+        };
+        document.getElementById('btn-undo').onclick = function() {
+            if (history.length > 0) {
+                const state = history.pop();
+                atoms = state.atoms; bonds = state.bonds;
+                selectedAtoms = [];
+                drawAll();
+            }
+        };
+        document.getElementById('btn-clear').onclick = function() {
+            if (atoms.length > 0 || bonds.length > 0) {
+                if (confirm('Clear everything?')) {
+                    saveState();
+                    atoms = []; bonds = [];
+                    selectedAtoms = [];
+                    drawAll();
+                }
+            }
+        };
+        document.getElementById('btn-smiles').onclick = function() {
+            const sm = atoms.length > 0 ? atoms.map(a => a.label||'C').join('') : 'No atoms drawn';
+            document.getElementById('smiles-output').value = 'SMILES: ' + sm;
+            navigator.clipboard.writeText(sm);
+        };
+
+        drawBenzene(375, 240);
+        drawAll();
+        saveState();
+        updateModeStatus();
     </script>
-    """, height=500)
+    """, height=560)
 
 # ─── HEADER ─────────────────────────────────────────────
 def render_header():
     valid_years = papers['Year'].dropna() if len(papers) > 0 else []
     topics = papers['Topic'].dropna().unique() if len(papers) > 0 else []
+    
+    logo_svg = '''
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="28,4 44,12 44,30 28,38 12,30 12,12" stroke="#6366f1" stroke-width="2" fill="rgba(99,102,241,0.06)"/>
+        <line x1="12" y1="12" x2="28" y2="20" stroke="#818cf8" stroke-width="1.5"/>
+        <line x1="28" y1="20" x2="44" y2="12" stroke="#818cf8" stroke-width="1.5"/>
+        <line x1="28" y1="38" x2="44" y2="30" stroke="#818cf8" stroke-width="1.5"/>
+        <line x1="28" y1="38" x2="12" y2="30" stroke="#818cf8" stroke-width="1.5"/>
+        <circle cx="28" cy="4" r="4" fill="#ef4444" stroke="#dc2626" stroke-width="1.2"/>
+        <text x="28" y="7" font-size="6.5" fill="white" text-anchor="middle" font-weight="bold">O</text>
+        <circle cx="44" cy="12" r="3.5" fill="#333" stroke="#333"/>
+        <circle cx="44" cy="30" r="3.5" fill="#333" stroke="#333"/>
+        <circle cx="28" cy="38" r="3.5" fill="#333" stroke="#333"/>
+        <circle cx="12" cy="30" r="3.5" fill="#333" stroke="#333"/>
+        <circle cx="12" cy="12" r="3.5" fill="#333" stroke="#333"/>
+        <text x="50" y="10" font-size="5" fill="#ef4444" font-weight="bold">OH</text>
+        <text x="50" y="32" font-size="5" fill="#ef4444" font-weight="bold">OH</text>
+        <text x="28" y="44" font-size="5" fill="#ef4444" font-weight="bold">OH</text>
+        <text x="5" y="32" font-size="5" fill="#ef4444" font-weight="bold">OH</text>
+        <text x="5" y="10" font-size="5" fill="#ef4444" font-weight="bold">OH</text>
+        <rect x="21" y="14" width="14" height="14" rx="3" fill="#0f172a" stroke="#a78bfa" stroke-width="1.8"/>
+        <line x1="21" y1="18" x2="18" y2="18" stroke="#a78bfa" stroke-width="1.2"/>
+        <line x1="21" y1="24" x2="18" y2="24" stroke="#a78bfa" stroke-width="1.2"/>
+        <line x1="35" y1="18" x2="38" y2="18" stroke="#a78bfa" stroke-width="1.2"/>
+        <line x1="35" y1="24" x2="38" y2="24" stroke="#a78bfa" stroke-width="1.2"/>
+        <line x1="28" y1="14" x2="28" y2="12" stroke="#a78bfa" stroke-width="1.2"/>
+        <line x1="28" y1="28" x2="28" y2="30" stroke="#a78bfa" stroke-width="1.2"/>
+        <circle cx="28" cy="21" r="5" fill="rgba(167,139,250,0.12)" stroke="#c084fc" stroke-width="1.2"/>
+        <circle cx="25.5" cy="18.5" r="1.5" fill="#a78bfa"/>
+        <circle cx="30.5" cy="18.5" r="1.5" fill="#a78bfa"/>
+        <circle cx="28" cy="24" r="1.5" fill="#c084fc"/>
+        <line x1="25.5" y1="18.5" x2="28" y2="24" stroke="#a78bfa" stroke-width="1"/>
+        <line x1="30.5" y1="18.5" x2="28" y2="24" stroke="#a78bfa" stroke-width="1"/>
+        <line x1="25.5" y1="18.5" x2="30.5" y2="18.5" stroke="#a78bfa" stroke-width="1"/>
+        <text x="28" y="16" font-size="4" fill="#c084fc" text-anchor="middle" font-weight="700">AI</text>
+        <circle cx="28" cy="12.5" r="2" fill="#22d3ee">
+            <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
+        </circle>
+    </svg>
+    '''
+    
     st.markdown(f"""
     <div class="header-wrapper">
         <div class="header-content">
             <div class="header-left">
+                <div class="logo-box">
+                    <div style="width:56px;height:56px;">{logo_svg}</div>
+                    <div class="logo-label">CCWANG_FIZSAB</div>
+                </div>
                 <div class="header-title-block">
-                    <div class="header-title">🧬 Glyco<span>Search</span></div>
+                    <div class="header-title">Glyco<span>Search</span></div>
                     <div class="header-subtitle">Glycosylation Research · {len(papers)} Papers</div>
                 </div>
             </div>
@@ -618,98 +1209,210 @@ else:
 
     # ─── TAB 1: SEARCH ────────────────────────────────
     with tab1:
-        st.markdown("### 🔎 Search Papers")
+        st.markdown("""
+        <div class="search-wrapper">
+            <div class="search-label">🔎 Find papers by keyword</div>
+        """, unsafe_allow_html=True)
+        
         col1, col2 = st.columns([4, 1])
         with col1:
-            keyword = st.text_input("Search papers", placeholder="e.g. glycosylation, RRV, Koenigs-Knorr")
+            keyword = st.text_input("", placeholder="e.g. NIS, sialic acid, Koenigs-Knorr, thioglycoside", label_visibility="collapsed")
         with col2:
-            max_results = st.selectbox("Results per page", [10, 20, 50, 100], index=0)
+            max_results = st.selectbox("Show", [10, 20, 50, 100], index=0)
+        
         topics_list = ['All Topics'] + sorted(papers['Topic'].dropna().unique().tolist())
         selected_topic = st.selectbox("Filter by Topic", topics_list, index=0)
+        
+        st.markdown("</div>", unsafe_allow_html=True)
+        
         if keyword:
             kw = keyword.lower()
             mask = (papers['Title'].astype(str).str.lower().str.contains(kw, na=False) | 
                     papers['Abstract'].astype(str).str.lower().str.contains(kw, na=False))
+            
             if selected_topic != 'All Topics':
                 mask = mask & (papers['Topic'] == selected_topic)
+            
             results = papers[mask].copy()
-            st.write(f"📊 Found **{len(results)}** papers")
+            
+            st.markdown(f"""
+            <p style="font-family:'Inter',sans-serif;font-weight:500;font-size:0.9rem;color:#0f172a;">
+                📊 Found <strong>{len(results)}</strong> papers
+            </p>
+            """, unsafe_allow_html=True)
+            
             if len(results) == 0:
-                st.info("No matches found.")
+                st.info("No matches found. Try different keywords.")
             else:
                 for _, row in results.head(max_results).iterrows():
                     title = str(row.get('Title', 'No title'))
                     year = str(row.get('Year', '?'))
                     journal = str(row.get('Journal', '?'))
                     topic = str(row.get('Topic', '?'))
-                    with st.expander(f"📄 {title[:80]}..."):
-                        st.write(f"**Year:** {year} | **Journal:** {journal} | **Topic:** {topic}")
-                        if str(row.get('Abstract', '')):
-                            st.write(f"**Abstract:** {str(row.get('Abstract', ''))[:300]}...")
+                    abstract = str(row.get('Abstract', ''))
+                    
+                    with st.expander(f"📄 {title[:100]}{'...' if len(title) > 100 else ''}", expanded=False):
+                        st.markdown(f"""
+                        <div class="result-card">
+                            <div class="result-title">{title}</div>
+                            <div class="result-meta">
+                                <span class="badge badge-year">📅 {year}</span>
+                                <span class="badge badge-topic">📂 {topic}</span>
+                                <span class="badge badge-journal">📖 {journal}</span>
+                            </div>
+                            {f'<div class="result-abstract">{abstract[:500]}...</div>' if len(abstract) > 10 else ''}
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        url = row.get('URL', '#')
+                        if url != '#':
+                            st.markdown(f"[🔗 View in PubMed]({url})")
 
     # ─── TAB 2: ASK AI ──────────────────────────────────
     with tab2:
-        st.markdown("### 💬 Ask GlycoAI")
-        st.markdown("Ask about RRV, Aka, glycosylation methods, and more!")
+        st.markdown("### 💬 Ask GlycoAI - Research Assistant")
+        st.markdown("Ask questions about glycosylation research and get comprehensive answers with references.")
+        
+        st.markdown("#### 💡 Try asking about:")
+        
         example_questions = [
-            "How does RRV affect glycosylation selectivity?",
-            "What is O-glycosylation?",
-            "How does remote participation work?",
-            "What are the best glycosylation methods?"
+            "Can environmental effects influence glycosylation?",
+            "What is O-glycosylation and why is it important?",
+            "What are the best methods for chemical glycosylation?",
+            "How does remote participation work in glycosylation?",
+            "What are the selectivity differences between L and D sugars?",
+            "How is AI and ML being used to automate glycosylation?",
+            "What factors affect glycosylation stereoselectivity?",
+            "Explain neighboring group participation in glycosylation"
         ]
+        
         cols = st.columns(2)
         for i, q in enumerate(example_questions):
-            if cols[i % 2].button(f"💡 {q}", key=f"ex_{i}"):
+            col_idx = i % 2
+            if cols[col_idx].button(
+                f"💡 {q}",
+                key=f"example_{i}",
+                use_container_width=True,
+                type="secondary"
+            ):
                 st.session_state['ask_question'] = q
                 st.rerun()
-        question = st.text_area("Type your question:", value=st.session_state.get('ask_question', ''), height=80)
-        if st.button("🔍 Ask", type="primary"):
-            if question:
-                with st.spinner("Searching through your papers..."):
-                    result = engine.answer_question(question)
-                st.markdown(f'<div class="ai-answer"><div class="answer-text">{result["answer"]}</div><div class="source-count">📚 Based on {result["source_count"]} sources</div></div>', unsafe_allow_html=True)
-                if result['references']:
-                    st.markdown("**📖 References:**")
-                    for ref in result['references']:
-                        st.markdown(f"- {ref}")
-            else:
-                st.warning("Please enter a question.")
+        
+        default_question = st.session_state.get('ask_question', '')
+        
+        question = st.text_area(
+            "Or type your own question:",
+            value=default_question,
+            placeholder="e.g., How do environmental conditions affect glycosylation reactions?",
+            height=80
+        )
+        
+        col1, col2 = st.columns([1, 5])
+        with col1:
+            ask_button = st.button("🔍 Ask", type="primary", use_container_width=True)
+        
+        if ask_button and question:
+            with st.spinner("🔬 Searching through our knowledge base and literature..."):
+                result = engine.answer_question(question)
+            
+            st.markdown(f"""
+            <div class="ai-answer">
+                <div class="answer-text">{result['answer']}</div>
+                <div class="source-count">📚 Based on {result['source_count']} relevant sources</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if result['references']:
+                st.markdown("**📖 References & Further Reading:**")
+                for ref in result['references']:
+                    st.markdown(f"- {ref}")
+            
+            with st.expander("📄 View related papers from our database"):
+                relevant = engine.search(question, top_n=5)
+                for paper in relevant:
+                    st.markdown(f"""
+                    **{paper['title']}** ({paper['year']})  
+                    *{paper['journal']}*  
+                    {paper['abstract'][:200]}...
+                    """)
+                    if paper['url'] and paper['url'] != '#':
+                        st.markdown(f"[🔗 Link]({paper['url']})")
+                    st.markdown("---")
+        
+        elif ask_button and not question:
+            st.warning("Please enter a question.")
 
     # ─── TAB 3: ANALYTICS ──────────────────────────────
     with tab3:
         st.markdown('<p class="analytics-title">📊 Research Analytics</p>', unsafe_allow_html=True)
+        
         col1, col2 = st.columns(2)
+        
         with col1:
             year_counts = papers['Year'].value_counts().sort_index()
             if len(year_counts) > 0:
-                chart = create_colorful_bar_chart(year_counts, "📅 Publications by Year", "viridis")
+                chart = create_colorful_bar_chart(
+                    year_counts, 
+                    "📅 Publications by Year",
+                    "viridis"
+                )
                 if chart:
                     st.altair_chart(chart, use_container_width=True)
+        
         with col2:
             topic_counts = papers['Topic'].value_counts()
             if len(topic_counts) > 0:
-                chart = create_colorful_bar_chart(topic_counts.head(10), "📂 Papers by Topic", "plasma")
+                chart = create_colorful_bar_chart(
+                    topic_counts.head(10),
+                    "📂 Papers by Topic",
+                    "plasma"
+                )
                 if chart:
                     st.altair_chart(chart, use_container_width=True)
+        
         st.markdown("---")
         st.markdown('<p class="analytics-title">🏆 Top Journals</p>', unsafe_allow_html=True)
         journal_counts = papers['Journal'].value_counts().head(10)
         if len(journal_counts) > 0:
-            st.dataframe(journal_counts.reset_index().rename(columns={'index': 'Journal', 'Journal': 'Count'}), use_container_width=True, hide_index=True)
+            st.dataframe(
+                journal_counts.reset_index().rename(columns={'index': 'Journal', 'Journal': 'Count'}),
+                use_container_width=True,
+                hide_index=True
+            )
 
     # ─── TAB 4: METHODS ─────────────────────────────────
     with tab4:
         st.markdown("### 📚 Glycosylation Methods Reference")
-        st.markdown("""
-        **Key Terms:**
-        - **RRV**: Relative Reactivity Value - measures donor reactivity
-        - **Aka**: Acceptor reactivity parameter
-        - **NGP**: Neighboring Group Participation
-        - **TMSOTf**: Common Lewis acid activator
-        - **Koenigs-Knorr**: Classic glycosylation method using glycosyl halides
-        - **Schmidt**: Trichloroacetimidate method with Lewis acids
-        - **Thioglycoside**: S-glycosides activated by thiophilic promoters
-        """)
+        
+        methods_data = {
+            "Method": ["Koenigs-Knorr", "Schmidt (imidate)", "Thioglycoside", "Glycosyl phosphate", 
+                       "Glycosyl fluoride", "Sulfoxide (Kahne)", "n-Pentenyl", "Glycosyl boronate"],
+            "Donor": ["Glycosyl halide (Br/Cl)", "Trichloroacetimidate", "S-Ph or S-Et glycoside", 
+                      "Diphenyl phosphate", "Glycosyl fluoride", "Glycosyl sulfoxide", 
+                      "n-Pentenyl glycoside", "Boronic acid derivative"],
+            "Activator": ["Ag₂O, Ag₂CO₃, AgOTf", "BF₃·Et₂O or TMSOTf", "NIS/TfOH or DMTST", "TMSOTf", 
+                          "Cp₂HfCl₂/AgClO₄", "Tf₂O", "NIS/Et₃SiOTf", "None (metal-free)"],
+            "Selectivity": ["α or β (NGP)", "β (C2-acyl)", "Tunable α/β", "β-selective", 
+                            "Varies", "α possible", "Varies", "β-selective"],
+            "Temp": ["0°C to RT", "−40°C to RT", "−78°C to RT", "−78°C", 
+                     "RT", "−78°C", "−10°C", "RT"]
+        }
+        st.dataframe(pd.DataFrame(methods_data), use_container_width=True, hide_index=True)
+        
+        st.markdown("---")
+        st.markdown("### 📖 Common Terminology")
+        terms = {
+            "NGP": "Neighboring Group Participation - using an acyl group at C2 to direct β-selectivity",
+            "TMSOTf": "Trimethylsilyl trifluoromethanesulfonate - common Lewis acid activator",
+            "NIS": "N-Iodosuccinimide - thiophilic activator for thioglycosides",
+            "DMTST": "Dimethyl(methylthio)sulfonium triflate - thiophilic activator",
+            "1,2-cis": "The newly formed glycosidic bond is on the same side as the C2 substituent",
+            "1,2-trans": "The newly formed glycosidic bond is on the opposite side from the C2 substituent",
+            "Remote Participation": "Influence of functional groups at positions other than C2 on glycosylation stereoselectivity",
+            "Anomeric Effect": "The tendency of a heteroatom substituent at the anomeric center to adopt the axial position"
+        }
+        for term, definition in terms.items():
+            st.markdown(f"**{term}:** {definition}")
 
     # ─── TAB 5: DRAW ────────────────────────────────────
     with tab5:
@@ -718,32 +1421,69 @@ else:
     # ─── TAB 6: SETTINGS ────────────────────────────────
     with tab6:
         st.markdown("### ⚙️ Settings")
-        if st.button("🔄 Reload Data"):
-            st.cache_data.clear()
-            st.cache_resource.clear()
-            st.rerun()
-        st.code(f"Papers: {len(papers)}")
-        st.code(f"Topics: {papers['Topic'].nunique() if len(papers) > 0 else 0}")
-        st.code("Knowledge: RRV, Aka, O-Glycosylation, Chemical Glycosylation, Remote Participation")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**Data Management**")
+            if st.button("🔄 Reload Data"):
+                st.cache_data.clear()
+                st.cache_resource.clear()
+                st.rerun()
+            
+            st.markdown("**Export**")
+            if st.button("📥 Export All Data"):
+                csv = papers.to_csv(index=False)
+                st.download_button("Download CSV", csv, "glycosylation_papers.csv")
+        
+        with col2:
+            st.markdown("**System Info**")
+            st.code(f"Papers: {len(papers)}")
+            st.code(f"Topics: {papers['Topic'].nunique() if len(papers) > 0 else 0}")
+            st.code(f"Knowledge Index: {len(engine.index)} papers")
+            st.code(f"Expert Topics: 6 topics (including RRV/Aka)")
 
     # ─── TAB 7: ABOUT ────────────────────────────────────
     with tab7:
+        st.markdown("### 📋 About GlycoSearch")
+        
         st.markdown("""
         <div class="about-box">
             <h3>🧬 GlycoSearch</h3>
-            <p><b>Developed by:</b> Fizza Sabbor and Dr. Sabbor Hussain</p>
-            <p><b>Institute:</b> <a href="https://www.chem.sinica.edu.tw" target="_blank" class="clickable-link">Institute of Chemistry, Academia Sinica</a></p>
-            <p><b>Principal Investigator:</b> <a href="https://www.chem.sinica.edu.tw/en/faculty/104/" target="_blank" class="clickable-link">Dr. Cheng-Chung Wang</a></p>
+            <p>
+                <b>Developed by:</b> Fizza Sabbor and Dr. Sabbor Hussain<br>
+                <b>Institute:</b> <a href="https://www.chem.sinica.edu.tw" target="_blank" class="clickable-link">Institute of Chemistry, Academia Sinica</a><br>
+                <b>Principal Investigator:</b> <a href="https://www.chem.sinica.edu.tw/en/faculty/104/" target="_blank" class="clickable-link">Dr. Cheng-Chung Wang</a><br>
+                <b>Email:</b> <a href="mailto:wangcc7280@gate.sinica.edu.tw" class="clickable-link">wangcc7280@gate.sinica.edu.tw</a>
+            </p>
             <hr>
-            <h4>🧪 Knowledge Base</h4>
-            <ul>
-                <li><b>RRV & Aka</b> - Reactivity parameters for donors and acceptors</li>
-                <li><b>O-Glycosylation</b> - Biological significance and types</li>
-                <li><b>Chemical Glycosylation</b> - Key methods and advances</li>
-                <li><b>Remote Participation</b> - Mechanisms and examples</li>
-            </ul>
-            <h4>📚 Data</h4>
-            <p>1,676+ glycosylation research papers from PubMed (1967-2026)</p>
+            <h4>🤖 AI Research Assistant</h4>
+            <p>
+                GlycoSearch includes an AI-powered research assistant with expert knowledge in:
+                <ul>
+                    <li><b>RRV (Relative Reactivity Value)</b> - Donor reactivity quantification and tuning</li>
+                    <li><b>Aka (Acceptor Reactivity)</b> - Acceptor nucleophilicity measurement</li>
+                    <li><b>Reactivity Matching</b> - How to match donors and acceptors for optimal results</li>
+                    <li><b>O-Glycosylation</b> - Biological significance, types, and clinical implications</li>
+                    <li><b>Chemical Glycosylation</b> - Key methods, stereoselectivity, and modern advances</li>
+                    <li><b>Remote Participation</b> - Mechanisms and factors affecting stereoselectivity</li>
+                    <li><b>Environmental Effects</b> - Temperature, solvent, and condition optimization</li>
+                    <li><b>L vs D Sugar Selectivity</b> - Differences in reactivity and selectivity trends</li>
+                    <li><b>Automation through ML/AI</b> - Predictive modeling and automated synthesis</li>
+                </ul>
+            </p>
+            <h4>📄 License</h4>
+            <p>MIT License — Free for academic and research use.</p>
+            <h4>© Copyright</h4>
+            <p>© 2026 Wang Research Group, Institute of Chemistry, Academia Sinica</p>
+            <h4>📚 Data Sources</h4>
+            <p>PubMed publications extracted with AI (2026).<br>Contains 1,676+ glycosylation research papers.</p>
+            <h4>🔗 Citation</h4>
+            <p>
+                If you use this tool, please cite:<br>
+                <i>Fizza Sabbor, Dr. Sabbor Hussain, Wang Research Group, GlycoSearch: Glycosylation Research Agent, 
+                Institute of Chemistry, Academia Sinica, 2026.</i>
+            </p>
         </div>
         """, unsafe_allow_html=True)
 
