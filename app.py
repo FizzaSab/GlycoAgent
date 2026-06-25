@@ -703,25 +703,104 @@ def screen_reactions(donor_type, acceptor_type, target_selectivity=None):
     
     return recommendations[:10]
 
-# ─── COMPLETE WORKING DRAWING TOOL ──────────────────────
+# ─── COMPLETE DRAWING TOOL ──────────────────────────────
 def chemical_drawing_tool():
     components.html("""
     <div style="padding:10px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;padding:10px 0;align-items:center;">
-            <button id="btn-draw" style="padding:6px 14px;background:#0f172a;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">✏️ Draw</button>
-            <button id="btn-line" style="padding:6px 14px;background:#e2e8f0;color:#0f172a;border:none;border-radius:6px;cursor:pointer;font-weight:600;">🔗 Bond</button>
-            <button id="btn-benzene" style="padding:6px 14px;background:#e2e8f0;color:#0f172a;border:none;border-radius:6px;cursor:pointer;">⬡ Benzene</button>
-            <button id="btn-undo" style="padding:6px 14px;background:#e2e8f0;color:#0f172a;border:none;border-radius:6px;cursor:pointer;">↩️ Undo</button>
-            <button id="btn-clear" style="padding:6px 14px;background:#fee2e2;color:#991b1b;border:none;border-radius:6px;cursor:pointer;">🗑️ Clear</button>
-            <button id="btn-smiles" style="padding:6px 14px;background:#dcfce7;color:#166534;border:none;border-radius:6px;cursor:pointer;">📋 SMILES</button>
+
+        <div class="draw-header" style="background:linear-gradient(135deg,#f8fafc,#eef2ff);border:2px solid #e2e8f0;border-radius:14px;padding:1rem 1.5rem;margin-bottom:0.8rem;text-align:center;">
+            <h2 style="font-family:'Inter',sans-serif;font-weight:700;font-size:1.3rem;color:#0f172a;margin:0;">🧪 Draw <span style="background:linear-gradient(135deg,#6366f1,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Chemical Structure</span></h2>
+            <p style="font-family:'Inter',sans-serif;font-size:0.8rem;color:#64748b;margin:0.2rem 0 0 0;">Build molecules with atoms, functional groups, leaving groups, and protecting groups</p>
         </div>
-        <div style="display:flex;gap:10px;padding:5px 0;align-items:center;flex-wrap:wrap;">
-            <span id="mode-status" style="padding:2px 12px;border-radius:50px;font-size:12px;font-weight:600;background:#dcfce7;color:#166534;">✏️ Draw Mode</span>
-            <span style="font-size:12px;color:#94a3b8;">💡 Click "Bond" then drag from atom to atom</span>
+
+        <!-- MODE SELECTION -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;padding:6px 0;align-items:center;background:#f8fafc;border-radius:8px;padding:6px 10px;border:1px solid #e2e8f0;">
+            <span style="font-size:9px;color:#94a3b8;font-weight:600;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Mode</span>
+            <button id="btn-draw" style="padding:4px 12px;border:2px solid #0f172a;border-radius:6px;background:#0f172a;color:white;cursor:pointer;font-size:11px;font-family:'Inter',sans-serif;font-weight:600;">✏️ Draw</button>
+            <button id="btn-line" style="padding:4px 12px;border:2px solid #e2e8f0;border-radius:6px;background:#f8fafc;color:#0f172a;cursor:pointer;font-size:11px;font-family:'Inter',sans-serif;font-weight:500;">🔗 Bond</button>
+            <button id="btn-eraser" style="padding:4px 12px;border:2px solid #e2e8f0;border-radius:6px;background:#f8fafc;color:#0f172a;cursor:pointer;font-size:11px;font-family:'Inter',sans-serif;font-weight:500;">🧹 Eraser</button>
+            <button id="btn-select" style="padding:4px 12px;border:2px solid #e2e8f0;border-radius:6px;background:#f8fafc;color:#0f172a;cursor:pointer;font-size:11px;font-family:'Inter',sans-serif;font-weight:500;">⬜ Select</button>
+            <button id="btn-replace" style="padding:4px 12px;border:2px solid #e2e8f0;border-radius:6px;background:#f8fafc;color:#0f172a;cursor:pointer;font-size:11px;font-family:'Inter',sans-serif;font-weight:500;">🔄 Replace</button>
+            <button id="btn-benzene" style="padding:4px 12px;border:2px solid #e2e8f0;border-radius:6px;background:#f8fafc;color:#0f172a;cursor:pointer;font-size:11px;font-family:'Inter',sans-serif;font-weight:500;">⬡ Benzene</button>
         </div>
-        <canvas id="canvas" width="750" height="450" style="border:2px solid #e2e8f0;border-radius:12px;background:white;cursor:crosshair;width:100%;height:auto;"></canvas>
-        <input id="smiles-output" placeholder="SMILES will appear here..." style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;margin-top:10px;font-family:monospace;">
+
+        <!-- ATOMS -->
+        <div style="display:flex;gap:4px;flex-wrap:wrap;padding:6px 0;align-items:center;background:#f8fafc;border-radius:8px;padding:6px 10px;border:1px solid #e2e8f0;margin-top:4px;">
+            <span style="font-size:9px;color:#94a3b8;font-weight:600;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Atoms</span>
+            <button class="atom-btn" data-atom="C" style="padding:3px 10px;border:2px solid #333;border-radius:6px;background:#0f172a;color:white;cursor:pointer;font-size:11px;font-weight:700;">C</button>
+            <button class="atom-btn" data-atom="O" style="padding:3px 10px;border:2px solid #FF0000;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#FF0000;">O</button>
+            <button class="atom-btn" data-atom="N" style="padding:3px 10px;border:2px solid #3050F8;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#3050F8;">N</button>
+            <button class="atom-btn" data-atom="H" style="padding:3px 10px;border:2px solid #888;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#888;">H</button>
+            <button class="atom-btn" data-atom="S" style="padding:3px 10px;border:2px solid #FFD700;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#B8860B;">S</button>
+            <button class="atom-btn" data-atom="P" style="padding:3px 10px;border:2px solid #FF8000;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#FF8000;">P</button>
+            <button class="atom-btn" data-atom="F" style="padding:3px 10px;border:2px solid #90E050;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#2E8B57;">F</button>
+            <button class="atom-btn" data-atom="Cl" style="padding:3px 10px;border:2px solid #1FF01F;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#1FF01F;">Cl</button>
+            <button class="atom-btn" data-atom="Br" style="padding:3px 10px;border:2px solid #A62929;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#A62929;">Br</button>
+            <button class="atom-btn" data-atom="I" style="padding:3px 10px;border:2px solid #940094;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;font-weight:700;color:#940094;">I</button>
+        </div>
+
+        <!-- FUNCTIONAL GROUPS -->
+        <div style="display:flex;gap:4px;flex-wrap:wrap;padding:6px 0;align-items:center;background:#f8fafc;border-radius:8px;padding:6px 10px;border:1px solid #e2e8f0;margin-top:4px;">
+            <span style="font-size:9px;color:#94a3b8;font-weight:600;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Groups</span>
+            <button class="fg-btn" data-fg="OH" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OH</button>
+            <button class="fg-btn" data-fg="OMe" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OMe</button>
+            <button class="fg-btn" data-fg="OAc" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OAc</button>
+            <button class="fg-btn" data-fg="OBn" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OBn</button>
+            <button class="fg-btn" data-fg="OBz" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OBz</button>
+            <button class="fg-btn" data-fg="NH2" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">NH2</button>
+            <button class="fg-btn" data-fg="N3" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">N3</button>
+            <button class="fg-btn" data-fg="OTs" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OTs</button>
+        </div>
+
+        <!-- PROTECTING GROUPS -->
+        <div style="display:flex;gap:4px;flex-wrap:wrap;padding:6px 0;align-items:center;background:#f8fafc;border-radius:8px;padding:6px 10px;border:1px solid #e2e8f0;margin-top:4px;">
+            <span style="font-size:9px;color:#94a3b8;font-weight:600;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Protecting</span>
+            <button class="fg-btn" data-fg="Ac" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">Ac</button>
+            <button class="fg-btn" data-fg="Bn" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">Bn</button>
+            <button class="fg-btn" data-fg="Bz" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">Bz</button>
+            <button class="fg-btn" data-fg="TBDMS" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">TBDMS</button>
+            <button class="fg-btn" data-fg="TIPS" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">TIPS</button>
+            <button class="fg-btn" data-fg="Piv" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">Piv</button>
+            <button class="fg-btn" data-fg="DPPA" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">DPPA</button>
+            <button class="fg-btn" data-fg="OTf" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;">OTf</button>
+            <button class="fg-btn" data-fg="STol" style="padding:2px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:10px;font-weight:500;color:#8B008B;">STol</button>
+        </div>
+
+        <!-- BOND TYPE & CONTROLS -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;padding:6px 0;align-items:center;background:#f8fafc;border-radius:8px;padding:6px 10px;border:1px solid #e2e8f0;margin-top:4px;">
+            <span style="font-size:9px;color:#94a3b8;font-weight:600;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Bond</span>
+            <button id="btn-single-bond" style="padding:3px 10px;border:2px solid #0f172a;border-radius:6px;background:#0f172a;color:white;cursor:pointer;font-size:11px;font-weight:600;">─</button>
+            <button id="btn-double-bond" style="padding:3px 10px;border:2px solid #e2e8f0;border-radius:6px;background:#f8fafc;color:#0f172a;cursor:pointer;font-size:11px;font-weight:500;">═</button>
+            <button id="btn-triple-bond" style="padding:3px 10px;border:2px solid #e2e8f0;border-radius:6px;background:#f8fafc;color:#0f172a;cursor:pointer;font-size:11px;font-weight:500;">≡</button>
+            <span style="margin-left:8px;font-size:9px;color:#94a3b8;font-weight:600;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:0.05em;">Actions</span>
+            <button id="btn-undo" style="padding:3px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;">↩️ Undo</button>
+            <button id="btn-clear" style="padding:3px 10px;border:1px solid #fee2e2;border-radius:6px;background:#fee2e2;color:#991b1b;cursor:pointer;font-size:11px;">🗑️ Clear</button>
+            <button id="btn-smiles" style="padding:3px 10px;border:1px solid #dcfce7;border-radius:6px;background:#dcfce7;color:#166534;cursor:pointer;font-size:11px;">📋 SMILES</button>
+            <button id="btn-query" style="padding:3px 10px;border:1px solid #f3e8ff;border-radius:6px;background:#f3e8ff;color:#6b21a8;cursor:pointer;font-size:11px;">🔍 Query</button>
+        </div>
+
+        <!-- STATUS -->
+        <div style="display:flex;gap:10px;padding:6px 0;align-items:center;flex-wrap:wrap;">
+            <span id="mode-status" style="padding:2px 12px;border-radius:50px;font-size:11px;font-weight:600;background:#dcfce7;color:#166534;">✏️ Draw Mode</span>
+            <span id="bond-type-indicator" style="font-size:10px;color:#64748b;padding:2px 8px;background:#f1f5f9;border-radius:4px;">Bond: Single</span>
+            <span id="selected-display" style="font-size:10px;color:#64748b;background:#f1f5f9;padding:2px 10px;border-radius:4px;">Selected: C</span>
+            <span style="font-size:10px;color:#94a3b8;">💡 Click "Bond" then drag from atom to atom</span>
+        </div>
+
+        <!-- CANVAS -->
+        <div class="draw-container" id="draw-container" style="position:relative;overflow:auto;max-height:600px;border:2px solid #e2e8f0;border-radius:12px;background:white;padding:10px;">
+            <canvas id="canvas" width="750" height="450" style="border:1px solid #e2e8f0;border-radius:8px;background:white;cursor:crosshair;width:100%;height:auto;"></canvas>
+            <div class="zoom-controls" style="position:sticky;bottom:0;background:rgba(255,255,255,0.95);padding:6px;border-top:1px solid #e2e8f0;display:flex;gap:8px;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(10px);">
+                <button id="zoom-in" style="padding:3px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;">🔍+</button>
+                <button id="zoom-out" style="padding:3px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;">🔍−</button>
+                <button id="zoom-reset" style="padding:3px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:11px;">⟲</button>
+                <span style="font-size:11px;color:#94a3b8;" id="zoom-level">100%</span>
+            </div>
+        </div>
+        <input id="smiles-output" placeholder="SMILES will appear here..." style="width:100%;padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;margin-top:8px;font-family:monospace;font-size:12px;background:#f8fafc;">
+        <div id="query-result" style="margin-top:8px;padding:10px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;display:none;"></div>
     </div>
+
     <script>
         // ─── SETUP ──────────────────────────────────────────
         const canvas = document.getElementById('canvas');
@@ -733,58 +812,150 @@ def chemical_drawing_tool():
         let history = [];
         let tool = 'draw';
         let selectedAtom = 'C';
+        let selectedFG = null;
+        let bondType = 1;
+        let deleteBondMode = false;
+        let replaceMode = false;
+        let selectMode = false;
+        let eraserMode = false;
+        let selectionStart = null;
+        let selectionEnd = null;
+        let selectedAtoms = [];
         const MAX_HISTORY = 30;
         let atomIdCounter = 0;
+        let zoomLevel = 1;
+        let offsetX = 0, offsetY = 0;
+        let isPanning = false;
+        let panStartX, panStartY;
 
-        // ─── DRAWING FUNCTIONS ─────────────────────────────
+        // ─── BUTTON HANDLERS ──────────────────────────────
+        document.querySelectorAll('.atom-btn').forEach(btn => {
+            btn.onclick = function() {
+                selectedAtom = this.dataset.atom;
+                selectedFG = null;
+                document.querySelectorAll('.atom-btn').forEach(b => {
+                    b.style.background = '#f8fafc';
+                    b.style.color = '#0f172a';
+                });
+                this.style.background = '#0f172a';
+                this.style.color = 'white';
+                document.getElementById('selected-display').textContent = 'Selected: ' + selectedAtom;
+                document.querySelectorAll('.fg-btn').forEach(b => b.classList.remove('active'));
+            };
+        });
+
+        document.querySelectorAll('.fg-btn').forEach(btn => {
+            btn.onclick = function() {
+                selectedFG = this.dataset.fg;
+                document.querySelectorAll('.fg-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('selected-display').textContent = 'Selected: ' + selectedFG;
+                document.querySelectorAll('.atom-btn').forEach(b => {
+                    b.style.background = '#f8fafc';
+                    b.style.color = '#0f172a';
+                });
+            };
+        });
+
+        // ─── COLOR MAP ─────────────────────────────────────
         function getAtomColor(label) {
             const colors = {
-                'C':'#333','O':'#FF0000','N':'#3050F8','H':'#888',
-                'S':'#FFD700','P':'#FF8000','F':'#90E050','Cl':'#1FF01F',
-                'Br':'#A62929','I':'#940094'
+                'C':'#333333','O':'#FF0000','N':'#3050F8','H':'#888888','S':'#FFD700','P':'#FF8000','F':'#90E050','Cl':'#1FF01F','Br':'#A62929','I':'#940094',
+                'OH':'#FF0000','OMe':'#CD5C5C','OAc':'#CD853F','OBn':'#8B4513','OBz':'#8B6914','NH2':'#4169E1','N3':'#4169E1','OTs':'#DAA520',
+                'Ac':'#CD853F','Bn':'#8B4513','Bz':'#8B6914','TBDMS':'#2E8B57','TIPS':'#2E8B57','Piv':'#CD853F','DPPA':'#8B008B','OTf':'#6366f1','STol':'#8B008B'
             };
-            return colors[label] || '#333';
+            return colors[label] || '#333333';
         }
 
-        function drawAtom(x, y, label) {
-            const radius = 18;
+        // ─── DRAWING FUNCTIONS ────────────────────────────
+        function drawAtom(x, y, label, highlight, selected) {
+            const radius = selected ? 24 : (highlight ? 22 : 18);
             const color = getAtomColor(label);
+            if (highlight) { ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 15; }
+            if (selected) { ctx.shadowColor = '#3b82f6'; ctx.shadowBlur = 20; }
             ctx.beginPath();
             ctx.arc(x, y, radius, 0, Math.PI*2);
-            ctx.fillStyle = color;
+            ctx.fillStyle = selected ? '#93c5fd' : color;
             ctx.fill();
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 2;
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = selected ? '#2563eb' : (highlight ? '#f59e0b' : '#333');
+            ctx.lineWidth = selected ? 4 : (highlight ? 3 : 2);
             ctx.stroke();
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 12px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            const displayLabel = label.length > 4 ? label.substring(0,4) : label;
-            ctx.fillText(displayLabel, x, y);
+            if (label) {
+                ctx.fillStyle = selected ? '#1e3a5f' : 'white';
+                ctx.font = 'bold 10px Inter, Arial, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(label.length > 6 ? label.substring(0,6) : label, x, y);
+            }
         }
 
-        function drawBond(x1, y1, x2, y2) {
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 3;
-            ctx.stroke();
+        function drawBond(x1, y1, x2, y2, type, highlight) {
+            const color = highlight ? '#ef4444' : '#333';
+            const offset = 6;
+            const dx = x2 - x1, dy = y2 - y1;
+            const len = Math.hypot(dx, dy);
+            if (len === 0) return;
+            const nx = -dy / len, ny = dx / len;
+            if (type === 1 || type === undefined) {
+                ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+                ctx.strokeStyle = color; ctx.lineWidth = highlight ? 6 : 3; ctx.stroke();
+            } else if (type === 2) {
+                for (let d = -1; d <= 1; d += 2) {
+                    const ox = d * offset * nx, oy = d * offset * ny;
+                    ctx.beginPath(); ctx.moveTo(x1 + ox, y1 + oy); ctx.lineTo(x2 + ox, y2 + oy);
+                    ctx.strokeStyle = color; ctx.lineWidth = highlight ? 6 : 3; ctx.stroke();
+                }
+            } else if (type === 3) {
+                for (let d = -1; d <= 1; d++) {
+                    const ox = d * offset * nx, oy = d * offset * ny;
+                    ctx.beginPath(); ctx.moveTo(x1 + ox, y1 + oy); ctx.lineTo(x2 + ox, y2 + oy);
+                    ctx.strokeStyle = color; ctx.lineWidth = highlight ? 6 : 2; ctx.stroke();
+                }
+            }
+            if (highlight) {
+                const mx = (x1+x2)/2, my = (y1+y2)/2;
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 2;
+                const s = 8;
+                ctx.beginPath();
+                ctx.moveTo(mx-s, my-s); ctx.lineTo(mx+s, my+s);
+                ctx.moveTo(mx+s, my-s); ctx.lineTo(mx-s, my+s);
+                ctx.stroke();
+            }
         }
 
         function drawBenzene(x, y) {
             const size = 50;
             const angles = [0, 60, 120, 180, 240, 300];
-            const pts = angles.map(d => ({
-                x: x + size * Math.cos(d * Math.PI / 180),
-                y: y + size * Math.sin(d * Math.PI / 180)
-            }));
+            const pts = angles.map(d => ({x: x + size * Math.cos(d * Math.PI / 180), y: y + size * Math.sin(d * Math.PI / 180)}));
             for (let i = 0; i < 6; i++) {
                 let j = (i + 1) % 6;
-                drawBond(pts[i].x, pts[i].y, pts[j].x, pts[j].y);
+                ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y);
+                ctx.strokeStyle = '#333'; ctx.lineWidth = 3; ctx.stroke();
+                if (i % 2 === 0) {
+                    const midX = (pts[i].x + pts[j].x) / 2, midY = (pts[i].y + pts[j].y) / 2;
+                    const angle = Math.atan2(pts[j].y - pts[i].y, pts[j].x - pts[i].x);
+                    const perpAngle = angle + Math.PI / 2;
+                    const offset = 8;
+                    for (let d = -1; d <= 1; d += 2) {
+                        const dx = d * offset * Math.cos(perpAngle), dy = d * offset * Math.sin(perpAngle);
+                        const sx = midX + dx - 22 * Math.cos(angle), sy = midY + dy - 22 * Math.sin(angle);
+                        const ex = midX + dx + 22 * Math.cos(angle), ey = midY + dy + 22 * Math.sin(angle);
+                        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey);
+                        ctx.strokeStyle = '#333'; ctx.lineWidth = 3; ctx.stroke();
+                    }
+                }
             }
             for (let i = 0; i < 6; i++) {
+                const color = getAtomColor('C');
+                ctx.beginPath(); ctx.arc(pts[i].x, pts[i].y, 18, 0, Math.PI*2);
+                ctx.fillStyle = color; ctx.fill();
+                ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 12px Inter, Arial, sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText('C', pts[i].x, pts[i].y);
                 atoms.push({x: pts[i].x, y: pts[i].y, label: 'C', id: atomIdCounter++});
             }
         }
@@ -794,33 +965,65 @@ def chemical_drawing_tool():
             let nearest = null, minDist = threshold;
             for (const a of atoms) {
                 const dist = Math.hypot(x - a.x, y - a.y);
-                if (dist < minDist) {
-                    minDist = dist;
-                    nearest = a;
-                }
+                if (dist < minDist) { minDist = dist; nearest = a; }
             }
             return nearest;
         }
 
+        function findNearestBond(x, y, threshold) {
+            threshold = threshold || 15;
+            let nearest = null, minDist = threshold;
+            for (const b of bonds) {
+                const dx = b.x2 - b.x1, dy = b.y2 - b.y1;
+                const len = Math.hypot(dx, dy);
+                if (len === 0) continue;
+                const t = Math.max(0, Math.min(1, ((x - b.x1)*dx + (y - b.y1)*dy) / (len*len)));
+                const px = b.x1 + t*dx, py = b.y1 + t*dy;
+                const dist = Math.hypot(x - px, y - py);
+                if (dist < minDist) { minDist = dist; nearest = b; }
+            }
+            return nearest;
+        }
+
+        function getAtomsInRect(x1, y1, x2, y2) {
+            const minX = Math.min(x1, x2), maxX = Math.max(x1, x2);
+            const minY = Math.min(y1, y2), maxY = Math.max(y1, y2);
+            return atoms.filter(a => a.x >= minX && a.x <= maxX && a.y >= minY && a.y <= maxY);
+        }
+
         function drawAll() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Grid
+            ctx.save();
+            ctx.translate(offsetX, offsetY);
+            ctx.scale(zoomLevel, zoomLevel);
             ctx.strokeStyle = '#f1f5f9';
             ctx.lineWidth = 0.5;
-            for (let x = 0; x <= canvas.width; x += 30) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
-                ctx.stroke();
+            for (let x=0; x<=canvas.width; x+=30) {
+                ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke();
             }
-            for (let y = 0; y <= canvas.height; y += 30) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
-                ctx.stroke();
+            for (let y=0; y<=canvas.height; y+=30) {
+                ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke();
             }
-            bonds.forEach(b => drawBond(b.x1, b.y1, b.x2, b.y2));
-            atoms.forEach(a => drawAtom(a.x, a.y, a.label));
+            bonds.forEach(b => drawBond(b.x1,b.y1,b.x2,b.y2,b.type||1,false));
+            atoms.forEach(a => {
+                const sel = selectedAtoms.some(s => s.id === a.id);
+                drawAtom(a.x,a.y,a.label,false,sel);
+            });
+            if (selectMode && selectionStart && selectionEnd) {
+                const x = Math.min(selectionStart.x, selectionEnd.x);
+                const y = Math.min(selectionStart.y, selectionEnd.y);
+                const w = Math.abs(selectionStart.x - selectionEnd.x);
+                const h = Math.abs(selectionStart.y - selectionEnd.y);
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.strokeRect(x, y, w, h);
+                ctx.setLineDash([]);
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+                ctx.fillRect(x, y, w, h);
+            }
+            ctx.restore();
+            document.getElementById('zoom-level').textContent = Math.round(zoomLevel * 100) + '%';
         }
 
         function saveState() {
@@ -832,74 +1035,83 @@ def chemical_drawing_tool():
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
-            return {
-                x: (e.clientX - rect.left) * scaleX,
-                y: (e.clientY - rect.top) * scaleY
-            };
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            return { x: (x - offsetX) / zoomLevel, y: (y - offsetY) / zoomLevel };
         }
 
-        // ─── TOOLBAR BUTTONS ──────────────────────────────
-        document.getElementById('btn-draw').addEventListener('click', function() {
-            tool = 'draw';
-            this.style.background = '#0f172a';
-            this.style.color = 'white';
-            document.getElementById('btn-line').style.background = '#e2e8f0';
-            document.getElementById('btn-line').style.color = '#0f172a';
-            document.getElementById('mode-status').textContent = '✏️ Draw Mode';
-            document.getElementById('mode-status').style.background = '#dcfce7';
-            document.getElementById('mode-status').style.color = '#166534';
-            canvas.style.cursor = 'crosshair';
-        });
-
-        document.getElementById('btn-line').addEventListener('click', function() {
-            tool = 'line';
-            this.style.background = '#0f172a';
-            this.style.color = 'white';
-            document.getElementById('btn-draw').style.background = '#e2e8f0';
-            document.getElementById('btn-draw').style.color = '#0f172a';
-            document.getElementById('mode-status').textContent = '🔗 Bond Mode';
-            document.getElementById('mode-status').style.background = '#dbeafe';
-            document.getElementById('mode-status').style.color = '#1e40af';
-            canvas.style.cursor = 'crosshair';
-        });
-
-        document.getElementById('btn-benzene').addEventListener('click', function() {
-            const pos = {x: canvas.width/2, y: canvas.height/2};
-            saveState();
-            drawBenzene(pos.x, pos.y);
-            drawAll();
-        });
-
-        document.getElementById('btn-undo').addEventListener('click', function() {
-            if (history.length > 0) {
-                const state = history.pop();
-                atoms = state.atoms;
-                bonds = state.bonds;
-                drawAll();
+        function updateModeStatus() {
+            const status = document.getElementById('mode-status');
+            if (eraserMode) {
+                status.textContent = '🧹 Eraser Mode';
+                status.style.background = '#fce4ec';
+                status.style.color = '#880e4f';
+                canvas.style.cursor = 'not-allowed';
+            } else if (selectMode) {
+                status.textContent = '⬜ Select Mode';
+                status.style.background = '#dbeafe';
+                status.style.color = '#1e40af';
+                canvas.style.cursor = 'default';
+            } else if (replaceMode) {
+                status.textContent = '🔄 Replace Mode';
+                status.style.background = '#fef3c7';
+                status.style.color = '#92400e';
+                canvas.style.cursor = 'pointer';
+            } else if (deleteBondMode) {
+                status.textContent = '✖️ Delete Bond Mode';
+                status.style.background = '#fee2e2';
+                status.style.color = '#991b1b';
+                canvas.style.cursor = 'crosshair';
+            } else {
+                status.textContent = '✏️ Draw Mode';
+                status.style.background = '#dcfce7';
+                status.style.color = '#166534';
+                canvas.style.cursor = 'crosshair';
             }
-        });
+        }
 
-        document.getElementById('btn-clear').addEventListener('click', function() {
-            if (atoms.length > 0 || bonds.length > 0) {
-                if (confirm('Clear everything?')) {
-                    saveState();
-                    atoms = [];
-                    bonds = [];
-                    drawAll();
-                }
-            }
-        });
-
-        document.getElementById('btn-smiles').addEventListener('click', function() {
-            const sm = atoms.length > 0 ? atoms.map(a => a.label||'C').join('') : 'No atoms drawn';
-            document.getElementById('smiles-output').value = 'SMILES: ' + sm;
-            navigator.clipboard.writeText(sm);
-        });
-
-        // ─── CANVAS EVENTS ────────────────────────────────
-        canvas.addEventListener('mousedown', function(e) {
+        // ─── CANVAS EVENTS ──────────────────────────────────
+        canvas.onmousedown = function(e) {
             const pos = getPos(e);
-            
+            if (e.button === 1 || (e.ctrlKey && e.button === 0)) {
+                isPanning = true;
+                panStartX = e.clientX - offsetX;
+                panStartY = e.clientY - offsetY;
+                canvas.style.cursor = 'grab';
+                return;
+            }
+            if (eraserMode) {
+                const atom = findNearestAtom(pos.x, pos.y);
+                if (atom) {
+                    saveState();
+                    atoms = atoms.filter(a => a !== atom);
+                    bonds = bonds.filter(b => b.x1 !== atom.x || b.y1 !== atom.y);
+                    bonds = bonds.filter(b => b.x2 !== atom.x || b.y2 !== atom.y);
+                    drawAll(); return;
+                }
+                const bond = findNearestBond(pos.x, pos.y);
+                if (bond) { saveState(); bonds = bonds.filter(b => b !== bond); drawAll(); }
+                return;
+            }
+            if (selectMode) {
+                selectionStart = pos; selectionEnd = pos; selectedAtoms = []; drawAll(); return;
+            }
+            if (replaceMode) {
+                const atom = findNearestAtom(pos.x, pos.y);
+                if (atom) {
+                    saveState();
+                    atom.label = selectedAtom || selectedFG || 'C';
+                    drawAll();
+                    drawAtom(atom.x, atom.y, atom.label, true);
+                    setTimeout(drawAll, 300);
+                }
+                return;
+            }
+            if (deleteBondMode) {
+                const bond = findNearestBond(pos.x, pos.y);
+                if (bond) { saveState(); bonds = bonds.filter(b => b !== bond); drawAll(); }
+                return;
+            }
             if (e.button === 2) {
                 const atom = findNearestAtom(pos.x, pos.y);
                 if (atom) {
@@ -911,14 +1123,12 @@ def chemical_drawing_tool():
                 }
                 return;
             }
-            
             if (tool === 'draw') {
-                const label = prompt('Atom label (C, O, N, H, S, P, F, Cl, Br, I):', 'C');
-                if (label) {
-                    saveState();
-                    atoms.push({x: pos.x, y: pos.y, label: label, id: atomIdCounter++});
-                    drawAll();
-                }
+                let label = selectedAtom;
+                if (selectedFG) { label = selectedFG; }
+                saveState();
+                atoms.push({x: pos.x, y: pos.y, label: label, id: atomIdCounter++});
+                drawAll();
             } else if (tool === 'line') {
                 const startAtom = findNearestAtom(pos.x, pos.y);
                 if (startAtom) {
@@ -926,69 +1136,324 @@ def chemical_drawing_tool():
                     lastX = startAtom.x;
                     lastY = startAtom.y;
                 }
-            }
-        });
-
-        canvas.addEventListener('mousemove', function(e) {
-            if (isDrawing && tool === 'line') {
-                const pos = getPos(e);
+            } else if (tool === 'benzene') {
+                saveState();
+                drawBenzene(pos.x, pos.y);
                 drawAll();
-                drawBond(lastX, lastY, pos.x, pos.y);
             }
-        });
+        };
 
-        canvas.addEventListener('mouseup', function(e) {
+        canvas.onmousemove = function(e) {
+            const pos = getPos(e);
+            if (isPanning) {
+                offsetX = e.clientX - panStartX;
+                offsetY = e.clientY - panStartY;
+                drawAll();
+                return;
+            }
+            if (selectMode && selectionStart) {
+                selectionEnd = pos;
+                drawAll();
+                const selected = getAtomsInRect(selectionStart.x, selectionStart.y, pos.x, pos.y);
+                selectedAtoms = selected;
+                selected.forEach(a => drawAtom(a.x, a.y, a.label, false, true));
+                return;
+            }
+            if (isDrawing && tool === 'line') {
+                drawAll();
+                drawBond(lastX, lastY, pos.x, pos.y, bondType, false);
+            }
+            if (replaceMode) {
+                canvas.style.cursor = findNearestAtom(pos.x, pos.y) ? 'pointer' : 'default';
+            }
+        };
+
+        canvas.onmouseup = function(e) {
+            if (isPanning) {
+                isPanning = false;
+                canvas.style.cursor = 'default';
+                return;
+            }
+            if (selectMode && selectionStart) {
+                const pos = getPos(e);
+                const selected = getAtomsInRect(selectionStart.x, selectionStart.y, pos.x, pos.y);
+                selectedAtoms = selected;
+                drawAll();
+                selected.forEach(a => drawAtom(a.x, a.y, a.label, false, true));
+                selectionStart = null; selectionEnd = null;
+                if (selected.length > 0) {
+                    document.getElementById('mode-status').textContent = `✅ ${selected.length} atoms selected. Press Delete to remove.`;
+                }
+                return;
+            }
             if (isDrawing && tool === 'line') {
                 const pos = getPos(e);
                 const endAtom = findNearestAtom(pos.x, pos.y);
-                
-                if (endAtom) {
+                const startAtom = atoms.find(a => a.x === lastX && a.y === lastY);
+                if (startAtom && endAtom && startAtom !== endAtom) {
                     saveState();
-                    const startAtom = atoms.find(a => a.x === lastX && a.y === lastY);
-                    if (startAtom && endAtom !== startAtom) {
-                        bonds.push({x1: startAtom.x, y1: startAtom.y, x2: endAtom.x, y2: endAtom.y});
+                    bonds.push({x1: startAtom.x, y1: startAtom.y, x2: endAtom.x, y2: endAtom.y, type: bondType});
+                    drawAll();
+                } else if (startAtom) {
+                    let label = selectedAtom;
+                    if (selectedFG) { label = selectedFG; }
+                    if (label) {
+                        saveState();
+                        const newAtom = {x: pos.x, y: pos.y, label: label, id: atomIdCounter++};
+                        atoms.push(newAtom);
+                        bonds.push({x1: startAtom.x, y1: startAtom.y, x2: newAtom.x, y2: newAtom.y, type: bondType});
                         drawAll();
-                    }
-                } else {
-                    const startAtom = atoms.find(a => a.x === lastX && a.y === lastY);
-                    if (startAtom) {
-                        const label = prompt('Atom label for new atom:', 'C');
-                        if (label) {
-                            saveState();
-                            const newAtom = {x: pos.x, y: pos.y, label: label, id: atomIdCounter++};
-                            atoms.push(newAtom);
-                            bonds.push({x1: startAtom.x, y1: startAtom.y, x2: newAtom.x, y2: newAtom.y});
-                            drawAll();
-                        }
                     }
                 }
                 isDrawing = false;
             }
-        });
+        };
 
-        canvas.addEventListener('contextmenu', function(e) {
+        canvas.oncontextmenu = function(e) { e.preventDefault(); };
+
+        canvas.addEventListener('wheel', function(e) {
             e.preventDefault();
-        });
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            const newZoom = Math.min(3, Math.max(0.3, zoomLevel + delta));
+            if (newZoom !== zoomLevel) {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+                const mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+                const worldX = (mouseX - offsetX) / zoomLevel;
+                const worldY = (mouseY - offsetY) / zoomLevel;
+                zoomLevel = newZoom;
+                offsetX = mouseX - worldX * zoomLevel;
+                offsetY = mouseY - worldY * zoomLevel;
+                drawAll();
+            }
+        }, { passive: false });
 
-        // ─── KEYBOARD SHORTCUTS ──────────────────────────
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'b' || e.key === 'B') {
-                document.getElementById('btn-line').click();
+            if ((e.key === 'Delete' || e.key === 'Backspace') && selectedAtoms.length > 0) {
+                saveState();
+                const ids = selectedAtoms.map(a => a.id);
+                atoms = atoms.filter(a => !ids.includes(a.id));
+                bonds = bonds.filter(b => {
+                    const a1 = atoms.find(a => a.x === b.x1 && a.y === b.y1);
+                    const a2 = atoms.find(a => a.x === b.x2 && a.y === b.y2);
+                    return a1 && a2;
+                });
+                selectedAtoms = [];
+                drawAll();
             }
-            if (e.key === 'd' || e.key === 'D') {
-                document.getElementById('btn-draw').click();
-            }
-            if (e.key === 'z' || e.key === 'Z') {
+            if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
                 document.getElementById('btn-undo').click();
             }
         });
 
-        // ─── START WITH BENZENE ──────────────────────────
+        // ─── ZOOM CONTROLS ──────────────────────────────────
+        document.getElementById('zoom-in').onclick = function() {
+            zoomLevel = Math.min(3, zoomLevel + 0.2);
+            drawAll();
+        };
+        document.getElementById('zoom-out').onclick = function() {
+            zoomLevel = Math.max(0.3, zoomLevel - 0.2);
+            drawAll();
+        };
+        document.getElementById('zoom-reset').onclick = function() {
+            zoomLevel = 1;
+            offsetX = 0;
+            offsetY = 0;
+            drawAll();
+        };
+
+        // ─── TOOLBAR BUTTONS ──────────────────────────────
+        document.getElementById('btn-draw').onclick = function() {
+            tool = 'draw'; deleteBondMode = false; replaceMode = false; selectMode = false; eraserMode = false;
+            selectionStart = null; selectionEnd = null; selectedAtoms = [];
+            this.style.background = '#0f172a';
+            this.style.color = 'white';
+            this.style.borderColor = '#0f172a';
+            document.querySelectorAll('#btn-line, #btn-eraser, #btn-select, #btn-replace, #btn-benzene').forEach(b => {
+                b.style.background = '#f8fafc';
+                b.style.color = '#0f172a';
+                b.style.borderColor = '#e2e8f0';
+            });
+            updateModeStatus();
+        };
+
+        document.getElementById('btn-line').onclick = function() {
+            tool = 'line'; deleteBondMode = false; replaceMode = false; selectMode = false; eraserMode = false;
+            selectionStart = null; selectionEnd = null; selectedAtoms = [];
+            this.style.background = '#0f172a';
+            this.style.color = 'white';
+            this.style.borderColor = '#0f172a';
+            document.querySelectorAll('#btn-draw, #btn-eraser, #btn-select, #btn-replace, #btn-benzene').forEach(b => {
+                b.style.background = '#f8fafc';
+                b.style.color = '#0f172a';
+                b.style.borderColor = '#e2e8f0';
+            });
+            updateModeStatus();
+        };
+
+        document.getElementById('btn-eraser').onclick = function() {
+            eraserMode = !eraserMode;
+            if (eraserMode) {
+                deleteBondMode = false; replaceMode = false; selectMode = false;
+                this.style.background = '#fce4ec';
+                this.style.color = '#880e4f';
+                this.style.borderColor = '#fce4ec';
+                document.querySelectorAll('#btn-draw, #btn-line, #btn-select, #btn-replace, #btn-benzene').forEach(b => {
+                    b.style.background = '#f8fafc';
+                    b.style.color = '#0f172a';
+                    b.style.borderColor = '#e2e8f0';
+                });
+            } else {
+                this.style.background = '#f8fafc';
+                this.style.color = '#0f172a';
+                this.style.borderColor = '#e2e8f0';
+            }
+            updateModeStatus();
+        };
+
+        document.getElementById('btn-select').onclick = function() {
+            selectMode = !selectMode;
+            if (selectMode) {
+                deleteBondMode = false; replaceMode = false; eraserMode = false;
+                this.style.background = '#dbeafe';
+                this.style.color = '#1e40af';
+                this.style.borderColor = '#dbeafe';
+                document.querySelectorAll('#btn-draw, #btn-line, #btn-eraser, #btn-replace, #btn-benzene').forEach(b => {
+                    b.style.background = '#f8fafc';
+                    b.style.color = '#0f172a';
+                    b.style.borderColor = '#e2e8f0';
+                });
+            } else {
+                this.style.background = '#f8fafc';
+                this.style.color = '#0f172a';
+                this.style.borderColor = '#e2e8f0';
+            }
+            updateModeStatus();
+        };
+
+        document.getElementById('btn-replace').onclick = function() {
+            replaceMode = !replaceMode;
+            if (replaceMode) {
+                deleteBondMode = false; selectMode = false; eraserMode = false;
+                this.style.background = '#fef3c7';
+                this.style.color = '#92400e';
+                this.style.borderColor = '#fef3c7';
+                document.querySelectorAll('#btn-draw, #btn-line, #btn-eraser, #btn-select, #btn-benzene').forEach(b => {
+                    b.style.background = '#f8fafc';
+                    b.style.color = '#0f172a';
+                    b.style.borderColor = '#e2e8f0';
+                });
+            } else {
+                this.style.background = '#f8fafc';
+                this.style.color = '#0f172a';
+                this.style.borderColor = '#e2e8f0';
+            }
+            updateModeStatus();
+        };
+
+        document.getElementById('btn-benzene').onclick = function() {
+            tool = 'benzene'; deleteBondMode = false; replaceMode = false; selectMode = false; eraserMode = false;
+            selectionStart = null; selectionEnd = null; selectedAtoms = [];
+            this.style.background = '#0f172a';
+            this.style.color = 'white';
+            this.style.borderColor = '#0f172a';
+            document.querySelectorAll('#btn-draw, #btn-line, #btn-eraser, #btn-select, #btn-replace').forEach(b => {
+                b.style.background = '#f8fafc';
+                b.style.color = '#0f172a';
+                b.style.borderColor = '#e2e8f0';
+            });
+            updateModeStatus();
+        };
+
+        document.getElementById('btn-single-bond').onclick = function() {
+            bondType = 1;
+            this.style.background = '#0f172a';
+            this.style.color = 'white';
+            this.style.borderColor = '#0f172a';
+            document.querySelectorAll('#btn-double-bond, #btn-triple-bond').forEach(b => {
+                b.style.background = '#f8fafc';
+                b.style.color = '#0f172a';
+                b.style.borderColor = '#e2e8f0';
+            });
+            document.getElementById('bond-type-indicator').textContent = 'Bond: Single';
+        };
+        document.getElementById('btn-double-bond').onclick = function() {
+            bondType = 2;
+            this.style.background = '#0f172a';
+            this.style.color = 'white';
+            this.style.borderColor = '#0f172a';
+            document.querySelectorAll('#btn-single-bond, #btn-triple-bond').forEach(b => {
+                b.style.background = '#f8fafc';
+                b.style.color = '#0f172a';
+                b.style.borderColor = '#e2e8f0';
+            });
+            document.getElementById('bond-type-indicator').textContent = 'Bond: Double';
+        };
+        document.getElementById('btn-triple-bond').onclick = function() {
+            bondType = 3;
+            this.style.background = '#0f172a';
+            this.style.color = 'white';
+            this.style.borderColor = '#0f172a';
+            document.querySelectorAll('#btn-single-bond, #btn-double-bond').forEach(b => {
+                b.style.background = '#f8fafc';
+                b.style.color = '#0f172a';
+                b.style.borderColor = '#e2e8f0';
+            });
+            document.getElementById('bond-type-indicator').textContent = 'Bond: Triple';
+        };
+
+        document.getElementById('btn-undo').onclick = function() {
+            if (history.length > 0) {
+                const state = history.pop();
+                atoms = state.atoms; bonds = state.bonds;
+                selectedAtoms = [];
+                drawAll();
+            }
+        };
+
+        document.getElementById('btn-clear').onclick = function() {
+            if (atoms.length > 0 || bonds.length > 0) {
+                if (confirm('Clear everything?')) {
+                    saveState();
+                    atoms = []; bonds = [];
+                    selectedAtoms = [];
+                    drawAll();
+                }
+            }
+        };
+
+        document.getElementById('btn-smiles').onclick = function() {
+            const sm = atoms.length > 0 ? atoms.map(a => a.label||'C').join('') : 'No atoms drawn';
+            document.getElementById('smiles-output').value = 'SMILES: ' + sm;
+            navigator.clipboard.writeText(sm);
+        };
+
+        document.getElementById('btn-query').onclick = function() {
+            const sm = atoms.length > 0 ? atoms.map(a => a.label||'C').join('') : 'No structure';
+            document.getElementById('query-result').style.display = 'block';
+            document.getElementById('query-result').innerHTML = `
+                <div style="background:#f0f4ff;padding:1rem;border-radius:8px;border:2px solid #c7d2fe;">
+                    <h4 style="color:#0f172a;margin:0 0 0.5rem 0;">🔍 Structure Query Results</h4>
+                    <div style="background:white;padding:0.8rem 1.2rem;border-radius:8px;border-left:4px solid #6366f1;margin:0.3rem 0;">
+                        <b>Structure:</b> ${sm}
+                    </div>
+                    <div style="background:white;padding:0.8rem 1.2rem;border-radius:8px;border-left:4px solid #6366f1;margin:0.3rem 0;">
+                        <b>Suggested Reaction Scheme:</b><br>Donor + Acceptor → Glycoside<br>Activator: NIS/TfOH or TMSOTf
+                    </div>
+                    <div style="background:white;padding:0.8rem 1.2rem;border-radius:8px;border-left:4px solid #6366f1;margin:0.3rem 0;">
+                        <b>Recommended Conditions:</b><br>• Temperature: −40°C to RT<br>• Solvent: DCM (anhydrous)<br>• Activator: TMSOTf (0.1-0.5 equiv)<br>• Time: 2-12 hours<br>• Expected Yield: 60-95%
+                    </div>
+                </div>
+            `;
+        };
+
+        // ─── INIT ──────────────────────────────────────────
         drawBenzene(375, 225);
         drawAll();
         saveState();
+        updateModeStatus();
     </script>
-    """, height=520)
+    """, height=700)
 
 # ─── HEADER ─────────────────────────────────────────────
 def render_header():
@@ -1291,7 +1756,7 @@ else:
         st.markdown("### 📖 Common Terminology")
         terms = {
             "RRV": "Relative Reactivity Value - measures donor reactivity",
-            "Aka": "Acceptor Nucleophilicity Constant - measures acceptor nucleophilicity",
+            "Aka": "Acceptor Reactivity Parameter - measures acceptor nucleophilicity",
             "NGP": "Neighboring Group Participation - using acyl group at C2",
             "TMSOTf": "Trimethylsilyl trifluoromethanesulfonate - Lewis acid activator",
             "NIS": "N-Iodosuccinimide - thiophilic activator",
