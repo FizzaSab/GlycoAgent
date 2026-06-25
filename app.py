@@ -534,6 +534,51 @@ def generate_qr_code(data, app_name="GlycoSearch", institute="Academia Sinica"):
     img_str = base64.b64encode(buffered.getvalue()).decode()
     return img_str
 
+# ─── BRANDED QR CARD ────────────────────────────────────
+def create_branded_qr_card(app_url="https://glycosearch.streamlit.app", app_name="GlycoSearch", institute="Academia Sinica"):
+    """Create complete branded QR card HTML"""
+    
+    qr_img = generate_qr_code(app_url, app_name, institute)
+    
+    html = f'''
+    <div style="background: white; padding: 2rem; border-radius: 16px; border: 2px solid #e2e8f0; text-align: center; max-width: 450px; margin: 0 auto;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <svg width="40" height="40" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="28,4 44,12 44,30 28,38 12,30 12,12" stroke="#6366f1" stroke-width="2" fill="rgba(99,102,241,0.06)"/>
+                <line x1="12" y1="12" x2="28" y2="20" stroke="#818cf8" stroke-width="1.5"/>
+                <line x1="28" y1="20" x2="44" y2="12" stroke="#818cf8" stroke-width="1.5"/>
+                <line x1="28" y1="38" x2="44" y2="30" stroke="#818cf8" stroke-width="1.5"/>
+                <line x1="28" y1="38" x2="12" y2="30" stroke="#818cf8" stroke-width="1.5"/>
+                <circle cx="28" cy="4" r="4" fill="#ef4444" stroke="#dc2626" stroke-width="1.2"/>
+                <text x="28" y="7" font-size="6.5" fill="white" text-anchor="middle" font-weight="bold">O</text>
+                <circle cx="44" cy="12" r="3.5" fill="#333" stroke="#333"/>
+                <circle cx="44" cy="30" r="3.5" fill="#333" stroke="#333"/>
+                <circle cx="28" cy="38" r="3.5" fill="#333" stroke="#333"/>
+                <circle cx="12" cy="30" r="3.5" fill="#333" stroke="#333"/>
+                <circle cx="12" cy="12" r="3.5" fill="#333" stroke="#333"/>
+                <rect x="21" y="14" width="14" height="14" rx="3" fill="#0f172a" stroke="#a78bfa" stroke-width="1.8"/>
+                <circle cx="28" cy="21" r="5" fill="rgba(167,139,250,0.12)" stroke="#c084fc" stroke-width="1.2"/>
+                <text x="28" y="16" font-size="4" fill="#c084fc" text-anchor="middle" font-weight="700">AI</text>
+            </svg>
+            <span style="font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.4rem; color: #0f172a;">{app_name}</span>
+        </div>
+        <div style="font-family: 'Inter', sans-serif; font-size: 0.8rem; color: #94a3b8; margin-bottom: 1rem;">{institute}</div>
+        <img src="data:image/png;base64,{qr_img}" style="border-radius: 12px; border: 2px solid #e2e8f0; max-width: 100%;">
+        <div style="margin-top: 1rem; font-family: 'Inter', sans-serif; font-size: 0.7rem; color: #94a3b8;">
+            Scan to access GlycoSearch
+        </div>
+        <div style="margin-top: 0.3rem; font-family: 'Inter', sans-serif; font-size: 0.6rem; color: #cbd5e1;">
+            {app_url}
+        </div>
+        <div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid #e2e8f0;">
+            <span style="font-family: 'Inter', sans-serif; font-size: 0.6rem; color: #94a3b8;">
+                Fizza Sabbor & Dr. Sabbor Hussain · Institute of Chemistry, Academia Sinica
+            </span>
+        </div>
+    </div>
+    '''
+    return html
+
 # ─── GLYCOKNOWLEDGE ENGINE ──────────────────────────────
 class GlycoKnowledgeEngine:
     def __init__(self, papers_df):
